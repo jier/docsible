@@ -98,6 +98,25 @@ docsible --role /path/to/custom/role
 
 **For detailed configuration options, see [CONFIGURATION.md](CONFIGURATION.md)**
 
+### Hybrid Template (NEW in 0.8.0)
+
+Use the `--hybrid` flag to generate a README with a mix of **manual sections** (for high-level docs) and **auto-generated sections** (for technical details):
+
+```bash
+# Generate README with hybrid template
+docsible --role ./my-role --hybrid --graph --comments
+
+# Auto-generates technical sections while preserving manual content areas
+# Perfect for maintaining both overview docs and accurate technical details
+```
+
+The hybrid template includes:
+- **Manual sections**: Quick Start, Architecture Overview, Example Playbooks, Testing, Compatibility, etc.
+- **Auto-generated sections**: Task Execution Flow, Role Variables, Task Details, Dependencies, Role Metadata
+- Clear HTML comments (`<!-- MANUALLY MAINTAINED -->` vs `<!-- DOCSIBLE GENERATED -->`) showing which sections to customize
+
+This approach lets you maintain high-level narrative documentation while ensuring technical details stay accurate and up-to-date!
+
 ```bash
 $ docsible --help
 Usage: docsible [OPTIONS]
@@ -134,6 +153,7 @@ Options:
 - `--comments`: Read comments from tasks files. (Optional).
 - `--md-template`: Specifies the path to the markdown template file (Optional). (Works only with roles)
 - `--md-collection-template`: Specifies the path to the markdown template file for documenting collections. (Optional).
+- `--hybrid`: Use hybrid template that combines manual sections with auto-generated content. (Optional).
 - `--append`: Append existing readme.md if needed.
 - `--output`: Output readme file name. Defaults to `README.md`.
 - `--repository-url`: Repository base URL (used for standalone roles). Use `detect` to auto-detect using Git, or provide a full URL.

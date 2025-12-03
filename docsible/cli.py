@@ -7,6 +7,7 @@ from datetime import datetime
 from pathlib import Path
 from jinja2 import Environment, BaseLoader, FileSystemLoader
 from docsible.markdown_template import static_template, collection_template
+from docsible.hybrid_template import hybrid_role_template
 from docsible.utils.mermaid import generate_mermaid_playbook, generate_mermaid_role_tasks_per_file
 from docsible.utils.yaml import load_yaml_generic, load_yaml_files_from_dir_custom, get_task_comments, get_task_line_numbers
 from docsible.utils.special_tasks_keys import process_special_task_keys
@@ -110,7 +111,7 @@ def render_readme_template(collection_metadata, md_collection_template, roles_in
     print(f"Collection README.md written at: {output_path}")
 
 
-def document_collection_roles(collection_path, playbook, graph, no_backup, no_docsible, comments, task_line, md_collection_template, md_role_template, append, output, repository_url, repo_type, repo_branch):
+def document_collection_roles(collection_path, playbook, graph, no_backup, no_docsible, comments, task_line, md_collection_template, md_role_template, hybrid, append, output, repository_url, repo_type, repo_branch):
     """
     Document all roles in a collection, extracting metadata from galaxy.yml or galaxy.yaml.
     """
@@ -173,7 +174,7 @@ def document_collection_roles(collection_path, playbook, graph, no_backup, no_do
                             print(f'{role} playbook not found:', role_playbook_path)
                         except Exception as e:
                             print(f'{playbook} import for {role} error:', e)
-                    role_info = document_role(str(role_path), playbook_content, graph, no_backup, no_docsible, comments, task_line, md_role_template,
+                    role_info = document_role(str(role_path), playbook_content, graph, no_backup, no_docsible, comments, task_line, md_role_template, hybrid,
                                               belongs_to_collection=collection_metadata, append=append, output=output, repository_url=repository_url, repo_type=repo_type, repo_branch=repo_branch)
                     roles_info.append(role_info)
 
@@ -192,20 +193,21 @@ def document_collection_roles(collection_path, playbook, graph, no_backup, no_do
 @click.option('--task-line', '-tl', is_flag=True, help='Read line numbers from tasks')
 @click.option('--md-collection-template', '-ctpl', default=None, help='Path to the collection markdown template file.')
 @click.option('--md-role-template', '-rtpl', '--md-template', '-tpl', default=None, help='Path to the role markdown template file.')
+@click.option('--hybrid', is_flag=True, help='Use hybrid template (combines manual sections with auto-generated content).')
 @click.option('--append', '-a', is_flag=True, help='Append to the existing README.md instead of replacing it.')
 @click.option('--output', '-o', default='README.md', help='Output readme file name.')
 @click.option('--repository-url', '-ru', default=None, help='Repository base URL (used for standalone roles)')
 @click.option('--repo-type', '-rt', default=None, help='Repository type: github, gitlab, gitea, etc.')
 @click.option('--repo-branch', '-rb', default=None, help='Repository branch name (e.g., main or master)')
 @click.version_option(version=get_version(), help=f"Show the module version. Actual is {get_version()}")
-def doc_the_role(role, collection, playbook, graph, no_backup, no_docsible, comments, task_line, md_collection_template, md_role_template, append, output, repository_url, repo_type, repo_branch):
+def doc_the_role(role, collection, playbook, graph, no_backup, no_docsible, comments, task_line, md_collection_template, md_role_template, hybrid, append, output, repository_url, repo_type, repo_branch):
     if collection:
         collection_path = os.path.abspath(collection)
         if not os.path.exists(collection_path) or not os.path.isdir(collection_path):
             print(f"Folder {collection_path} does not exist.")
             return
         document_collection_roles(collection_path, playbook, graph, no_backup, no_docsible, comments, task_line,
-                                  md_collection_template, md_role_template, append, output, repository_url, repo_type, repo_branch)
+                                  md_collection_template, md_role_template, hybrid, append, output, repository_url, repo_type, repo_branch)
     elif role:
         role_path = os.path.abspath(role)
         if not os.path.exists(role_path) or not os.path.isdir(role_path):
@@ -224,13 +226,13 @@ def doc_the_role(role, collection, playbook, graph, no_backup, no_docsible, comm
                 print('playbook not found:', playbook)
             except Exception as e:
                 print('playbook import error:', e)
-        document_role(role_path, playbook_content, graph, no_backup, no_docsible, comments, task_line, md_role_template, belongs_to_collection=False,
+        document_role(role_path, playbook_content, graph, no_backup, no_docsible, comments, task_line, md_role_template, hybrid, belongs_to_collection=False,
                       append=append, output=output, repository_url=repository_url, repo_type=repo_type, repo_branch=repo_branch)
     else:
         print("Please specify either a role or a collection path.")
 
 
-def document_role(role_path, playbook_content, generate_graph, no_backup, no_docsible, comments, task_line, md_role_template, belongs_to_collection, append, output, repository_url, repo_type, repo_branch):
+def document_role(role_path, playbook_content, generate_graph, no_backup, no_docsible, comments, task_line, md_role_template, hybrid, belongs_to_collection, append, output, repository_url, repo_type, repo_branch):
     # Initialize project structure for this role
     project_structure = ProjectStructure(role_path)
 
@@ -345,13 +347,20 @@ def document_role(role_path, playbook_content, generate_graph, no_backup, no_doc
         mermaid_code_per_file = generate_mermaid_role_tasks_per_file(
             role_info["tasks"])
 
-    # Render the static template
+    # Render the template
     if md_role_template:
+        # Custom template provided
         template_dir = os.path.dirname(md_role_template)
         template_file = os.path.basename(md_role_template)
         env = Environment(loader=FileSystemLoader(template_dir))
         template = env.get_template(template_file)
+    elif hybrid:
+        # Use hybrid template
+        env = Environment(loader=BaseLoader)
+        template = env.from_string(hybrid_role_template)
+        print("[INFO] Using hybrid template (manual + auto-generated sections)")
     else:
+        # Use standard template
         env = Environment(loader=BaseLoader)
         template = env.from_string(static_template)
     new_content = template.render(
