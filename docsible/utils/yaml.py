@@ -126,26 +126,31 @@ def load_yaml_file_custom(filepath):
 
             for comment in comments:
                 lc = comment.lower()
-                if lc.startswith('title:'):
-                    meta['title'] = comment[6:].strip()
-                elif lc.startswith('required:'):
-                    meta['required'] = comment[9:].strip()
-                elif lc.startswith('choices:'):
-                    meta['choices'] = comment[8:].strip()
-                elif lc.startswith('description:'):
-                    meta['description'] = comment[12:].strip()
-                elif lc.startswith('type:'):
-                    meta['type'] = comment[5:].strip()
-                elif lc.startswith('description-lines:'):
+                # Normalize tags: convert both '-' and '_' to a standard separator for comparison
+                # This allows tags like 'title:', 'required:', 'description-lines:', 'description_lines:' to all work
+                normalized_lc = lc.replace('_', '-')
+
+                if normalized_lc.startswith('title:'):
+                    meta['title'] = comment.split(':', 1)[1].strip()
+                elif normalized_lc.startswith('required:'):
+                    meta['required'] = comment.split(':', 1)[1].strip()
+                elif normalized_lc.startswith('choices:'):
+                    meta['choices'] = comment.split(':', 1)[1].strip()
+                elif normalized_lc.startswith('description:'):
+                    meta['description'] = comment.split(':', 1)[1].strip()
+                elif normalized_lc.startswith('type:'):
+                    meta['type'] = comment.split(':', 1)[1].strip()
+                elif normalized_lc.startswith('description-lines:') or 'description-lines:' in normalized_lc or 'description_lines:' in lc:
                     description_lines = []
                     start_collecting = False  # Flag to start collecting lines
 
                     # Process all subsequent lines to collect description content
                     for subsequent_line in lines[comment_index:]:
                         line_content = subsequent_line.strip()
+                        normalized_line = line_content.lower().replace('_', '-')
 
-                        # Start collecting after `description-lines:`
-                        if line_content.startswith("#") and 'description-lines:' in line_content:
+                        # Start collecting after `description-lines:` or `description_lines:`
+                        if line_content.startswith("#") and ('description-lines:' in normalized_line or 'description_lines:' in line_content.lower()):
                             start_collecting = True
                             continue
 

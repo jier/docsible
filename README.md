@@ -25,6 +25,10 @@ Docsible is a command-line interface (CLI) written in Python that automates the 
 - Includes meta-data like author and license from `meta/main.[yml/yaml]`
 - Generates a well-structured table for default and role-specific variables
 - Support for encrypted Ansible Vault variables
+- **NEW**: Flexible project structure support (AWX, monorepos, custom directories)
+- **NEW**: Auto-detection of various Ansible project layouts
+- **NEW**: Optional `.docsible.yml` configuration for custom structures
+- **NEW**: Comment tag flexibility (supports both `-` and `_` separators)
 
 ## Installation
 
@@ -58,6 +62,41 @@ docsible --collection ./collections_tests/lucian/ --no-backup --graph
 ```bash
 docsible --role /path/to/ansible/role # without include a playbook into readme
 ```
+
+### Flexible Project Structures (NEW in 0.8.0)
+
+Docsible now supports flexible project structures including AWX projects, monorepos, and custom directory layouts!
+
+#### Generate Configuration Template
+```bash
+# Create a .docsible.yml configuration file in your project
+docsible-init-config
+
+# Or specify a custom path
+docsible-init-config --path /path/to/your/project
+```
+
+#### Example: Documenting a Monorepo
+```bash
+# For a monorepo with roles in ansible/roles/
+docsible --collection /path/to/monorepo
+```
+
+#### Example: Custom Directory Names
+If your project uses custom directory names, create a `.docsible.yml`:
+```yaml
+structure:
+  defaults_dir: 'role_defaults'
+  vars_dir: 'variables'
+  tasks_dir: 'playbooks'
+```
+
+Then run docsible normally:
+```bash
+docsible --role /path/to/custom/role
+```
+
+**For detailed configuration options, see [CONFIGURATION.md](CONFIGURATION.md)**
 
 ```bash
 $ docsible --help

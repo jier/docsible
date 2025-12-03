@@ -32,3 +32,4 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
 docsible = 'docsible.cli:doc_the_role'
+docsible-init-config = 'docsible.cli:init_config'

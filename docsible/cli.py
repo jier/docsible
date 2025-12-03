@@ -4,12 +4,14 @@ import yaml
 import click
 from shutil import copyfile
 from datetime import datetime
+from pathlib import Path
 from jinja2 import Environment, BaseLoader, FileSystemLoader
 from docsible.markdown_template import static_template, collection_template
 from docsible.utils.mermaid import generate_mermaid_playbook, generate_mermaid_role_tasks_per_file
 from docsible.utils.yaml import load_yaml_generic, load_yaml_files_from_dir_custom, get_task_comments, get_task_line_numbers
 from docsible.utils.special_tasks_keys import process_special_task_keys
 from docsible.utils.git import get_repo_info
+from docsible.utils.project_structure import ProjectStructure, create_example_config
 
 DOCSIBLE_START_TAG = "<!-- DOCSIBLE START -->"
 DOCSIBLE_END_TAG = "<!-- DOCSIBLE END -->"
@@ -112,6 +114,8 @@ def document_collection_roles(collection_path, playbook, graph, no_backup, no_do
     """
     Document all roles in a collection, extracting metadata from galaxy.yml or galaxy.yaml.
     """
+    # Initialize project structure
+    project_structure = ProjectStructure(collection_path)
 
     try:
         git_info = get_repo_info(collection_path) or {}
@@ -124,50 +128,57 @@ def document_collection_roles(collection_path, playbook, graph, no_backup, no_do
     repo_type = repo_type or (
         git_info.get("repository_type") if git_info else None)
 
-    for root, dirs, files in os.walk(collection_path):
-        galaxy_file = next(
-            (f for f in files if f in ['galaxy.yml', 'galaxy.yaml']), None)
-        if galaxy_file:
-            galaxy_path = os.path.join(root, galaxy_file)
-            with open(galaxy_path, 'r') as f:
-                collection_metadata = yaml.safe_load(f)
-                if output == "README.md":
-                    readme_path = os.path.join(
-                        root, collection_metadata.get('readme', output))
-                else:
-                    readme_path = os.path.join(root, output)
+    # Find all collection markers in the directory tree
+    collection_markers = project_structure.find_collection_markers()
 
-            collection_metadata['repository_type'] = repo_type
-            collection_metadata['repository_branch'] = repo_branch
+    if not collection_markers:
+        print(f"[WARN] No collection marker files (galaxy.yml/yaml) found in {collection_path}")
+        return
 
-            if os.path.exists(readme_path) and not no_backup:
-                backup_path = f"{readme_path[:readme_path.lower().rfind('.md')]}_backup_{timestamp}.md"
-                copyfile(readme_path, backup_path)
-                print(f"Backup of existing {output} created at: {backup_path}")
+    for galaxy_path in collection_markers:
+        collection_root = galaxy_path.parent
 
-            roles_dir = os.path.join(root, 'roles')
-            roles_info = []
-            if os.path.exists(roles_dir) and os.path.isdir(roles_dir):
-                for role in os.listdir(roles_dir):
-                    role_path = os.path.join(roles_dir, role)
-                    if os.path.isdir(role_path):
-                        if playbook:
-                            playbook_content = None
-                            role_playbook_path = os.path.join(
-                                role_path, playbook)
-                            try:
-                                with open(role_playbook_path, 'r') as f:
-                                    playbook_content = f.read()
-                            except FileNotFoundError:
-                                print(f'{role} not found:', role_playbook_path)
-                            except Exception as e:
-                                print(f'{playbook} import for {role} error:', e)
-                        role_info = document_role(role_path, playbook_content, graph, no_backup, no_docsible, comments, task_line, md_role_template,
-                                                  belongs_to_collection=collection_metadata, append=append, output=output, repository_url=repository_url, repo_type=repo_type, repo_branch=repo_branch)
-                        roles_info.append(role_info)
+        with open(galaxy_path, 'r') as f:
+            collection_metadata = yaml.safe_load(f)
+            if output == "README.md":
+                readme_path = os.path.join(
+                    str(collection_root), collection_metadata.get('readme', output))
+            else:
+                readme_path = os.path.join(str(collection_root), output)
 
-            render_readme_template(
-                collection_metadata, md_collection_template, roles_info, readme_path, append)
+        collection_metadata['repository_type'] = repo_type
+        collection_metadata['repository_branch'] = repo_branch
+
+        if os.path.exists(readme_path) and not no_backup:
+            backup_path = f"{readme_path[:readme_path.lower().rfind('.md')]}_backup_{timestamp}.md"
+            copyfile(readme_path, backup_path)
+            print(f"Backup of existing {output} created at: {backup_path}")
+
+        # Use ProjectStructure to find roles directory
+        collection_structure = ProjectStructure(str(collection_root))
+        roles_dir = collection_structure.get_roles_dir()
+
+        roles_info = []
+        if roles_dir.exists() and roles_dir.is_dir():
+            for role in os.listdir(str(roles_dir)):
+                role_path = roles_dir / role
+                if role_path.is_dir():
+                    if playbook:
+                        playbook_content = None
+                        role_playbook_path = role_path / playbook
+                        try:
+                            with open(role_playbook_path, 'r') as f:
+                                playbook_content = f.read()
+                        except FileNotFoundError:
+                            print(f'{role} playbook not found:', role_playbook_path)
+                        except Exception as e:
+                            print(f'{playbook} import for {role} error:', e)
+                    role_info = document_role(str(role_path), playbook_content, graph, no_backup, no_docsible, comments, task_line, md_role_template,
+                                              belongs_to_collection=collection_metadata, append=append, output=output, repository_url=repository_url, repo_type=repo_type, repo_branch=repo_branch)
+                    roles_info.append(role_info)
+
+        render_readme_template(
+            collection_metadata, md_collection_template, roles_info, readme_path, append)
 
 
 @click.command()
@@ -220,32 +231,36 @@ def doc_the_role(role, collection, playbook, graph, no_backup, no_docsible, comm
 
 
 def document_role(role_path, playbook_content, generate_graph, no_backup, no_docsible, comments, task_line, md_role_template, belongs_to_collection, append, output, repository_url, repo_type, repo_branch):
+    # Initialize project structure for this role
+    project_structure = ProjectStructure(role_path)
+
     role_name = os.path.basename(role_path)
     readme_path = os.path.join(role_path, output)
-    meta_path = os.path.join(role_path, "meta", "main.yml")
     docsible_path = os.path.join(role_path, ".docsible")
-    argument_specs_path = os.path.join(role_path, "meta", "argument_specs.yml")
 
     if not no_docsible:
         manage_docsible_file_keys(docsible_path)
 
-    # Check if meta/main.yml exist, otherwise try meta/main.yaml
-    if not os.path.exists(meta_path):
-        meta_path = os.path.join(role_path, "meta", "main.yaml")
+    # Use ProjectStructure to get meta file path
+    meta_path = project_structure.get_meta_file(Path(role_path))
+    if meta_path is None:
+        print(f"[WARN] No meta file found for role {role_name}")
+        meta_path = Path(role_path) / "meta" / "main.yml"  # Fallback for load_yaml_generic
 
-    if not os.path.exists(argument_specs_path):
-        argument_specs_path = os.path.join(
-            role_path, "meta", "argument_specs.yaml")
+    # Use ProjectStructure to get argument specs file
+    argument_specs_path = project_structure.get_argument_specs_file(Path(role_path))
 
-    if os.path.exists(argument_specs_path):
-        argument_specs = load_yaml_generic(argument_specs_path)
+    if argument_specs_path and argument_specs_path.exists():
+        argument_specs = load_yaml_generic(str(argument_specs_path))
     else:
         argument_specs = None
 
-    defaults_data = load_yaml_files_from_dir_custom(
-        os.path.join(role_path, "defaults")) or []
-    vars_data = load_yaml_files_from_dir_custom(
-        os.path.join(role_path, "vars")) or []
+    # Use ProjectStructure to get defaults and vars directories
+    defaults_dir = project_structure.get_defaults_dir(Path(role_path))
+    vars_dir = project_structure.get_vars_dir(Path(role_path))
+
+    defaults_data = load_yaml_files_from_dir_custom(str(defaults_dir)) or []
+    vars_data = load_yaml_files_from_dir_custom(str(vars_dir)) or []
 
     if repository_url == "detect":
         try:
@@ -264,7 +279,7 @@ def document_role(role_path, playbook_content, generate_graph, no_backup, no_doc
         "defaults": defaults_data,
         "vars": vars_data,
         "tasks": [],
-        "meta": load_yaml_generic(meta_path) or {},
+        "meta": load_yaml_generic(str(meta_path)) or {},
         "playbook": {"content": playbook_content, "graph":
                      generate_mermaid_playbook(yaml.safe_load(playbook_content)) if generate_graph and playbook_content else None},
         "docsible": load_yaml_generic(docsible_path) if not no_docsible else None,
@@ -275,17 +290,22 @@ def document_role(role_path, playbook_content, generate_graph, no_backup, no_doc
         "argument_specs": argument_specs
     }
 
-    tasks_dir = os.path.join(role_path, "tasks")
+    # Use ProjectStructure to get tasks directory
+    tasks_dir = project_structure.get_tasks_dir(Path(role_path))
     role_info["tasks"] = []
 
-    if os.path.exists(tasks_dir) and os.path.isdir(tasks_dir):
-        for dirpath, dirnames, filenames in os.walk(tasks_dir):
+    if tasks_dir.exists() and tasks_dir.is_dir():
+        # Get supported YAML extensions from project structure
+        yaml_extensions = project_structure.get_yaml_extensions()
+
+        for dirpath, dirnames, filenames in os.walk(str(tasks_dir)):
             for task_file in filenames:
-                if task_file.endswith(".yml") or task_file.endswith(".yaml"):
+                # Check if file has a supported YAML extension
+                if any(task_file.endswith(ext) for ext in yaml_extensions):
                     file_path = os.path.join(dirpath, task_file)
                     tasks_data = load_yaml_generic(file_path)
                     if tasks_data:
-                        relative_path = os.path.relpath(file_path, tasks_dir)
+                        relative_path = os.path.relpath(file_path, str(tasks_dir))
                         task_info = {'file': relative_path,
                                      'tasks': [], 'mermaid': [], "comments": [], 'lines': []}
                         if comments:
@@ -357,6 +377,30 @@ def document_role(role_path, playbook_content, generate_graph, no_backup, no_doc
 
     print('Documentation generated at:', readme_path)
     return role_info
+
+
+@click.command()
+@click.option('--path', '-p', default='.', help='Path where to create .docsible.yml')
+@click.option('--force', '-f', is_flag=True, help='Overwrite existing .docsible.yml file')
+def init_config(path, force):
+    """
+    Generate an example .docsible.yml configuration file.
+    This file allows you to customize how docsible interprets your Ansible project structure.
+    """
+    config_path = Path(path) / '.docsible.yml'
+
+    if config_path.exists() and not force:
+        print(f"[ERROR] Configuration file already exists at {config_path}")
+        print("Use --force to overwrite it.")
+        return
+
+    try:
+        with open(config_path, 'w', encoding='utf-8') as f:
+            f.write(create_example_config())
+        print(f"[SUCCESS] Example configuration created at: {config_path}")
+        print("\nYou can now customize this file to match your project structure.")
+    except Exception as e:
+        print(f"[ERROR] Failed to create configuration file: {e}")
 
 
 if __name__ == '__main__':
