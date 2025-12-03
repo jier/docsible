@@ -61,6 +61,55 @@ def test_monorepo_detection():
     print("✓ Monorepo detection test passed")
 
 
+def test_multi_role_detection():
+    """Test that a regular repo with just roles/ folder is detected correctly"""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        # Create multi-role structure (no galaxy.yml, just roles/)
+        multi_role_path = Path(tmpdir)
+        roles_dir = multi_role_path / 'roles'
+        roles_dir.mkdir()
+
+        # Create a couple of roles
+        (roles_dir / 'role1' / 'tasks').mkdir(parents=True)
+        (roles_dir / 'role2' / 'tasks').mkdir(parents=True)
+
+        project = ProjectStructure(str(multi_role_path))
+
+        assert project.project_type == 'multi-role', f"Expected 'multi-role', got '{project.project_type}'"
+        assert project.get_roles_dir().name == 'roles'
+
+        # Test that find_roles works
+        roles = project.find_roles()
+        assert len(roles) == 2, f"Expected 2 roles, found {len(roles)}"
+
+    print("✓ Multi-role detection test passed")
+
+
+def test_awx_detection():
+    """Test that AWX project structure is detected correctly (requires BOTH roles/ and inventory/)"""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        # Create AWX structure with BOTH roles/ and inventory/
+        awx_path = Path(tmpdir)
+        (awx_path / 'roles').mkdir()
+        (awx_path / 'inventory').mkdir()
+
+        project = ProjectStructure(str(awx_path))
+
+        assert project.project_type == 'awx', f"Expected 'awx', got '{project.project_type}'"
+
+    # Test that just roles/ alone is NOT detected as AWX
+    with tempfile.TemporaryDirectory() as tmpdir:
+        just_roles_path = Path(tmpdir)
+        (just_roles_path / 'roles').mkdir()
+
+        project = ProjectStructure(str(just_roles_path))
+
+        assert project.project_type != 'awx', f"Expected NOT 'awx', got '{project.project_type}'"
+        assert project.project_type == 'multi-role', f"Expected 'multi-role', got '{project.project_type}'"
+
+    print("✓ AWX detection test passed")
+
+
 def test_custom_config():
     """Test that custom configuration from .docsible.yml is loaded"""
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -153,6 +202,8 @@ if __name__ == '__main__':
         test_standard_role_detection()
         test_collection_detection()
         test_monorepo_detection()
+        test_multi_role_detection()
+        test_awx_detection()
         test_custom_config()
         test_yaml_extensions()
         test_meta_file_discovery()

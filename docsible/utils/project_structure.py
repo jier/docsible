@@ -70,7 +70,7 @@ class ProjectStructure:
         Auto-detect the project type based on directory structure.
 
         Returns:
-            'collection', 'awx', 'monorepo', 'role', or 'unknown'
+            'collection', 'awx', 'monorepo', 'multi-role', 'role', or 'unknown'
         """
         # Check for collection marker (galaxy.yml/yaml)
         for marker in self.DEFAULTS['collection_marker_files']:
@@ -85,6 +85,10 @@ class ProjectStructure:
         if self._is_monorepo():
             return 'monorepo'
 
+        # Check for regular multi-role repo (just roles/ at root, no galaxy.yml)
+        if (self.root_path / 'roles').is_dir():
+            return 'multi-role'
+
         # Check for standard role
         if self._is_standard_role():
             return 'role'
@@ -93,15 +97,13 @@ class ProjectStructure:
 
     def _is_awx_project(self) -> bool:
         """Detect AWX project structure."""
-        # AWX projects typically have:
+        # AWX projects must have BOTH:
         # - roles/ directory
         # - inventory/ or inventories/ directory
-        # - project.yml or similar playbooks
-        awx_indicators = [
-            (self.root_path / 'roles').is_dir(),
-            (self.root_path / 'inventory').exists() or (self.root_path / 'inventories').exists(),
-        ]
-        return sum(awx_indicators) >= 1
+        has_roles = (self.root_path / 'roles').is_dir()
+        has_inventory = (self.root_path / 'inventory').exists() or (self.root_path / 'inventories').exists()
+
+        return has_roles and has_inventory
 
     def _is_monorepo(self) -> bool:
         """Detect monorepo structure (e.g., ansible/roles/, projects/ansible/)."""
@@ -268,6 +270,14 @@ class ProjectStructure:
 
         elif self.project_type == 'awx':
             # For AWX, roles are typically in roles/ at root
+            roles_dir = self.root_path / 'roles'
+            if roles_dir.exists():
+                for item in roles_dir.iterdir():
+                    if item.is_dir() and self._is_valid_role(item):
+                        roles.append(item)
+
+        elif self.project_type == 'multi-role':
+            # For multi-role repos, roles are in roles/ at root (like collections, but no galaxy.yml)
             roles_dir = self.root_path / 'roles'
             if roles_dir.exists():
                 for item in roles_dir.iterdir():

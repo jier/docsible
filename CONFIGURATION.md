@@ -109,7 +109,31 @@ my-collection/
 
 **Detection**: Has `galaxy.yml` or `galaxy.yaml` file
 
-### 3. AWX Project
+### 3. Multi-Role Repository (NEW)
+
+**Structure**:
+```
+my-roles-repo/
+├── roles/
+│   ├── role1/
+│   │   ├── tasks/
+│   │   └── defaults/
+│   └── role2/
+│       ├── tasks/
+│       └── vars/
+└── README.md
+```
+
+**Detection**: Has `roles/` directory at root, but no `galaxy.yml` (not a formal collection)
+
+**Use Case**: Regular repositories that organize multiple roles in a `roles/` folder without being an official Ansible collection.
+
+**Usage**:
+```bash
+docsible --collection ./my-roles-repo
+```
+
+### 4. AWX Project
 
 **Structure**:
 ```
@@ -123,9 +147,9 @@ awx-project/
 └── README.md
 ```
 
-**Detection**: Has `roles/` directory and `inventory/` or `inventories/` directory
+**Detection**: Has **BOTH** `roles/` directory **AND** `inventory/` or `inventories/` directory
 
-### 4. Monorepo
+### 5. Monorepo
 
 **Structure**:
 ```
@@ -236,7 +260,39 @@ structure:
 docsible --role ./custom-role
 ```
 
-### Example 3: AWX Project
+### Example 3: Multi-Role Repository
+
+**Directory Structure**:
+```
+ansible-roles/
+├── roles/
+│   ├── webserver/
+│   │   ├── tasks/
+│   │   │   └── main.yml
+│   │   └── defaults/
+│   │       └── main.yml
+│   ├── database/
+│   │   ├── tasks/
+│   │   │   └── main.yml
+│   │   └── vars/
+│   │       └── main.yml
+│   └── loadbalancer/
+│       └── tasks/
+│           └── main.yml
+└── README.md
+```
+
+**Configuration**: Not needed (auto-detected as multi-role repository)
+
+**Usage**:
+```bash
+# Documents all roles in the roles/ directory
+docsible --collection ./ansible-roles
+```
+
+**Result**: Creates a README.md at the root and individual role documentation in each role directory.
+
+### Example 4: AWX Project
 
 **Directory Structure**:
 ```
@@ -256,7 +312,7 @@ awx-project/
 docsible --collection ./awx-project
 ```
 
-### Example 4: Multiple Collections in Monorepo
+### Example 5: Multiple Collections in Monorepo
 
 **Directory Structure**:
 ```
@@ -281,7 +337,7 @@ docsible --collection .
 
 All `galaxy.yml` files will be found and each collection documented.
 
-### Example 5: Support Both .yml and .yaml
+### Example 6: Support Both .yml and .yaml
 
 By default, Docsible scans both `.yml` and `.yaml` extensions. No configuration needed.
 
