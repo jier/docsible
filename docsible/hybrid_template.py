@@ -72,6 +72,7 @@ This sequence diagram shows the detailed interaction between the role, tasks, in
 
 {% endif %}
 
+{% if not no_vars %}
 {% if role.playbook.graph %}
 ### Playbook Flow (Flowchart)
 ```mermaid
@@ -90,6 +91,7 @@ This sequence diagram shows the detailed interaction between the role, tasks, in
 
 {% if not role.tasks and not role.playbook.graph and not sequence_diagram_detailed %}
 *No task flow graph generated. Use `--graph` flag to generate task execution diagrams.*
+{% endif %}
 {% endif %}
 
 ---
@@ -243,6 +245,7 @@ This role depends on the following Ansible roles:
 
 ---
 
+{% if not no_vars %}
 ## Task Details
 
 <!-- DOCSIBLE GENERATED -->
@@ -265,6 +268,7 @@ This role depends on the following Ansible roles:
 {% endif %}
 
 ---
+{% endif %}
 
 ## Testing
 

@@ -256,6 +256,7 @@ Description: {{ role.meta.galaxy_info.description or 'Not available.' }}
 {% endif %}
 
 
+{% if not no_vars %}
 ### Tasks
 
 {% for taskfile in role.tasks|sort(attribute='file') %}
@@ -304,6 +305,7 @@ Description: {{ role.meta.galaxy_info.description or 'Not available.' }}
 {{ role.playbook.graph }}
 ```
 {%- endif %}
+{% endif %}
 
 {% if role.meta.galaxy_info -%}
 ## Author Information

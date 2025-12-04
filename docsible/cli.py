@@ -41,6 +41,10 @@ def extract_playbook_role_dependencies(playbook_content, current_role_name):
     """
     Extract role names from playbook that differ from the current role name.
 
+    Searches for roles in:
+    - roles: section
+    - include_role/import_role tasks in pre_tasks, tasks, post_tasks
+
     Args:
         playbook_content: YAML content of the playbook as string
         current_role_name: Name of the current role being documented
@@ -57,6 +61,7 @@ def extract_playbook_role_dependencies(playbook_content, current_role_name):
             return []
 
         playbook_roles = []
+
         for play in playbook_data:
             if not isinstance(play, dict):
                 continue
@@ -78,6 +83,37 @@ def extract_playbook_role_dependencies(playbook_content, current_role_name):
                     and role_name not in playbook_roles
                 ):
                     playbook_roles.append(role_name)
+
+            # Extract roles from include_role/import_role in task sections
+            for task_section in ["pre_tasks", "tasks", "post_tasks"]:
+                tasks = play.get(task_section, [])
+                if not isinstance(tasks, list):
+                    continue
+
+                for task in tasks:
+                    if not isinstance(task, dict):
+                        continue
+
+                    # Check for include_role or import_role
+                    for role_action in ["include_role", "import_role"]:
+                        if role_action in task:
+                            role_spec = task[role_action]
+
+                            # Role can be specified as string or dict with 'name' key
+                            if isinstance(role_spec, str):
+                                role_name = role_spec
+                            elif isinstance(role_spec, dict):
+                                role_name = role_spec.get("name")
+                            else:
+                                continue
+
+                            # Add if different from current role and not already in list
+                            if (
+                                role_name
+                                and role_name != current_role_name
+                                and role_name not in playbook_roles
+                            ):
+                                playbook_roles.append(role_name)
 
         return playbook_roles
     except Exception as e:

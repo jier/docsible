@@ -195,6 +195,61 @@ def generate_mermaid_sequence_role_detailed(role_info: Dict[str, Any], include_h
     return diagram
 
 
+def _detect_state_support(role_info: Dict[str, Any]) -> bool:
+    """
+    Detect if the role explicitly supports present/absent states.
+
+    Checks:
+    - defaults/vars for 'state' variable with present/absent in choices/description
+    - tasks using state parameter with present/absent values
+
+    Args:
+        role_info: Role information dict
+
+    Returns:
+        True if role supports present/absent states
+    """
+    # Check defaults for state variable
+    for defaults_file in role_info.get('defaults', []):
+        data = defaults_file.get('data', {})
+        if 'state' in data:
+            state_info = data['state']
+            # Check choices
+            choices = state_info.get('choices', '')
+            if isinstance(choices, str) and ('present' in choices.lower() and 'absent' in choices.lower()):
+                return True
+            if isinstance(choices, list) and any('present' in str(c).lower() for c in choices) and any('absent' in str(c).lower() for c in choices):
+                return True
+            # Check description
+            description = state_info.get('description', '')
+            if 'present' in str(description).lower() and 'absent' in str(description).lower():
+                return True
+
+    # Check vars for state variable
+    for vars_file in role_info.get('vars', []):
+        data = vars_file.get('data', {})
+        if 'state' in data:
+            state_info = data['state']
+            choices = state_info.get('choices', '')
+            if isinstance(choices, str) and ('present' in choices.lower() and 'absent' in choices.lower()):
+                return True
+            if isinstance(choices, list) and any('present' in str(c).lower() for c in choices) and any('absent' in str(c).lower() for c in choices):
+                return True
+
+    # Check tasks for state usage with present/absent
+    for task_file_info in role_info.get('tasks', []):
+        for task in task_file_info.get('tasks', []):
+            if not isinstance(task, dict):
+                continue
+            # Check if task has state parameter with present/absent
+            for key, value in task.items():
+                if key == 'state' and isinstance(value, str):
+                    if value.lower() in ['present', 'absent']:
+                        return True
+
+    return False
+
+
 def _generate_simplified_sequence_diagram(role_info: Dict[str, Any], include_handlers: bool) -> str:
     """
     Generate simplified sequence diagram for large/complex roles.
@@ -215,8 +270,20 @@ def _generate_simplified_sequence_diagram(role_info: Dict[str, Any], include_han
         diagram += "    participant Handlers\n"
 
     diagram += "\n"
-    diagram += f"    Playbook->>+{role_participant}: Execute role\n"
-    diagram += f"    activate {role_participant}\n\n"
+
+    # Check for present/absent state support
+    supports_states = _detect_state_support(role_info)
+
+    if supports_states:
+        # Show alternative flows for present/absent
+        diagram += f"    alt state: present\n"
+        diagram += f"    Playbook->>+{role_participant}: Execute role (ensure present)\n"
+        diagram += f"    activate {role_participant}\n"
+    else:
+        diagram += f"    Playbook->>+{role_participant}: Execute role\n"
+        diagram += f"    activate {role_participant}\n"
+
+    diagram += "\n"
 
     # Process tasks at file level only (no individual task details)
     tasks_data = role_info.get('tasks', [])
@@ -251,7 +318,30 @@ def _generate_simplified_sequence_diagram(role_info: Dict[str, Any], include_han
     diagram += f"    deactivate {role_participant}\n"
     diagram += f"    {role_participant}-->>-Playbook: Role complete\n"
 
-    diagram += f"\n    Note over Playbook: Simplified view - {len(tasks_data)} task files\n"
+    # Add "absent" alternative if state support is detected
+    if supports_states:
+        diagram += f"    else state: absent\n"
+        diagram += f"    Playbook->>+{role_participant}: Execute role (ensure absent)\n"
+        diagram += f"    activate {role_participant}\n"
+
+        # Show simplified task execution for absent
+        for task_file_info in tasks_data:
+            task_file = task_file_info.get('file', 'main.yml')
+            tasks = task_file_info.get('tasks', [])
+            if not tasks:
+                continue
+            task_count = len(tasks)
+            diagram += f"    {role_participant}->>{role_participant}: Execute {task_file}\n"
+            diagram += f"    Note right of {role_participant}: {task_count} tasks\n"
+
+        diagram += f"    deactivate {role_participant}\n"
+        diagram += f"    {role_participant}-->>-Playbook: Role complete\n"
+        diagram += f"    end\n"
+
+    diagram += f"\n    Note over Playbook: Simplified view - {len(tasks_data)} task files"
+    if supports_states:
+        diagram += " (supports present/absent)"
+    diagram += "\n"
 
     return diagram
 
