@@ -89,7 +89,18 @@ docsible-init-config = 'docsible.cli:init_config'
 
 # uv specific configuration
 [tool.uv]
-dev-dependencies = []
+[dependency-groups]
+dev =[
+    "ruff>=0.14.8",
+]
+test = [
+    "pytest>=7.4.4",
+]
+[tool.pytest.ini_options]
+addopts = [
+    "--import-mode=importlib",
+    "-v"
+]
 
 # Hatch configuration for building
 [tool.hatch.build.targets.wheel]
