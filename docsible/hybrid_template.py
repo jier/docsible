@@ -200,6 +200,7 @@ This role depends on the following Ansible roles:
 
 ---
 
+{% if not no_vars %}
 ## Example Playbooks
 
 <!-- MANUALLY MAINTAINED -->
@@ -244,6 +245,7 @@ This role depends on the following Ansible roles:
 ```
 
 ---
+{% endif %}
 
 {% if not no_vars %}
 ## Task Details
@@ -268,7 +270,6 @@ This role depends on the following Ansible roles:
 {% endif %}
 
 ---
-{% endif %}
 
 ## Testing
 
@@ -297,6 +298,7 @@ This role depends on the following Ansible roles:
 ```
 
 ---
+{% endif %}
 
 ## Compatibility
 

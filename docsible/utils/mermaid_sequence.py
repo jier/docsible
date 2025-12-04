@@ -23,13 +23,14 @@ def sanitize_note_text(text: str, max_length: int = 50) -> str:
 
 def generate_mermaid_sequence_playbook_high_level(playbook: List[Dict], role_meta: Optional[Dict] = None) -> str:
     """
-    Generate high-level sequence diagram showing playbook → roles interaction.
+    Generate high-level sequence diagram showing playbook → roles → tasks interaction.
 
     Shows:
     - Playbook execution flow
     - Role dependencies (from meta/main.yml)
     - Pre-tasks, roles, tasks, post-tasks, handlers phases
-    - Role includes/imports
+    - Individual include_role/import_role/include_tasks/import_tasks
+    - Task names
 
     Args:
         playbook: Parsed playbook YAML structure
@@ -45,9 +46,9 @@ def generate_mermaid_sequence_playbook_high_level(playbook: List[Dict], role_met
     # Track participants (roles and handlers)
     participants = set()
 
-    # Analyze playbook structure to identify all participants
+    # Analyze playbook structure to identify all participants (roles from all sources)
     for play in playbook:
-        # Add roles as participants
+        # Add roles from roles: section
         roles = play.get("roles", [])
         for role in roles:
             if isinstance(role, dict):
@@ -59,6 +60,28 @@ def generate_mermaid_sequence_playbook_high_level(playbook: List[Dict], role_met
             if role_name not in participants:
                 participants.add(role_name)
                 diagram += f"    participant {role_name}\n"
+
+        # Scan tasks for include_role/import_role and add as participants
+        for task_section in ["pre_tasks", "tasks", "post_tasks"]:
+            tasks = play.get(task_section, [])
+            for task in tasks:
+                if not isinstance(task, dict):
+                    continue
+
+                for role_action in ["include_role", "import_role"]:
+                    if role_action in task:
+                        role_spec = task[role_action]
+                        if isinstance(role_spec, str):
+                            role_name = role_spec
+                        elif isinstance(role_spec, dict):
+                            role_name = role_spec.get("name")
+                        else:
+                            continue
+
+                        role_name_clean = sanitize_participant_name(role_name)
+                        if role_name_clean not in participants:
+                            participants.add(role_name_clean)
+                            diagram += f"    participant {role_name_clean}\n"
 
     # Add handlers participant if there are any
     has_handlers = False
@@ -83,11 +106,12 @@ def generate_mermaid_sequence_playbook_high_level(playbook: List[Dict], role_met
         hosts = play.get("hosts", "all")
         diagram += f"    Note over Playbook: Play {play_idx + 1}: Target hosts={hosts}\n\n"
 
-        # Pre-tasks
+        # Pre-tasks - show individual tasks
         pre_tasks = play.get("pre_tasks", [])
         if pre_tasks:
             diagram += f"    Note over Playbook: Pre-tasks ({len(pre_tasks)} tasks)\n"
-            diagram += "    Playbook->>Playbook: Execute pre-tasks\n\n"
+            diagram = _add_task_details(diagram, pre_tasks, "Playbook", participants, has_handlers)
+            diagram += "\n"
 
         # Role dependencies (if available from meta)
         if role_meta and role_meta.get('dependencies'):
@@ -130,25 +154,19 @@ def generate_mermaid_sequence_playbook_high_level(playbook: List[Dict], role_met
 
             diagram += f"    {role_name_clean}-->>-Playbook: Complete\n\n"
 
-        # Tasks
+        # Tasks - show individual tasks with include_role/import_role details
         tasks = play.get("tasks", [])
         if tasks:
             diagram += f"    Note over Playbook: Tasks ({len(tasks)} tasks)\n"
-            diagram += "    Playbook->>Playbook: Execute tasks\n"
-
-            # Check for handler notifications in tasks
-            for task in tasks:
-                if isinstance(task, dict) and 'notify' in task:
-                    if has_handlers:
-                        diagram += "    Playbook->>Handlers: Notify\n"
-                    break
+            diagram = _add_task_details(diagram, tasks, "Playbook", participants, has_handlers)
             diagram += "\n"
 
-        # Post-tasks
+        # Post-tasks - show individual tasks
         post_tasks = play.get("post_tasks", [])
         if post_tasks:
             diagram += f"    Note over Playbook: Post-tasks ({len(post_tasks)} tasks)\n"
-            diagram += "    Playbook->>Playbook: Execute post-tasks\n\n"
+            diagram = _add_task_details(diagram, post_tasks, "Playbook", participants, has_handlers)
+            diagram += "\n"
 
         # Handlers
         if has_handlers:
@@ -158,6 +176,83 @@ def generate_mermaid_sequence_playbook_high_level(playbook: List[Dict], role_met
 
     diagram += "    Playbook-->>User: Playbook complete\n"
     diagram += "    deactivate Playbook\n"
+
+    return diagram
+
+
+def _add_task_details(diagram: str, tasks: List[Dict], executor: str, participants: set, has_handlers: bool) -> str:
+    """
+    Helper function to add task details to sequence diagram.
+
+    Args:
+        diagram: The diagram string to append to
+        tasks: List of task dictionaries
+        executor: Name of the executing participant (e.g., "Playbook")
+        participants: Set of known participants
+        has_handlers: Whether handlers are present
+
+    Returns:
+        Updated diagram string
+    """
+    for task in tasks:
+        if not isinstance(task, dict):
+            continue
+
+        # Get task name
+        task_name = task.get('name', 'Unnamed task')
+        task_name_short = sanitize_note_text(task_name, 40)
+
+        # Check for include_role or import_role
+        role_included = False
+        for role_action in ["include_role", "import_role"]:
+            if role_action in task:
+                role_spec = task[role_action]
+                if isinstance(role_spec, str):
+                    role_name = role_spec
+                elif isinstance(role_spec, dict):
+                    role_name = role_spec.get("name")
+                else:
+                    continue
+
+                role_name_clean = sanitize_participant_name(role_name)
+                diagram += f"    {executor}->>+{role_name_clean}: {role_action}: {role_name}\n"
+                diagram += f"    {role_name_clean}-->>-{executor}: Complete\n"
+
+                # Check for notifications
+                if 'notify' in task and has_handlers:
+                    diagram += f"    {executor}->>Handlers: Notify\n"
+                role_included = True
+                break
+
+        if role_included:
+            continue
+
+        # Check for include_tasks or import_tasks
+        task_included = False
+        for task_action in ["include_tasks", "import_tasks"]:
+            if task_action in task:
+                task_file = task[task_action]
+                if isinstance(task_file, str):
+                    diagram += f"    {executor}->>{executor}: {task_action}: {task_file}\n"
+                elif isinstance(task_file, dict):
+                    file_name = task_file.get("file", "unknown")
+                    diagram += f"    {executor}->>{executor}: {task_action}: {file_name}\n"
+
+                # Check for notifications
+                if 'notify' in task and has_handlers:
+                    diagram += f"    {executor}->>Handlers: Notify\n"
+                task_included = True
+                break
+
+        if task_included:
+            continue
+
+        # Regular task
+        diagram += f"    {executor}->>{executor}: {task_name_short}\n"
+
+        # Check for notifications
+        if 'notify' in task and has_handlers:
+            diagram += f"    {executor}->>Handlers: Notify\n"
 
     return diagram
 
