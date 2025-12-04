@@ -1,0 +1,22 @@
+---
+# title: Complex Role Variables
+# description: Variables with present/absent state support
+
+state: present
+# choices: [present, absent]
+# description: Whether to install or remove the application
+
+app_name: "myapp"
+app_version: "1.0.0"
+app_port: 3000
+
+database_config:
+  host: localhost
+  port: 5432
+  name: appdb
+  user: appuser
+
+feature_flags:
+  enable_cache: true
+  enable_monitoring: false
+  debug_mode: false

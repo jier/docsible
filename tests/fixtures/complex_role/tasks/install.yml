@@ -1,0 +1,17 @@
+---
+- name: Download application
+  ansible.builtin.get_url:
+    url: "https://example.com/{{ app_name }}-{{ app_version }}.tar.gz"
+    dest: "/tmp/{{ app_name }}.tar.gz"
+    mode: '0644'
+
+- name: Extract application
+  ansible.builtin.unarchive:
+    src: "/tmp/{{ app_name }}.tar.gz"
+    dest: "/opt/{{ app_name }}"
+    remote_src: true
+
+- name: Install Python dependencies
+  ansible.builtin.pip:
+    requirements: "/opt/{{ app_name }}/requirements.txt"
+    state: present

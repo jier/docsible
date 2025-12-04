@@ -1,0 +1,7 @@
+---
+- name: Test simple role
+  hosts: localhost
+  become: true
+  roles:
+    - role: simple_role
+      simple_var: "test_value"

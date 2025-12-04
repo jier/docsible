@@ -323,6 +323,7 @@ This role depends on the following Ansible roles:
 
 ---
 
+{% if not no_vars %}
 ## Role Metadata
 
 <!-- DOCSIBLE GENERATED -->
@@ -393,6 +394,7 @@ Contributions are welcome! Please:
 4. Submit a pull request
 
 ---
+{% endif %}
 
 ## Changelog
 

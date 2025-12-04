@@ -1,0 +1,20 @@
+---
+galaxy_info:
+  author: Test Author
+  description: A simple test role
+  company: Test Company
+  license: MIT
+  min_ansible_version: 2.10
+  platforms:
+    - name: Ubuntu
+      versions:
+        - focal
+        - jammy
+    - name: Debian
+      versions:
+        - bullseye
+  galaxy_tags:
+    - test
+    - simple
+
+dependencies: []

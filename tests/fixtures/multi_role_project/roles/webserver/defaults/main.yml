@@ -1,0 +1,4 @@
+---
+webserver_port: 80
+webserver_ssl_enabled: false
+document_root: /var/www/html

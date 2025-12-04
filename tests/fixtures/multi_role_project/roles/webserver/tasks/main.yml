@@ -1,0 +1,12 @@
+---
+- name: Install Apache
+  ansible.builtin.apt:
+    name: apache2
+    state: present
+
+- name: Configure Apache port
+  ansible.builtin.lineinfile:
+    path: /etc/apache2/ports.conf
+    regexp: '^Listen'
+    line: "Listen {{ webserver_port }}"
+  notify: Restart Apache

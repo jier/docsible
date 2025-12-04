@@ -1,0 +1,16 @@
+---
+- name: Stop application service
+  ansible.builtin.service:
+    name: "{{ app_name }}"
+    state: stopped
+  ignore_errors: true
+
+- name: Remove application directory
+  ansible.builtin.file:
+    path: "/opt/{{ app_name }}"
+    state: absent
+
+- name: Remove configuration
+  ansible.builtin.file:
+    path: "/etc/{{ app_name }}"
+    state: absent
