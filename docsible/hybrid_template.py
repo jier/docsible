@@ -28,6 +28,18 @@ Minimal example for immediate usage:
 <!-- MANUALLY MAINTAINED -->
 > **Note**: Add high-level explanation of what the role does and how components interact
 
+{% if sequence_diagram_high_level %}
+### Execution Sequence
+
+<!-- DOCSIBLE GENERATED -->
+```mermaid
+{{ sequence_diagram_high_level }}
+```
+
+*This diagram shows how the playbook interacts with roles, dependencies, and handlers.*
+{% else %}
+> **Note**: Add a high-level architecture diagram below. Use `--graph` flag with a playbook to auto-generate sequence diagram.
+
 ```mermaid
 graph TD
     A[Role Input] --> B[Validation]
@@ -38,6 +50,7 @@ graph TD
 ```
 
 *Customize the mermaid diagram above to match your role's architecture.*
+{% endif %}
 
 ---
 
@@ -46,8 +59,21 @@ graph TD
 <!-- DOCSIBLE GENERATED -->
 > Generated via: `docsible --role . --graph --comments --no-backup`
 
+{% if sequence_diagram_detailed %}
+### Detailed Execution Sequence
+
+This sequence diagram shows the detailed interaction between the role, tasks, includes, and handlers:
+
+```mermaid
+{{ sequence_diagram_detailed }}
+```
+
+---
+
+{% endif %}
+
 {% if role.playbook.graph %}
-### Playbook Flow
+### Playbook Flow (Flowchart)
 ```mermaid
 {{ role.playbook.graph }}
 ```
@@ -55,14 +81,14 @@ graph TD
 
 {% for task_info in role.tasks %}
 {% if mermaid_code_per_file.get(task_info.file) %}
-### Tasks in `{{ task_info.file }}`
+### Tasks in `{{ task_info.file }}` (Flowchart)
 ```mermaid
 {{ mermaid_code_per_file[task_info.file] }}
 ```
 {% endif %}
 {% endfor %}
 
-{% if not role.tasks and not role.playbook.graph %}
+{% if not role.tasks and not role.playbook.graph and not sequence_diagram_detailed %}
 *No task flow graph generated. Use `--graph` flag to generate task execution diagrams.*
 {% endif %}
 

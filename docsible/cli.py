@@ -9,6 +9,7 @@ from jinja2 import Environment, BaseLoader, FileSystemLoader
 from docsible.markdown_template import static_template, collection_template
 from docsible.hybrid_template import hybrid_role_template
 from docsible.utils.mermaid import generate_mermaid_playbook, generate_mermaid_role_tasks_per_file
+from docsible.utils.mermaid_sequence import generate_mermaid_sequence_playbook_high_level, generate_mermaid_sequence_role_detailed
 from docsible.utils.yaml import load_yaml_generic, load_yaml_files_from_dir_custom, get_task_comments, get_task_line_numbers
 from docsible.utils.special_tasks_keys import process_special_task_keys
 from docsible.utils.git import get_repo_info
@@ -281,6 +282,7 @@ def document_role(role_path, playbook_content, generate_graph, no_backup, no_doc
         "defaults": defaults_data,
         "vars": vars_data,
         "tasks": [],
+        "handlers": [],
         "meta": load_yaml_generic(str(meta_path)) or {},
         "playbook": {"content": playbook_content, "graph":
                      generate_mermaid_playbook(yaml.safe_load(playbook_content)) if generate_graph and playbook_content else None},
@@ -333,6 +335,30 @@ def document_role(role_path, playbook_content, generate_graph, no_backup, no_doc
 
                         role_info["tasks"].append(task_info)
 
+    # Scan handlers directory (similar to tasks)
+    handlers_dir = Path(role_path) / "handlers"
+    role_info["handlers"] = []
+
+    if handlers_dir.exists() and handlers_dir.is_dir():
+        yaml_extensions = project_structure.get_yaml_extensions()
+
+        for dirpath, dirnames, filenames in os.walk(str(handlers_dir)):
+            for handler_file in filenames:
+                if any(handler_file.endswith(ext) for ext in yaml_extensions):
+                    file_path = os.path.join(dirpath, handler_file)
+                    handlers_data = load_yaml_generic(file_path)
+                    if handlers_data and isinstance(handlers_data, list):
+                        for handler in handlers_data:
+                            if isinstance(handler, dict) and 'name' in handler:
+                                # Extract handler info
+                                handler_info = {
+                                    'name': handler.get('name', 'Unnamed handler'),
+                                    'module': next((k for k in handler.keys() if k not in ['name', 'notify', 'when', 'tags', 'listen']), 'unknown'),
+                                    'listen': handler.get('listen', []),
+                                    'file': os.path.relpath(file_path, str(handlers_dir))
+                                }
+                                role_info["handlers"].append(handler_info)
+
     if os.path.exists(readme_path):
         if not no_backup:
             backup_readme_path = os.path.join(
@@ -343,9 +369,33 @@ def document_role(role_path, playbook_content, generate_graph, no_backup, no_doc
             os.remove(readme_path)
 
     mermaid_code_per_file = {}
+    sequence_diagram_high_level = None
+    sequence_diagram_detailed = None
+
     if generate_graph:
         mermaid_code_per_file = generate_mermaid_role_tasks_per_file(
             role_info["tasks"])
+
+        # Generate sequence diagrams
+        # High-level: playbook → roles (for Architecture Overview)
+        if playbook_content:
+            try:
+                playbook_parsed = yaml.safe_load(playbook_content)
+                sequence_diagram_high_level = generate_mermaid_sequence_playbook_high_level(
+                    playbook_parsed,
+                    role_meta=role_info.get('meta')
+                )
+            except Exception as e:
+                print(f"[WARN] Could not generate high-level sequence diagram: {e}")
+
+        # Detailed: role → tasks → handlers (for Task Execution Flow)
+        try:
+            sequence_diagram_detailed = generate_mermaid_sequence_role_detailed(
+                role_info,
+                include_handlers=len(role_info.get('handlers', [])) > 0
+            )
+        except Exception as e:
+            print(f"[WARN] Could not generate detailed sequence diagram: {e}")
 
     # Render the template
     if md_role_template:
@@ -364,7 +414,11 @@ def document_role(role_path, playbook_content, generate_graph, no_backup, no_doc
         env = Environment(loader=BaseLoader)
         template = env.from_string(static_template)
     new_content = template.render(
-        role=role_info, mermaid_code_per_file=mermaid_code_per_file)
+        role=role_info,
+        mermaid_code_per_file=mermaid_code_per_file,
+        sequence_diagram_high_level=sequence_diagram_high_level,
+        sequence_diagram_detailed=sequence_diagram_detailed
+    )
     new_content = manage_docsible_tags(new_content)
 
     if os.path.exists(readme_path):
