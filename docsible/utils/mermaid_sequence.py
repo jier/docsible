@@ -162,7 +162,101 @@ def generate_mermaid_sequence_playbook_high_level(playbook: List[Dict], role_met
     return diagram
 
 
-def generate_mermaid_sequence_role_detailed(role_info: Dict[str, Any], include_handlers: bool = True) -> str:
+def generate_mermaid_sequence_role_detailed(role_info: Dict[str, Any], include_handlers: bool = True, simplify_large: bool = True, max_lines: int = 20) -> str:
+    """
+    Generate detailed sequence diagram showing role → tasks → handlers interaction.
+
+    Shows:
+    - Task execution order
+    - include_tasks/import_tasks as separate participants
+    - include_role/import_role as separate participants
+    - Handler notifications and execution
+    - Block/rescue/always structures
+
+    Args:
+        role_info: Role information dict with tasks, handlers, meta
+        include_handlers: Whether to include handler interactions
+        simplify_large: If True, simplifies diagrams with more than max_lines
+        max_lines: Maximum lines before simplification kicks in
+
+    Returns:
+        Mermaid sequence diagram as string
+    """
+    # First, generate the full diagram
+    diagram = _generate_full_sequence_diagram(role_info, include_handlers)
+
+    # Count lines in the diagram
+    line_count = diagram.count('\n')
+
+    # If diagram is too large and simplification is enabled, generate simplified version
+    if simplify_large and line_count > max_lines:
+        diagram = _generate_simplified_sequence_diagram(role_info, include_handlers)
+
+    return diagram
+
+
+def _generate_simplified_sequence_diagram(role_info: Dict[str, Any], include_handlers: bool) -> str:
+    """
+    Generate simplified sequence diagram for large/complex roles.
+    Shows only high-level structure: role → task files → handlers.
+    """
+    diagram = "sequenceDiagram\n"
+
+    role_name = role_info.get('name', 'Role')
+    role_participant = sanitize_participant_name(role_name)
+
+    diagram += f"    participant Playbook\n"
+    diagram += f"    participant {role_participant}\n"
+
+    # Add handlers if any
+    handlers = []
+    if include_handlers and role_info.get('handlers'):
+        handlers = role_info['handlers']
+        diagram += "    participant Handlers\n"
+
+    diagram += "\n"
+    diagram += f"    Playbook->>+{role_participant}: Execute role\n"
+    diagram += f"    activate {role_participant}\n\n"
+
+    # Process tasks at file level only (no individual task details)
+    tasks_data = role_info.get('tasks', [])
+
+    for task_file_info in tasks_data:
+        task_file = task_file_info.get('file', 'main.yml')
+        tasks = task_file_info.get('tasks', [])
+
+        if not tasks:
+            continue
+
+        task_count = len(tasks)
+
+        # Show task file with count
+        diagram += f"    {role_participant}->>{role_participant}: Execute {task_file}\n"
+        diagram += f"    Note right of {role_participant}: {task_count} tasks\n"
+
+        # Check if any tasks notify handlers
+        has_notify = any('notify' in task for task in tasks if isinstance(task, dict))
+        if has_notify and include_handlers:
+            diagram += f"    {role_participant}->>Handlers: Notify handlers\n"
+
+        diagram += "\n"
+
+    # Execute handlers if any were notified
+    if include_handlers and handlers:
+        diagram += f"    Note over {role_participant},Handlers: Execute notified handlers\n"
+        diagram += f"    {role_participant}->>+Handlers: Flush handlers\n"
+        diagram += f"    Note over Handlers: {len(handlers)} handlers\n"
+        diagram += f"    Handlers-->>-{role_participant}: Handlers complete\n\n"
+
+    diagram += f"    deactivate {role_participant}\n"
+    diagram += f"    {role_participant}-->>-Playbook: Role complete\n"
+
+    diagram += f"\n    Note over Playbook: Simplified view - {len(tasks_data)} task files\n"
+
+    return diagram
+
+
+def _generate_full_sequence_diagram(role_info: Dict[str, Any], include_handlers: bool) -> str:
     """
     Generate detailed sequence diagram showing role → tasks → handlers interaction.
 

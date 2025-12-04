@@ -37,6 +37,54 @@ def get_version():
     return "0.8.0"
 
 
+def extract_playbook_role_dependencies(playbook_content, current_role_name):
+    """
+    Extract role names from playbook that differ from the current role name.
+
+    Args:
+        playbook_content: YAML content of the playbook as string
+        current_role_name: Name of the current role being documented
+
+    Returns:
+        List of role names (excluding current role)
+    """
+    if not playbook_content:
+        return []
+
+    try:
+        playbook_data = yaml.safe_load(playbook_content)
+        if not isinstance(playbook_data, list):
+            return []
+
+        playbook_roles = []
+        for play in playbook_data:
+            if not isinstance(play, dict):
+                continue
+
+            # Extract roles from 'roles' key
+            roles = play.get("roles", [])
+            for role in roles:
+                if isinstance(role, dict):
+                    # Role as dict: {role: name, vars: {...}}
+                    role_name = role.get("role", role.get("name"))
+                else:
+                    # Role as string: "role_name"
+                    role_name = str(role)
+
+                # Only add if different from current role and not already in list
+                if (
+                    role_name
+                    and role_name != current_role_name
+                    and role_name not in playbook_roles
+                ):
+                    playbook_roles.append(role_name)
+
+        return playbook_roles
+    except Exception as e:
+        print(f"[WARN] Could not extract playbook role dependencies: {e}")
+        return []
+
+
 def manage_docsible_file_keys(docsible_path):
     default_data = {
         "description": None,
@@ -137,6 +185,7 @@ def document_collection_roles(
     md_collection_template,
     md_role_template,
     hybrid,
+    no_vars,
     append,
     output,
     repository_url,
@@ -216,6 +265,7 @@ def document_collection_roles(
                         task_line,
                         md_role_template,
                         hybrid,
+                        no_vars,
                         belongs_to_collection=collection_metadata,
                         append=append,
                         output=output,
@@ -270,6 +320,9 @@ def document_collection_roles(
     help="Use hybrid template (combines manual sections with auto-generated content).",
 )
 @click.option(
+    "--no-vars", is_flag=True, help="Skip variable documentation generation."
+)
+@click.option(
     "--append",
     "-a",
     is_flag=True,
@@ -309,6 +362,7 @@ def doc_the_role(
     md_collection_template,
     md_role_template,
     hybrid,
+    no_vars,
     append,
     output,
     repository_url,
@@ -331,6 +385,7 @@ def doc_the_role(
             md_collection_template,
             md_role_template,
             hybrid,
+            no_vars,
             append,
             output,
             repository_url,
@@ -365,6 +420,7 @@ def doc_the_role(
             task_line,
             md_role_template,
             hybrid,
+            no_vars,
             belongs_to_collection=False,
             append=append,
             output=output,
@@ -386,6 +442,7 @@ def document_role(
     task_line,
     md_role_template,
     hybrid,
+    no_vars,
     belongs_to_collection,
     append,
     output,
@@ -436,6 +493,11 @@ def document_role(
         repo_branch = repo_branch or (git_info.get("branch") if git_info else "main")
         repo_type = repo_type or (git_info.get("repository_type") if git_info else None)
 
+    # Extract playbook role dependencies (roles different from current role)
+    playbook_dependencies = extract_playbook_role_dependencies(
+        playbook_content, role_name
+    )
+
     role_info = {
         "name": role_name,
         "defaults": defaults_data,
@@ -448,6 +510,7 @@ def document_role(
             "graph": generate_mermaid_playbook(yaml.safe_load(playbook_content))
             if generate_graph and playbook_content
             else None,
+            "dependencies": playbook_dependencies,
         },
         "docsible": load_yaml_generic(docsible_path) if not no_docsible else None,
         "belongs_to_collection": belongs_to_collection,
@@ -602,6 +665,7 @@ def document_role(
         mermaid_code_per_file=mermaid_code_per_file,
         sequence_diagram_high_level=sequence_diagram_high_level,
         sequence_diagram_detailed=sequence_diagram_detailed,
+        no_vars=no_vars,
     )
     new_content = manage_docsible_tags(new_content)
 

@@ -107,6 +107,7 @@ Description: {{ role.meta.galaxy_info.description or 'Not available.' }}
 {% endfor %}
 {% endmacro %}
 
+{% if not no_vars %}
 {% if role.argument_specs %}
 <details>
 <summary><b>🧩 Argument Specifications in meta/argument_specs</b></summary>
@@ -252,6 +253,7 @@ Description: {{ role.meta.galaxy_info.description or 'Not available.' }}
 {%- endfor %}
 {%- else %}
 {%- endif %}
+{% endif %}
 
 
 ### Tasks
@@ -328,6 +330,16 @@ No platforms specified.
 
 #### Dependencies
 
+{% if role.playbook.dependencies %}
+**Playbook Role Dependencies**
+
+Roles referenced in the playbook (excluding current role):
+
+{% for dep_role in role.playbook.dependencies %}
+- `{{ dep_role }}`
+{% endfor %}
+
+{% endif %}
 {% if role.meta.dependencies %}
 {%- for dep in role.meta.dependencies -%}
 - {% if dep is string -%}
@@ -469,6 +481,7 @@ Description: Not available.
   {% endif %}
 {% endfor %}
 {% endmacro %}
+{% if not no_vars %}
 {% if role.argument_specs %}
 <details>
 <summary><b>🧩 {{ role.name }} Argument Specifications in meta/argument_specs</b></summary>
@@ -568,6 +581,7 @@ Description: Not available.
 {%- endfor %}
 {%- else %}
 {%- endif %}
+{% endif %}
 {% endfor %}
 ## Metadata
 

@@ -94,6 +94,7 @@ This sequence diagram shows the detailed interaction between the role, tasks, in
 
 ---
 
+{% if not no_vars %}
 ## Role Variables
 
 <!-- DOCSIBLE GENERATED -->
@@ -156,11 +157,22 @@ The following variables are defined in `vars/`:
 {% endif %}
 
 ---
+{% endif %}
 
 ## Dependencies
 
 <!-- DOCSIBLE GENERATED + MANUAL ADDITIONS -->
 
+{% if role.playbook.dependencies %}
+### Playbook Role Dependencies
+
+Roles referenced in the playbook (excluding current role):
+
+{% for dep_role in role.playbook.dependencies %}
+- `{{ dep_role }}`
+{% endfor %}
+
+{% endif %}
 {% if role.meta.dependencies %}
 ### Role Dependencies
 
