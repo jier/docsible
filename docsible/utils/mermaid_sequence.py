@@ -4,6 +4,7 @@ Provides both high-level architecture and detailed execution flow visualizations
 """
 import re
 from typing import List, Dict, Any, Optional
+from docsible.utils.mermaid import extract_task_name_from_module
 
 
 def sanitize_participant_name(text: str) -> str:
@@ -222,8 +223,15 @@ def generate_mermaid_sequence_role_detailed(role_info: Dict[str, Any], include_h
         diagram += f"    {role_participant}->>+{task_file_participant}: Load tasks\n\n"
 
         # Process each task
-        for task in tasks:
-            task_name = task.get('name', 'Unnamed task')
+        for task_idx, task in enumerate(tasks):
+            # Get task name - use extract_task_name_from_module for unnamed tasks
+            if 'name' not in task or not task['name']:
+                # Try to extract from original task data if available
+                original_task = task_file_info.get('mermaid', [{}])[task_idx] if task_idx < len(task_file_info.get('mermaid', [])) else task
+                task_name = extract_task_name_from_module(original_task, task_idx)
+            else:
+                task_name = task['name']
+
             task_module = task.get('module', 'unknown')
 
             # Sanitize task name for display
