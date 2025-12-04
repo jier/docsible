@@ -1,3 +1,61 @@
+# Standard Python project metadata (PEP 621) - works with uv, pip, pyenv
+[project]
+name = "docsible"
+version = "0.8.0"
+description = "Document generator for ansible role/collection"
+readme = "README.md"
+requires-python = ">=3.7"
+license = {text = "MIT"}
+authors = [
+    {name = "Lucian BLETAN", email = "neuraluc@gmail.com"}
+]
+keywords = ["ansible", "documentation", "roles", "collections", "readme", "markdown"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: POSIX",
+    "Operating System :: MacOS",
+    "Operating System :: Unix",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Software Development :: Documentation",
+    "Topic :: System :: Systems Administration",
+]
+
+# Core dependencies
+dependencies = [
+    "click>=8.1.7",
+    "PyYAML>=6.0.1",
+    "Jinja2>=3.1.2",
+]
+
+# URLs for project
+[project.urls]
+Homepage = "https://github.com/docsible/docsible"
+Repository = "https://github.com/docsible/docsible"
+Issues = "https://github.com/docsible/docsible/issues"
+Documentation = "https://github.com/docsible/docsible"
+
+# Entry points (scripts) - works with uv, pip
+[project.scripts]
+docsible = "docsible.cli:doc_the_role"
+docsible-init-config = "docsible.cli:init_config"
+
+# Build system configuration - supports multiple backends
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+# Poetry configuration (for backward compatibility)
 [tool.poetry]
 name = "docsible"
 version = "0.8.0"
@@ -25,11 +83,22 @@ click = "^8.1.7"
 PyYAML = "^6.0.1"
 Jinja2 = "^3.1.2"
 
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
-
 [tool.poetry.scripts]
 docsible = 'docsible.cli:doc_the_role'
 docsible-init-config = 'docsible.cli:init_config'
+
+# uv specific configuration
+[tool.uv]
+dev-dependencies = []
+
+# Hatch configuration for building
+[tool.hatch.build.targets.wheel]
+packages = ["docsible"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/docsible",
+    "/README.md",
+    "/LICENSE",
+    "/CONFIGURATION.md",
+]
