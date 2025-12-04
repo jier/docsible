@@ -2,10 +2,12 @@
 Module for handling flexible Ansible project structures.
 Supports standard roles, collections, AWX projects, and monorepos.
 """
+
 import os
-import yaml
 from pathlib import Path
-from typing import Optional, Dict, Any, List
+from typing import Any, Dict, List, Optional
+
+import yaml
 
 
 class ProjectStructure:
@@ -18,17 +20,17 @@ class ProjectStructure:
 
     # Default directory and file patterns
     DEFAULTS = {
-        'defaults_dir': 'defaults',
-        'vars_dir': 'vars',
-        'tasks_dir': 'tasks',
-        'meta_dir': 'meta',
-        'meta_file': 'main',  # Without extension
-        'argument_specs_file': 'argument_specs',  # Without extension
-        'roles_dir': 'roles',
-        'collection_marker_files': ['galaxy.yml', 'galaxy.yaml'],
-        'role_marker_files': ['meta/main.yml', 'meta/main.yaml'],
-        'yaml_extensions': ['.yml', '.yaml'],
-        'test_playbook': 'tests/test.yml',
+        "defaults_dir": "defaults",
+        "vars_dir": "vars",
+        "tasks_dir": "tasks",
+        "meta_dir": "meta",
+        "meta_file": "main",  # Without extension
+        "argument_specs_file": "argument_specs",  # Without extension
+        "roles_dir": "roles",
+        "collection_marker_files": ["galaxy.yml", "galaxy.yaml"],
+        "role_marker_files": ["meta/main.yml", "meta/main.yaml"],
+        "yaml_extensions": [".yml", ".yaml"],
+        "test_playbook": "tests/test.yml",
     }
 
     def __init__(self, root_path: str, config: Optional[Dict[str, Any]] = None):
@@ -49,17 +51,17 @@ class ProjectStructure:
         Returns empty dict if no config file found.
         """
         config_paths = [
-            self.root_path / '.docsible.yml',
-            self.root_path / '.docsible.yaml',
+            self.root_path / ".docsible.yml",
+            self.root_path / ".docsible.yaml",
         ]
 
         for config_path in config_paths:
             if config_path.exists():
                 try:
-                    with open(config_path, 'r', encoding='utf-8') as f:
+                    with open(config_path, "r", encoding="utf-8") as f:
                         loaded_config = yaml.safe_load(f) or {}
                     print(f"[INFO] Loaded configuration from {config_path}")
-                    return loaded_config.get('structure', {})
+                    return loaded_config.get("structure", {})
                 except Exception as e:
                     print(f"[WARN] Error loading config from {config_path}: {e}")
 
@@ -73,35 +75,37 @@ class ProjectStructure:
             'collection', 'awx', 'monorepo', 'multi-role', 'role', or 'unknown'
         """
         # Check for collection marker (galaxy.yml/yaml)
-        for marker in self.DEFAULTS['collection_marker_files']:
+        for marker in self.DEFAULTS["collection_marker_files"]:
             if (self.root_path / marker).exists():
-                return 'collection'
+                return "collection"
 
         # Check for AWX project structure
         if self._is_awx_project():
-            return 'awx'
+            return "awx"
 
         # Check for monorepo (multiple roles at different levels)
         if self._is_monorepo():
-            return 'monorepo'
+            return "monorepo"
 
         # Check for regular multi-role repo (just roles/ at root, no galaxy.yml)
-        if (self.root_path / 'roles').is_dir():
-            return 'multi-role'
+        if (self.root_path / "roles").is_dir():
+            return "multi-role"
 
         # Check for standard role
         if self._is_standard_role():
-            return 'role'
+            return "role"
 
-        return 'unknown'
+        return "unknown"
 
     def _is_awx_project(self) -> bool:
         """Detect AWX project structure."""
         # AWX projects must have BOTH:
         # - roles/ directory
         # - inventory/ or inventories/ directory
-        has_roles = (self.root_path / 'roles').is_dir()
-        has_inventory = (self.root_path / 'inventory').exists() or (self.root_path / 'inventories').exists()
+        has_roles = (self.root_path / "roles").is_dir()
+        has_inventory = (self.root_path / "inventory").exists() or (
+            self.root_path / "inventories"
+        ).exists()
 
         return has_roles and has_inventory
 
@@ -109,9 +113,9 @@ class ProjectStructure:
         """Detect monorepo structure (e.g., ansible/roles/, projects/ansible/)."""
         # Look for roles directory not at root level
         monorepo_patterns = [
-            'ansible/roles',
-            'playbooks/roles',
-            'automation/roles',
+            "ansible/roles",
+            "playbooks/roles",
+            "automation/roles",
         ]
 
         for pattern in monorepo_patterns:
@@ -124,15 +128,16 @@ class ProjectStructure:
         """Detect standard Ansible role structure."""
         # A standard role has at least one of: tasks/, defaults/, vars/, meta/
         role_indicators = [
-            (self.root_path / 'tasks').is_dir(),
-            (self.root_path / 'defaults').is_dir(),
-            (self.root_path / 'vars').is_dir(),
-            (self.root_path / 'meta').is_dir(),
+            (self.root_path / "tasks").is_dir(),
+            (self.root_path / "defaults").is_dir(),
+            (self.root_path / "vars").is_dir(),
+            (self.root_path / "meta").is_dir(),
         ]
         return any(role_indicators)
 
-    def _resolve_path(self, key: str, base_path: Optional[Path] = None,
-                     default: Optional[str] = None) -> Path:
+    def _resolve_path(
+        self, key: str, base_path: Optional[Path] = None, default: Optional[str] = None
+    ) -> Path:
         """
         Resolve a path using priority: config > auto-detect > default.
 
@@ -158,19 +163,19 @@ class ProjectStructure:
 
     def get_defaults_dir(self, role_path: Optional[Path] = None) -> Path:
         """Get the defaults directory for a role."""
-        return self._resolve_path('defaults_dir', role_path or self.root_path)
+        return self._resolve_path("defaults_dir", role_path or self.root_path)
 
     def get_vars_dir(self, role_path: Optional[Path] = None) -> Path:
         """Get the vars directory for a role."""
-        return self._resolve_path('vars_dir', role_path or self.root_path)
+        return self._resolve_path("vars_dir", role_path or self.root_path)
 
     def get_tasks_dir(self, role_path: Optional[Path] = None) -> Path:
         """Get the tasks directory for a role."""
-        return self._resolve_path('tasks_dir', role_path or self.root_path)
+        return self._resolve_path("tasks_dir", role_path or self.root_path)
 
     def get_meta_dir(self, role_path: Optional[Path] = None) -> Path:
         """Get the meta directory for a role."""
-        return self._resolve_path('meta_dir', role_path or self.root_path)
+        return self._resolve_path("meta_dir", role_path or self.root_path)
 
     def get_meta_file(self, role_path: Optional[Path] = None) -> Optional[Path]:
         """
@@ -178,25 +183,28 @@ class ProjectStructure:
         Returns None if not found.
         """
         meta_dir = self.get_meta_dir(role_path)
-        meta_filename = self.config.get('meta_file', self.DEFAULTS['meta_file'])
+        meta_filename = self.config.get("meta_file", self.DEFAULTS["meta_file"])
 
-        for ext in self.DEFAULTS['yaml_extensions']:
+        for ext in self.DEFAULTS["yaml_extensions"]:
             meta_path = meta_dir / f"{meta_filename}{ext}"
             if meta_path.exists():
                 return meta_path
 
         return None
 
-    def get_argument_specs_file(self, role_path: Optional[Path] = None) -> Optional[Path]:
+    def get_argument_specs_file(
+        self, role_path: Optional[Path] = None
+    ) -> Optional[Path]:
         """
         Get the meta/argument_specs.yml or .yaml file for a role.
         Returns None if not found.
         """
         meta_dir = self.get_meta_dir(role_path)
-        specs_filename = self.config.get('argument_specs_file',
-                                         self.DEFAULTS['argument_specs_file'])
+        specs_filename = self.config.get(
+            "argument_specs_file", self.DEFAULTS["argument_specs_file"]
+        )
 
-        for ext in self.DEFAULTS['yaml_extensions']:
+        for ext in self.DEFAULTS["yaml_extensions"]:
             specs_path = meta_dir / f"{specs_filename}{ext}"
             if specs_path.exists():
                 return specs_path
@@ -208,16 +216,16 @@ class ProjectStructure:
         base = collection_path or self.root_path
 
         # Check config first
-        if 'roles_dir' in self.config:
-            return base / self.config['roles_dir']
+        if "roles_dir" in self.config:
+            return base / self.config["roles_dir"]
 
         # Auto-detect for monorepo
-        if self.project_type == 'monorepo':
+        if self.project_type == "monorepo":
             monorepo_patterns = [
-                'ansible/roles',
-                'playbooks/roles',
-                'automation/roles',
-                'roles',  # Fallback
+                "ansible/roles",
+                "playbooks/roles",
+                "automation/roles",
+                "roles",  # Fallback
             ]
 
             for pattern in monorepo_patterns:
@@ -226,7 +234,7 @@ class ProjectStructure:
                     return roles_path
 
         # Default
-        return base / self.DEFAULTS['roles_dir']
+        return base / self.DEFAULTS["roles_dir"]
 
     def find_collection_markers(self, search_path: Optional[Path] = None) -> List[Path]:
         """
@@ -237,7 +245,7 @@ class ProjectStructure:
         markers = []
 
         for root, dirs, files in os.walk(search):
-            for marker_file in self.DEFAULTS['collection_marker_files']:
+            for marker_file in self.DEFAULTS["collection_marker_files"]:
                 if marker_file in files:
                     markers.append(Path(root) / marker_file)
 
@@ -252,7 +260,7 @@ class ProjectStructure:
         """
         roles = []
 
-        if self.project_type == 'collection':
+        if self.project_type == "collection":
             # For collections, roles are in the roles/ directory
             roles_dir = self.get_roles_dir()
             if roles_dir.exists():
@@ -260,7 +268,7 @@ class ProjectStructure:
                     if item.is_dir() and self._is_valid_role(item):
                         roles.append(item)
 
-        elif self.project_type == 'monorepo':
+        elif self.project_type == "monorepo":
             # For monorepos, scan for roles in the configured/detected roles directory
             roles_dir = self.get_roles_dir()
             if roles_dir.exists():
@@ -268,23 +276,23 @@ class ProjectStructure:
                     if item.is_dir() and self._is_valid_role(item):
                         roles.append(item)
 
-        elif self.project_type == 'awx':
+        elif self.project_type == "awx":
             # For AWX, roles are typically in roles/ at root
-            roles_dir = self.root_path / 'roles'
+            roles_dir = self.root_path / "roles"
             if roles_dir.exists():
                 for item in roles_dir.iterdir():
                     if item.is_dir() and self._is_valid_role(item):
                         roles.append(item)
 
-        elif self.project_type == 'multi-role':
+        elif self.project_type == "multi-role":
             # For multi-role repos, roles are in roles/ at root (like collections, but no galaxy.yml)
-            roles_dir = self.root_path / 'roles'
+            roles_dir = self.root_path / "roles"
             if roles_dir.exists():
                 for item in roles_dir.iterdir():
                     if item.is_dir() and self._is_valid_role(item):
                         roles.append(item)
 
-        elif self.project_type == 'role':
+        elif self.project_type == "role":
             # Single role - return the root path itself
             roles.append(self.root_path)
 
@@ -296,10 +304,10 @@ class ProjectStructure:
         A role must have at least one of: tasks/, defaults/, vars/, meta/
         """
         role_indicators = [
-            (path / 'tasks').is_dir(),
-            (path / 'defaults').is_dir(),
-            (path / 'vars').is_dir(),
-            (path / 'meta').is_dir(),
+            (path / "tasks").is_dir(),
+            (path / "defaults").is_dir(),
+            (path / "vars").is_dir(),
+            (path / "meta").is_dir(),
         ]
         return any(role_indicators)
 
@@ -309,14 +317,14 @@ class ProjectStructure:
         Returns None if not found.
         """
         base = role_path or self.root_path
-        playbook_path = self.config.get('test_playbook', self.DEFAULTS['test_playbook'])
+        playbook_path = self.config.get("test_playbook", self.DEFAULTS["test_playbook"])
 
         full_path = base / playbook_path
         return full_path if full_path.exists() else None
 
     def get_yaml_extensions(self) -> List[str]:
         """Get list of supported YAML file extensions."""
-        return self.config.get('yaml_extensions', self.DEFAULTS['yaml_extensions'])
+        return self.config.get("yaml_extensions", self.DEFAULTS["yaml_extensions"])
 
     def to_dict(self) -> Dict[str, Any]:
         """
@@ -324,16 +332,16 @@ class ProjectStructure:
         Useful for debugging or generating .docsible.yml templates.
         """
         return {
-            'project_type': self.project_type,
-            'root_path': str(self.root_path),
-            'config': self.config,
-            'detected_structure': {
-                'defaults_dir': str(self.get_defaults_dir()),
-                'vars_dir': str(self.get_vars_dir()),
-                'tasks_dir': str(self.get_tasks_dir()),
-                'meta_dir': str(self.get_meta_dir()),
-                'roles_dir': str(self.get_roles_dir()),
-            }
+            "project_type": self.project_type,
+            "root_path": str(self.root_path),
+            "config": self.config,
+            "detected_structure": {
+                "defaults_dir": str(self.get_defaults_dir()),
+                "vars_dir": str(self.get_vars_dir()),
+                "tasks_dir": str(self.get_tasks_dir()),
+                "meta_dir": str(self.get_meta_dir()),
+                "roles_dir": str(self.get_roles_dir()),
+            },
         }
 
 

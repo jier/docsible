@@ -1,23 +1,36 @@
 # Import libraries
 import os
-import yaml
-import click
-from shutil import copyfile
 from datetime import datetime
 from pathlib import Path
-from jinja2 import Environment, BaseLoader, FileSystemLoader
-from docsible.markdown_template import static_template, collection_template
+from shutil import copyfile
+
+import click
+import yaml
+from jinja2 import BaseLoader, Environment, FileSystemLoader
+
 from docsible.hybrid_template import hybrid_role_template
-from docsible.utils.mermaid import generate_mermaid_playbook, generate_mermaid_role_tasks_per_file
-from docsible.utils.mermaid_sequence import generate_mermaid_sequence_playbook_high_level, generate_mermaid_sequence_role_detailed
-from docsible.utils.yaml import load_yaml_generic, load_yaml_files_from_dir_custom, get_task_comments, get_task_line_numbers
-from docsible.utils.special_tasks_keys import process_special_task_keys
+from docsible.markdown_template import collection_template, static_template
 from docsible.utils.git import get_repo_info
+from docsible.utils.mermaid import (
+    generate_mermaid_playbook,
+    generate_mermaid_role_tasks_per_file,
+)
+from docsible.utils.mermaid_sequence import (
+    generate_mermaid_sequence_playbook_high_level,
+    generate_mermaid_sequence_role_detailed,
+)
 from docsible.utils.project_structure import ProjectStructure, create_example_config
+from docsible.utils.special_tasks_keys import process_special_task_keys
+from docsible.utils.yaml import (
+    get_task_comments,
+    get_task_line_numbers,
+    load_yaml_files_from_dir_custom,
+    load_yaml_generic,
+)
 
 DOCSIBLE_START_TAG = "<!-- DOCSIBLE START -->"
 DOCSIBLE_END_TAG = "<!-- DOCSIBLE END -->"
-timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
+timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
 
 
 def get_version():
@@ -26,33 +39,33 @@ def get_version():
 
 def manage_docsible_file_keys(docsible_path):
     default_data = {
-        'description': None,
-        'requester': None,
-        'users': None,
-        'dt_dev': None,
-        'dt_prod': None,
-        'dt_update': datetime.now().strftime('%Y/%m/%d'),
-        'version': None,
-        'time_saving': None,
-        'category': None,
-        'subCategory': None,
-        'aap_hub': None,
-        'critical': None,
-        'automation_kind': None
+        "description": None,
+        "requester": None,
+        "users": None,
+        "dt_dev": None,
+        "dt_prod": None,
+        "dt_update": datetime.now().strftime("%Y/%m/%d"),
+        "version": None,
+        "time_saving": None,
+        "category": None,
+        "subCategory": None,
+        "aap_hub": None,
+        "critical": None,
+        "automation_kind": None,
     }
     if os.path.exists(docsible_path):
-        with open(docsible_path, 'r') as f:
+        with open(docsible_path, "r") as f:
             existing_data = yaml.safe_load(f) or {}
 
         updated_data = {**default_data, **existing_data}
         if updated_data != existing_data:
             # Update dt_update field if docsible keys added
-            existing_data['dt_update'] = datetime.now().strftime('%Y/%m/%d')
-            with open(docsible_path, 'w', encoding='utf-8') as f:
+            existing_data["dt_update"] = datetime.now().strftime("%Y/%m/%d")
+            with open(docsible_path, "w", encoding="utf-8") as f:
                 yaml.dump(updated_data, f, default_flow_style=False)
             print(f"Updated {docsible_path} with new keys.")
     else:
-        with open(docsible_path, 'w', encoding='utf-8') as f:
+        with open(docsible_path, "w", encoding="utf-8") as f:
             yaml.dump(default_data, f, default_flow_style=False)
         print(f"Initialized {docsible_path} with default keys.")
 
@@ -70,10 +83,12 @@ def replace_between_tags(existing_content, new_content):
         after = existing_content[end_index:].lstrip()
         return f"{before}\n{new_content}\n{after}".strip()
     else:
-        return existing_content + '\n' + new_content.strip()
+        return existing_content + "\n" + new_content.strip()
 
 
-def render_readme_template(collection_metadata, md_collection_template, roles_info, output_path, append):
+def render_readme_template(
+    collection_metadata, md_collection_template, roles_info, output_path, append
+):
     """
     Render the collection README.md using an embedded Jinja template.
     """
@@ -86,20 +101,19 @@ def render_readme_template(collection_metadata, md_collection_template, roles_in
     else:
         env = Environment(loader=BaseLoader)
         template = env.from_string(collection_template)
-    data = {
-        'collection': collection_metadata,
-        'roles': roles_info
-    }
+    data = {"collection": collection_metadata, "roles": roles_info}
     new_content = template.render(data)
     new_content = manage_docsible_tags(new_content)
 
     if os.path.exists(output_path):
-        with open(output_path, 'r', encoding='utf-8') as f:
+        with open(output_path, "r", encoding="utf-8") as f:
             existing_readme = f.read()
         if append:
-            if DOCSIBLE_START_TAG in existing_readme and DOCSIBLE_END_TAG in existing_readme:
-                final_content = replace_between_tags(
-                    existing_readme, new_content)
+            if (
+                DOCSIBLE_START_TAG in existing_readme
+                and DOCSIBLE_END_TAG in existing_readme
+            ):
+                final_content = replace_between_tags(existing_readme, new_content)
             else:
                 final_content = f"{existing_readme}\n{new_content}"
         else:
@@ -107,12 +121,28 @@ def render_readme_template(collection_metadata, md_collection_template, roles_in
     else:
         final_content = new_content
 
-    with open(output_path, 'w', encoding='utf-8') as readme_file:
+    with open(output_path, "w", encoding="utf-8") as readme_file:
         readme_file.write(final_content)
     print(f"Collection README.md written at: {output_path}")
 
 
-def document_collection_roles(collection_path, playbook, graph, no_backup, no_docsible, comments, task_line, md_collection_template, md_role_template, hybrid, append, output, repository_url, repo_type, repo_branch):
+def document_collection_roles(
+    collection_path,
+    playbook,
+    graph,
+    no_backup,
+    no_docsible,
+    comments,
+    task_line,
+    md_collection_template,
+    md_role_template,
+    hybrid,
+    append,
+    output,
+    repository_url,
+    repo_type,
+    repo_branch,
+):
     """
     Document all roles in a collection, extracting metadata from galaxy.yml or galaxy.yaml.
     """
@@ -125,34 +155,35 @@ def document_collection_roles(collection_path, playbook, graph, no_backup, no_do
         print(f"[WARN] Could not get Git info: {e}")
         git_info = {}
     repository_url = git_info.get("repository") if git_info else None
-    repo_branch = repo_branch or (
-        git_info.get("branch") if git_info else "main")
-    repo_type = repo_type or (
-        git_info.get("repository_type") if git_info else None)
+    repo_branch = repo_branch or (git_info.get("branch") if git_info else "main")
+    repo_type = repo_type or (git_info.get("repository_type") if git_info else None)
 
     # Find all collection markers in the directory tree
     collection_markers = project_structure.find_collection_markers()
 
     if not collection_markers:
-        print(f"[WARN] No collection marker files (galaxy.yml/yaml) found in {collection_path}")
+        print(
+            f"[WARN] No collection marker files (galaxy.yml/yaml) found in {collection_path}"
+        )
         return
 
     for galaxy_path in collection_markers:
         collection_root = galaxy_path.parent
 
-        with open(galaxy_path, 'r') as f:
+        with open(galaxy_path, "r") as f:
             collection_metadata = yaml.safe_load(f)
             if output == "README.md":
                 readme_path = os.path.join(
-                    str(collection_root), collection_metadata.get('readme', output))
+                    str(collection_root), collection_metadata.get("readme", output)
+                )
             else:
                 readme_path = os.path.join(str(collection_root), output)
 
-        collection_metadata['repository_type'] = repo_type
-        collection_metadata['repository_branch'] = repo_branch
+        collection_metadata["repository_type"] = repo_type
+        collection_metadata["repository_branch"] = repo_branch
 
         if os.path.exists(readme_path) and not no_backup:
-            backup_path = f"{readme_path[:readme_path.lower().rfind('.md')]}_backup_{timestamp}.md"
+            backup_path = f"{readme_path[: readme_path.lower().rfind('.md')]}_backup_{timestamp}.md"
             copyfile(readme_path, backup_path)
             print(f"Backup of existing {output} created at: {backup_path}")
 
@@ -169,71 +200,199 @@ def document_collection_roles(collection_path, playbook, graph, no_backup, no_do
                         playbook_content = None
                         role_playbook_path = role_path / playbook
                         try:
-                            with open(role_playbook_path, 'r') as f:
+                            with open(role_playbook_path, "r") as f:
                                 playbook_content = f.read()
                         except FileNotFoundError:
-                            print(f'{role} playbook not found:', role_playbook_path)
+                            print(f"{role} playbook not found:", role_playbook_path)
                         except Exception as e:
-                            print(f'{playbook} import for {role} error:', e)
-                    role_info = document_role(str(role_path), playbook_content, graph, no_backup, no_docsible, comments, task_line, md_role_template, hybrid,
-                                              belongs_to_collection=collection_metadata, append=append, output=output, repository_url=repository_url, repo_type=repo_type, repo_branch=repo_branch)
+                            print(f"{playbook} import for {role} error:", e)
+                    role_info = document_role(
+                        str(role_path),
+                        playbook_content,
+                        graph,
+                        no_backup,
+                        no_docsible,
+                        comments,
+                        task_line,
+                        md_role_template,
+                        hybrid,
+                        belongs_to_collection=collection_metadata,
+                        append=append,
+                        output=output,
+                        repository_url=repository_url,
+                        repo_type=repo_type,
+                        repo_branch=repo_branch,
+                    )
                     roles_info.append(role_info)
 
         render_readme_template(
-            collection_metadata, md_collection_template, roles_info, readme_path, append)
+            collection_metadata, md_collection_template, roles_info, readme_path, append
+        )
 
 
 @click.command()
-@click.option('--role', '-r', default=None, help='Path to the Ansible role directory.')
-@click.option('--collection', '-c', default=None, help='Path to the Ansible collection directory.')
-@click.option('--playbook', '-p', default='tests/test.yml', help='Path to the playbook file.')
-@click.option('--graph', '-g', is_flag=True, help='Generate Mermaid graph for tasks.')
-@click.option('--no-backup', '-nob', is_flag=True, help='Do not backup the readme before remove.')
-@click.option('--no-docsible', '-nod', is_flag=True, help='Do not generate .docsible file and do not include it in README.md.')
-@click.option('--comments', '-com', is_flag=True, help='Read comments from tasks files')
-@click.option('--task-line', '-tl', is_flag=True, help='Read line numbers from tasks')
-@click.option('--md-collection-template', '-ctpl', default=None, help='Path to the collection markdown template file.')
-@click.option('--md-role-template', '-rtpl', '--md-template', '-tpl', default=None, help='Path to the role markdown template file.')
-@click.option('--hybrid', is_flag=True, help='Use hybrid template (combines manual sections with auto-generated content).')
-@click.option('--append', '-a', is_flag=True, help='Append to the existing README.md instead of replacing it.')
-@click.option('--output', '-o', default='README.md', help='Output readme file name.')
-@click.option('--repository-url', '-ru', default=None, help='Repository base URL (used for standalone roles)')
-@click.option('--repo-type', '-rt', default=None, help='Repository type: github, gitlab, gitea, etc.')
-@click.option('--repo-branch', '-rb', default=None, help='Repository branch name (e.g., main or master)')
-@click.version_option(version=get_version(), help=f"Show the module version. Actual is {get_version()}")
-def doc_the_role(role, collection, playbook, graph, no_backup, no_docsible, comments, task_line, md_collection_template, md_role_template, hybrid, append, output, repository_url, repo_type, repo_branch):
+@click.option("--role", "-r", default=None, help="Path to the Ansible role directory.")
+@click.option(
+    "--collection", "-c", default=None, help="Path to the Ansible collection directory."
+)
+@click.option(
+    "--playbook", "-p", default="tests/test.yml", help="Path to the playbook file."
+)
+@click.option("--graph", "-g", is_flag=True, help="Generate Mermaid graph for tasks.")
+@click.option(
+    "--no-backup", "-nob", is_flag=True, help="Do not backup the readme before remove."
+)
+@click.option(
+    "--no-docsible",
+    "-nod",
+    is_flag=True,
+    help="Do not generate .docsible file and do not include it in README.md.",
+)
+@click.option("--comments", "-com", is_flag=True, help="Read comments from tasks files")
+@click.option("--task-line", "-tl", is_flag=True, help="Read line numbers from tasks")
+@click.option(
+    "--md-collection-template",
+    "-ctpl",
+    default=None,
+    help="Path to the collection markdown template file.",
+)
+@click.option(
+    "--md-role-template",
+    "-rtpl",
+    "--md-template",
+    "-tpl",
+    default=None,
+    help="Path to the role markdown template file.",
+)
+@click.option(
+    "--hybrid",
+    is_flag=True,
+    help="Use hybrid template (combines manual sections with auto-generated content).",
+)
+@click.option(
+    "--append",
+    "-a",
+    is_flag=True,
+    help="Append to the existing README.md instead of replacing it.",
+)
+@click.option("--output", "-o", default="README.md", help="Output readme file name.")
+@click.option(
+    "--repository-url",
+    "-ru",
+    default=None,
+    help="Repository base URL (used for standalone roles)",
+)
+@click.option(
+    "--repo-type",
+    "-rt",
+    default=None,
+    help="Repository type: github, gitlab, gitea, etc.",
+)
+@click.option(
+    "--repo-branch",
+    "-rb",
+    default=None,
+    help="Repository branch name (e.g., main or master)",
+)
+@click.version_option(
+    version=get_version(), help=f"Show the module version. Actual is {get_version()}"
+)
+def doc_the_role(
+    role,
+    collection,
+    playbook,
+    graph,
+    no_backup,
+    no_docsible,
+    comments,
+    task_line,
+    md_collection_template,
+    md_role_template,
+    hybrid,
+    append,
+    output,
+    repository_url,
+    repo_type,
+    repo_branch,
+):
     if collection:
         collection_path = os.path.abspath(collection)
         if not os.path.exists(collection_path) or not os.path.isdir(collection_path):
             print(f"Folder {collection_path} does not exist.")
             return
-        document_collection_roles(collection_path, playbook, graph, no_backup, no_docsible, comments, task_line,
-                                  md_collection_template, md_role_template, hybrid, append, output, repository_url, repo_type, repo_branch)
+        document_collection_roles(
+            collection_path,
+            playbook,
+            graph,
+            no_backup,
+            no_docsible,
+            comments,
+            task_line,
+            md_collection_template,
+            md_role_template,
+            hybrid,
+            append,
+            output,
+            repository_url,
+            repo_type,
+            repo_branch,
+        )
     elif role:
         role_path = os.path.abspath(role)
         if not os.path.exists(role_path) or not os.path.isdir(role_path):
             print(f"Folder {role_path} does not exist.")
             return
 
-        if playbook == 'tests/test.yml':
+        if playbook == "tests/test.yml":
             playbook = os.path.join(role_path, playbook)
 
         playbook_content = None
         if playbook:
             try:
-                with open(playbook, 'r') as f:
+                with open(playbook, "r") as f:
                     playbook_content = f.read()
             except FileNotFoundError:
-                print('playbook not found:', playbook)
+                print("playbook not found:", playbook)
             except Exception as e:
-                print('playbook import error:', e)
-        document_role(role_path, playbook_content, graph, no_backup, no_docsible, comments, task_line, md_role_template, hybrid, belongs_to_collection=False,
-                      append=append, output=output, repository_url=repository_url, repo_type=repo_type, repo_branch=repo_branch)
+                print("playbook import error:", e)
+        document_role(
+            role_path,
+            playbook_content,
+            graph,
+            no_backup,
+            no_docsible,
+            comments,
+            task_line,
+            md_role_template,
+            hybrid,
+            belongs_to_collection=False,
+            append=append,
+            output=output,
+            repository_url=repository_url,
+            repo_type=repo_type,
+            repo_branch=repo_branch,
+        )
     else:
         print("Please specify either a role or a collection path.")
 
 
-def document_role(role_path, playbook_content, generate_graph, no_backup, no_docsible, comments, task_line, md_role_template, hybrid, belongs_to_collection, append, output, repository_url, repo_type, repo_branch):
+def document_role(
+    role_path,
+    playbook_content,
+    generate_graph,
+    no_backup,
+    no_docsible,
+    comments,
+    task_line,
+    md_role_template,
+    hybrid,
+    belongs_to_collection,
+    append,
+    output,
+    repository_url,
+    repo_type,
+    repo_branch,
+):
     # Initialize project structure for this role
     project_structure = ProjectStructure(role_path)
 
@@ -248,7 +407,9 @@ def document_role(role_path, playbook_content, generate_graph, no_backup, no_doc
     meta_path = project_structure.get_meta_file(Path(role_path))
     if meta_path is None:
         print(f"[WARN] No meta file found for role {role_name}")
-        meta_path = Path(role_path) / "meta" / "main.yml"  # Fallback for load_yaml_generic
+        meta_path = (
+            Path(role_path) / "meta" / "main.yml"
+        )  # Fallback for load_yaml_generic
 
     # Use ProjectStructure to get argument specs file
     argument_specs_path = project_structure.get_argument_specs_file(Path(role_path))
@@ -272,10 +433,8 @@ def document_role(role_path, playbook_content, generate_graph, no_backup, no_doc
             print(f"[WARN] Could not get Git info: {e}")
             git_info = {}
         repository_url = git_info.get("repository") if git_info else None
-        repo_branch = repo_branch or (
-            git_info.get("branch") if git_info else "main")
-        repo_type = repo_type or (
-            git_info.get("repository_type") if git_info else None)
+        repo_branch = repo_branch or (git_info.get("branch") if git_info else "main")
+        repo_type = repo_type or (git_info.get("repository_type") if git_info else None)
 
     role_info = {
         "name": role_name,
@@ -284,14 +443,18 @@ def document_role(role_path, playbook_content, generate_graph, no_backup, no_doc
         "tasks": [],
         "handlers": [],
         "meta": load_yaml_generic(str(meta_path)) or {},
-        "playbook": {"content": playbook_content, "graph":
-                     generate_mermaid_playbook(yaml.safe_load(playbook_content)) if generate_graph and playbook_content else None},
+        "playbook": {
+            "content": playbook_content,
+            "graph": generate_mermaid_playbook(yaml.safe_load(playbook_content))
+            if generate_graph and playbook_content
+            else None,
+        },
         "docsible": load_yaml_generic(docsible_path) if not no_docsible else None,
         "belongs_to_collection": belongs_to_collection,
         "repository": repository_url,
         "repository_type": repo_type,
         "repository_branch": repo_branch,
-        "argument_specs": argument_specs
+        "argument_specs": argument_specs,
     }
 
     # Use ProjectStructure to get tasks directory
@@ -310,28 +473,32 @@ def document_role(role_path, playbook_content, generate_graph, no_backup, no_doc
                     tasks_data = load_yaml_generic(file_path)
                     if tasks_data:
                         relative_path = os.path.relpath(file_path, str(tasks_dir))
-                        task_info = {'file': relative_path,
-                                     'tasks': [], 'mermaid': [], "comments": [], 'lines': []}
+                        task_info = {
+                            "file": relative_path,
+                            "tasks": [],
+                            "mermaid": [],
+                            "comments": [],
+                            "lines": [],
+                        }
                         if comments:
-                            task_info['comments'] = get_task_comments(
-                                file_path)
+                            task_info["comments"] = get_task_comments(file_path)
                         if task_line:
-                            task_info['lines'] = get_task_line_numbers(
-                                file_path)
+                            task_info["lines"] = get_task_line_numbers(file_path)
                         if not isinstance(tasks_data, list):
                             print(
-                                f"Unexpected data type for tasks in {task_file}. Skipping.")
+                                f"Unexpected data type for tasks in {task_file}. Skipping."
+                            )
                             continue
                         for task in tasks_data:
                             if not isinstance(task, dict):
                                 print(
-                                    f"Skipping unexpected data in {task_file}: {task}")
+                                    f"Skipping unexpected data in {task_file}: {task}"
+                                )
                                 continue
                             if task and len(task.keys()) > 0:
-                                processed_tasks = process_special_task_keys(
-                                    task)
-                                task_info['tasks'].extend(processed_tasks)
-                                task_info['mermaid'].extend([task])
+                                processed_tasks = process_special_task_keys(task)
+                                task_info["tasks"].extend(processed_tasks)
+                                task_info["mermaid"].extend([task])
 
                         role_info["tasks"].append(task_info)
 
@@ -349,22 +516,40 @@ def document_role(role_path, playbook_content, generate_graph, no_backup, no_doc
                     handlers_data = load_yaml_generic(file_path)
                     if handlers_data and isinstance(handlers_data, list):
                         for handler in handlers_data:
-                            if isinstance(handler, dict) and 'name' in handler:
+                            if isinstance(handler, dict) and "name" in handler:
                                 # Extract handler info
                                 handler_info = {
-                                    'name': handler.get('name', 'Unnamed handler'),
-                                    'module': next((k for k in handler.keys() if k not in ['name', 'notify', 'when', 'tags', 'listen']), 'unknown'),
-                                    'listen': handler.get('listen', []),
-                                    'file': os.path.relpath(file_path, str(handlers_dir))
+                                    "name": handler.get("name", "Unnamed handler"),
+                                    "module": next(
+                                        (
+                                            k
+                                            for k in handler.keys()
+                                            if k
+                                            not in [
+                                                "name",
+                                                "notify",
+                                                "when",
+                                                "tags",
+                                                "listen",
+                                            ]
+                                        ),
+                                        "unknown",
+                                    ),
+                                    "listen": handler.get("listen", []),
+                                    "file": os.path.relpath(
+                                        file_path, str(handlers_dir)
+                                    ),
                                 }
                                 role_info["handlers"].append(handler_info)
 
     if os.path.exists(readme_path):
         if not no_backup:
             backup_readme_path = os.path.join(
-                role_path, f"{output[:output.lower().rfind('.md')]}_backup_{timestamp}.md")
+                role_path,
+                f"{output[: output.lower().rfind('.md')]}_backup_{timestamp}.md",
+            )
             copyfile(readme_path, backup_readme_path)
-            print(f'Readme file backed up as: {backup_readme_path}')
+            print(f"Readme file backed up as: {backup_readme_path}")
         if not append:
             os.remove(readme_path)
 
@@ -373,17 +558,17 @@ def document_role(role_path, playbook_content, generate_graph, no_backup, no_doc
     sequence_diagram_detailed = None
 
     if generate_graph:
-        mermaid_code_per_file = generate_mermaid_role_tasks_per_file(
-            role_info["tasks"])
+        mermaid_code_per_file = generate_mermaid_role_tasks_per_file(role_info["tasks"])
 
         # Generate sequence diagrams
         # High-level: playbook → roles (for Architecture Overview)
         if playbook_content:
             try:
                 playbook_parsed = yaml.safe_load(playbook_content)
-                sequence_diagram_high_level = generate_mermaid_sequence_playbook_high_level(
-                    playbook_parsed,
-                    role_meta=role_info.get('meta')
+                sequence_diagram_high_level = (
+                    generate_mermaid_sequence_playbook_high_level(
+                        playbook_parsed, role_meta=role_info.get("meta")
+                    )
                 )
             except Exception as e:
                 print(f"[WARN] Could not generate high-level sequence diagram: {e}")
@@ -391,8 +576,7 @@ def document_role(role_path, playbook_content, generate_graph, no_backup, no_doc
         # Detailed: role → tasks → handlers (for Task Execution Flow)
         try:
             sequence_diagram_detailed = generate_mermaid_sequence_role_detailed(
-                role_info,
-                include_handlers=len(role_info.get('handlers', [])) > 0
+                role_info, include_handlers=len(role_info.get("handlers", [])) > 0
             )
         except Exception as e:
             print(f"[WARN] Could not generate detailed sequence diagram: {e}")
@@ -417,17 +601,19 @@ def document_role(role_path, playbook_content, generate_graph, no_backup, no_doc
         role=role_info,
         mermaid_code_per_file=mermaid_code_per_file,
         sequence_diagram_high_level=sequence_diagram_high_level,
-        sequence_diagram_detailed=sequence_diagram_detailed
+        sequence_diagram_detailed=sequence_diagram_detailed,
     )
     new_content = manage_docsible_tags(new_content)
 
     if os.path.exists(readme_path):
-        with open(readme_path, 'r', encoding='utf-8') as f:
+        with open(readme_path, "r", encoding="utf-8") as f:
             existing_readme = f.read()
         if append:
-            if DOCSIBLE_START_TAG in existing_readme and DOCSIBLE_END_TAG in existing_readme:
-                final_content = replace_between_tags(
-                    existing_readme, new_content)
+            if (
+                DOCSIBLE_START_TAG in existing_readme
+                and DOCSIBLE_END_TAG in existing_readme
+            ):
+                final_content = replace_between_tags(existing_readme, new_content)
             else:
                 final_content = f"{existing_readme}\n{new_content}"
         else:
@@ -435,22 +621,24 @@ def document_role(role_path, playbook_content, generate_graph, no_backup, no_doc
     else:
         final_content = new_content
 
-    with open(readme_path, "w", encoding='utf-8') as f:
+    with open(readme_path, "w", encoding="utf-8") as f:
         f.write(final_content)
 
-    print('Documentation generated at:', readme_path)
+    print("Documentation generated at:", readme_path)
     return role_info
 
 
 @click.command()
-@click.option('--path', '-p', default='.', help='Path where to create .docsible.yml')
-@click.option('--force', '-f', is_flag=True, help='Overwrite existing .docsible.yml file')
+@click.option("--path", "-p", default=".", help="Path where to create .docsible.yml")
+@click.option(
+    "--force", "-f", is_flag=True, help="Overwrite existing .docsible.yml file"
+)
 def init_config(path, force):
     """
     Generate an example .docsible.yml configuration file.
     This file allows you to customize how docsible interprets your Ansible project structure.
     """
-    config_path = Path(path) / '.docsible.yml'
+    config_path = Path(path) / ".docsible.yml"
 
     if config_path.exists() and not force:
         print(f"[ERROR] Configuration file already exists at {config_path}")
@@ -458,7 +646,7 @@ def init_config(path, force):
         return
 
     try:
-        with open(config_path, 'w', encoding='utf-8') as f:
+        with open(config_path, "w", encoding="utf-8") as f:
             f.write(create_example_config())
         print(f"[SUCCESS] Example configuration created at: {config_path}")
         print("\nYou can now customize this file to match your project structure.")
@@ -466,5 +654,5 @@ def init_config(path, force):
         print(f"[ERROR] Failed to create configuration file: {e}")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     doc_the_role()
