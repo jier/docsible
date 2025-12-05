@@ -15,10 +15,8 @@ class TestInitConfigCommand:
 
     def test_init_config_creates_file(self, tmp_path):
         """Test that init-config creates .docsible.yml file."""
-        os.chdir(tmp_path)
-
         runner = CliRunner()
-        result = runner.invoke(init_config, [])
+        result = runner.invoke(init_config, ['--path', str(tmp_path)])
 
         assert result.exit_code == 0
         config_path = tmp_path / ".docsible.yml"
@@ -26,12 +24,16 @@ class TestInitConfigCommand:
 
     def test_init_config_content(self, tmp_path):
         """Test that init-config creates valid YAML with correct structure."""
-        os.chdir(tmp_path)
-
         runner = CliRunner()
-        result = runner.invoke(init_config, [])
+        # Pass --path explicitly to tell it where to create the file
+        result = runner.invoke(init_config, ['--path', str(tmp_path)])
+
+        # Verify command succeeded
+        assert result.exit_code == 0
 
         config_path = tmp_path / ".docsible.yml"
+        assert config_path.exists(), "Config file was not created"
+
         with open(config_path) as f:
             config = yaml.safe_load(f)
 
@@ -50,9 +52,7 @@ class TestInitConfigCommand:
         assert ".yml" in config["yaml_extensions"]
 
     def test_init_config_not_overwrite_existing(self, tmp_path):
-        """Test that init-config does not overwrite existing config."""
-        os.chdir(tmp_path)
-
+        """Test that init-config does not overwrite existing config without --force."""
         # Create initial config
         config_path = tmp_path / ".docsible.yml"
         initial_content = {"custom_key": "custom_value"}
@@ -60,14 +60,20 @@ class TestInitConfigCommand:
             yaml.dump(initial_content, f)
 
         runner = CliRunner()
-        result = runner.invoke(init_config, [])
+        result = runner.invoke(init_config, ['--path', str(tmp_path)])
 
-        # Check that custom key is preserved
+        # Command should indicate file exists (not exit_code 0)
+        # The file should remain unchanged
         with open(config_path) as f:
             config = yaml.safe_load(f)
 
+        # Original content should be preserved
         assert "custom_key" in config
         assert config["custom_key"] == "custom_value"
+
+        # Should not have overwritten with default config
+        # (if it was overwritten, custom_key would be gone)
+        assert config == initial_content
 
 
 class TestConfigExamples:
