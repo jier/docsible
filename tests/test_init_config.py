@@ -9,59 +9,65 @@ from click.testing import CliRunner
 
 from docsible.cli import init_config
 
+@pytest.fixture
+def config_examples_path() -> Path:
+    """Path to config examples."""
+    return Path(__file__).parent / "fixtures" / "init_config_examples"
 
 class TestInitConfigCommand:
     """Test the init config command."""
 
-    def test_init_config_creates_file(self, tmp_path):
+    def test_init_config_creates_file(self, config_examples_path):
         """Test that init-config creates .docsible.yml file."""
         runner = CliRunner()
-        result = runner.invoke(init_config, ['--path', str(tmp_path)])
+        result = runner.invoke(init_config, ['--path', str(config_examples_path)])
 
         assert result.exit_code == 0
-        config_path = tmp_path / ".docsible.yml"
+        config_path = config_examples_path / ".docsible.yml"
         assert config_path.exists()
 
-    def test_init_config_content(self, tmp_path):
+    def test_init_config_content(self, config_examples_path):
         """Test that init-config creates valid YAML with correct structure."""
         runner = CliRunner()
         # Pass --path explicitly to tell it where to create the file
-        result = runner.invoke(init_config, ['--path', str(tmp_path)])
+        result = runner.invoke(init_config, ['--path', str(config_examples_path)])
 
         # Verify command succeeded
         assert result.exit_code == 0
 
-        config_path = tmp_path / ".docsible.yml"
+        config_path = config_examples_path / ".docsible.yml"
         assert config_path.exists(), "Config file was not created"
 
         with open(config_path) as f:
             config = yaml.safe_load(f)
 
         # Check for standard keys
-        assert "defaults_dir" in config
-        assert "vars_dir" in config
-        assert "tasks_dir" in config
-        assert "meta_dir" in config
-        assert "handlers_dir" in config
-        assert "yaml_extensions" in config
+        assert "defaults_dir" in config['structure']
+        assert "vars_dir" in config['structure']
+        assert "tasks_dir" in config['structure']
+        assert "meta_dir" in config['structure']
+        assert "handlers_dir" in config['structure']
+        assert "yaml_extensions" in config['structure']
 
         # Check default values
-        assert config["defaults_dir"] == "defaults"
-        assert config["vars_dir"] == "vars"
-        assert config["tasks_dir"] == "tasks"
-        assert ".yml" in config["yaml_extensions"]
+        assert config['structure']["defaults_dir"] == "defaults"
+        assert config['structure']["vars_dir"] == "vars"
+        assert config['structure']["tasks_dir"] == "tasks"
+        assert ".yml" in config['structure']["yaml_extensions"]
 
-    def test_init_config_not_overwrite_existing(self, tmp_path):
+    def test_init_config_not_overwrite_existing(self, config_examples_path):
         """Test that init-config does not overwrite existing config without --force."""
         # Create initial config
-        config_path = tmp_path / ".docsible.yml"
+        config_path = config_examples_path / ".docsible.yml"
         initial_content = {"custom_key": "custom_value"}
         with open(config_path, "w") as f:
             yaml.dump(initial_content, f)
 
         runner = CliRunner()
-        result = runner.invoke(init_config, ['--path', str(tmp_path)])
+        result = runner.invoke(init_config, ['--path', str(config_examples_path)])
 
+       # Verify command succeeded
+        assert result.exit_code == 0
         # Command should indicate file exists (not exit_code 0)
         # The file should remain unchanged
         with open(config_path) as f:
@@ -78,11 +84,6 @@ class TestInitConfigCommand:
 
 class TestConfigExamples:
     """Test various configuration examples."""
-
-    @pytest.fixture
-    def config_examples_path(self):
-        """Path to config examples."""
-        return Path(__file__).parent / "fixtures" / "init_config_examples"
 
     def test_standard_role_config(self, config_examples_path):
         """Test standard role configuration."""
@@ -127,11 +128,6 @@ class TestConfigExamples:
 
 class TestProjectStructureWithConfig:
     """Test ProjectStructure class with various configurations."""
-
-    @pytest.fixture
-    def config_examples_path(self):
-        """Path to config examples."""
-        return Path(__file__).parent / "fixtures" / "init_config_examples"
 
     def test_load_custom_config(self, config_examples_path, tmp_path):
         """Test loading custom configuration."""
