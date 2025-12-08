@@ -48,11 +48,17 @@ class TestInitConfigCommand:
         assert "meta_dir" in config['structure']
         assert "handlers_dir" in config['structure']
         assert "yaml_extensions" in config['structure']
+        assert "library_dir" in config['structure']  
+        assert "templates_dir" in config['structure']
+        assert "lookup_plugins_dir" in config['structure'] 
 
         # Check default values
         assert config['structure']["defaults_dir"] == "defaults"
         assert config['structure']["vars_dir"] == "vars"
         assert config['structure']["tasks_dir"] == "tasks"
+        assert config['structure']["library_dir"] == "library"    
+        assert config['structure']["templates_dir"] == "templates"
+        assert config['structure']["lookup_plugins_dir"] == "lookup_plugins"  
         assert ".yml" in config['structure']["yaml_extensions"]
 
     def test_init_config_not_overwrite_existing(self, tmp_path):

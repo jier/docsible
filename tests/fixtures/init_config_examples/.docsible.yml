@@ -14,6 +14,11 @@ structure:
   meta_dir: 'meta'                   # Where role metadata is stored
   roles_dir: 'roles'                 # Where roles are located (for collections/monorepos)
   handlers_dir: 'handlers'       # Where handlers are located (for collections/monorepos)
+  templates_dir: 'templates'         # Where Jinja2 templates are located 
+  
+  # Custom modules and plugins
+  library_dir: 'library'                     # Custom Ansible modules
+  lookup_plugins_dir: 'lookup_plugins'       # Custom lookup plugins 
   # For monorepo structures, you can specify nested paths:
   # roles_dir: 'ansible/roles'         # Example: monorepo with ansible subdirectory
   # roles_dir: 'playbooks/roles'       # Example: playbooks subdirectory

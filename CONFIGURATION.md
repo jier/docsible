@@ -175,6 +175,7 @@ structure:
   vars_dir: 'vars'                   # Where role variables are stored
   tasks_dir: 'tasks'                 # Where task files are located
   meta_dir: 'meta'                   # Where role metadata is stored
+  handlers_dir: 'handlers'       # Where handlers are located (for collections/monorepos)
 
   # For collections and monorepos
   roles_dir: 'roles'                 # Where roles are located

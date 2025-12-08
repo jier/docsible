@@ -25,6 +25,10 @@ class ProjectStructure:
         "tasks_dir": "tasks",
         "meta_dir": "meta",
         "meta_file": "main",  # Without extension
+        "handlers_dir": "handlers", 
+        "library_dir": "library",    
+        "templates_dir": "templates", 
+        "lookup_plugins_dir": "lookup_plugins", 
         "argument_specs_file": "argument_specs",  # Without extension
         "roles_dir": "roles",
         "collection_marker_files": ["galaxy.yml", "galaxy.yaml"],
@@ -172,7 +176,19 @@ class ProjectStructure:
     def get_tasks_dir(self, role_path: Optional[Path] = None) -> Path:
         """Get the tasks directory for a role."""
         return self._resolve_path("tasks_dir", role_path or self.root_path)
+    
+    def get_library_dir(self, role_path: Optional[Path] = None) -> Path:
+        """Get the library directory for a role (custom modules)."""
+        return self._resolve_path("library_dir", role_path or self.root_path)
 
+    def get_lookup_plugins_dir(self, role_path: Optional[Path] = None) -> Path:
+        """Get the lookup_plugins directory for a role."""
+        return self._resolve_path("lookup_plugins_dir", role_path or self.root_path)
+
+    def get_templates_dir(self, role_path: Optional[Path] = None) -> Path:
+        """Get the templates directory for a role."""
+        return self._resolve_path("templates_dir", role_path or self.root_path)
+    
     def get_meta_dir(self, role_path: Optional[Path] = None) -> Path:
         """Get the meta directory for a role."""
         return self._resolve_path("meta_dir", role_path or self.root_path)
@@ -364,8 +380,12 @@ structure:
   tasks_dir: 'tasks'                 # Where task files are located
   meta_dir: 'meta'                   # Where role metadata is stored
   roles_dir: 'roles'                 # Where roles are located (for collections/monorepos)
-  handlers_dir: 'handlers'       # Where handlers are located (for collections/monorepos)
-
+  handlers_dir: 'handlers'          # Where handlers are located (for collections/monorepos)
+  templates_dir: 'templates'         # Where Jinja2 templates are located
+  
+  # Custom modules and plugins
+  library_dir: 'library'                     # Custom Ansible modules
+  lookup_plugins_dir: 'lookup_plugins'       # Custom lookup plugins 
   # For monorepo structures, you can specify nested paths:
   # roles_dir: 'ansible/roles'         # Example: monorepo with ansible subdirectory
   # roles_dir: 'playbooks/roles'       # Example: playbooks subdirectory
