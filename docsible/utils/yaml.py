@@ -1,11 +1,25 @@
-"""Module providing yaml parsing functions"""
+"""Module providing yaml parsing functions."""
 import os
-import yaml
 import re
+from pathlib import Path
+from typing import Any, Dict, Optional, Union
+import logging
+
+import yaml
+
+logger = logging.getLogger(__name__)
 
 
-def vault_constructor(loader, node):
-    # Handle '!vault' tag to prevent constructor issues
+def vault_constructor(loader: yaml.SafeLoader, node: yaml.Node) -> str:
+    """Handle Ansible Vault encrypted data in YAML files.
+
+    Args:
+        loader: YAML loader instance
+        node: YAML node containing vault data
+
+    Returns:
+        Placeholder string for encrypted content
+    """
     return "ENCRYPTED_WITH_ANSIBLE_VAULT"
 
 
@@ -13,18 +27,30 @@ def vault_constructor(loader, node):
 yaml.SafeLoader.add_constructor('!vault', vault_constructor)
 
 
-def load_yaml_generic(filepath):
-    """Function to load YAML in a standard way"""
+def load_yaml_generic(filepath: Union[str, Path]) -> Optional[Dict[str, Any]]:
+    """Load YAML file and return parsed data.
+
+    Args:
+        filepath: Path to YAML file
+
+    Returns:
+        Parsed YAML data as dictionary, or None if error occurs
+
+    Example:
+        >>> data = load_yaml_generic('defaults/main.yml')
+        >>> if data:
+        ...     print(data.get('my_var'))
+    """
     try:
         with open(filepath, 'r', encoding='utf-8') as f:
             data = yaml.safe_load(f)
         return data
     except (FileNotFoundError, yaml.constructor.ConstructorError) as e:
-        print(f"Error loading {filepath}: {e}")
+        logger.error(f"Error loading {filepath}: {e}")
         return None
 
 
-def get_multiline_indicator(line):
+def get_multiline_indicator(line: str) -> Optional[str]:
     """
     Detect and map YAML multiline scalar indicators to a descriptive name.
     Handles all combinations of |, >, +, -, and 1-9 indent levels.

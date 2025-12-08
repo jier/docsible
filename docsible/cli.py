@@ -1,13 +1,17 @@
 # Import libraries
+import logging
 import os
+import sys
 from datetime import datetime
 from pathlib import Path
 from shutil import copyfile
+from typing import Dict, List, Optional, Any
 
 import click
 import yaml
 from jinja2 import BaseLoader, Environment, FileSystemLoader
 
+from docsible import constants
 from docsible.hybrid_template import hybrid_role_template
 from docsible.markdown_template import collection_template, static_template
 from docsible.utils.git import get_repo_info
@@ -28,18 +32,43 @@ from docsible.utils.yaml import (
     load_yaml_generic,
 )
 
-DOCSIBLE_START_TAG = "<!-- DOCSIBLE START -->"
-DOCSIBLE_END_TAG = "<!-- DOCSIBLE END -->"
-timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+# Setup logging
+logger = logging.getLogger(__name__)
+
+# Use constants from constants module
+DOCSIBLE_START_TAG = constants.DOCSIBLE_START_TAG
+DOCSIBLE_END_TAG = constants.DOCSIBLE_END_TAG
+timestamp = datetime.now().strftime(constants.BACKUP_TIMESTAMP_FORMAT)
 
 
-def get_version():
-    return "0.8.0"
+def setup_logging(verbose: bool = False) -> None:
+    """Configure logging for the application.
 
-
-def extract_playbook_role_dependencies(playbook_content, current_role_name):
+    Args:
+        verbose: If True, set log level to DEBUG, otherwise INFO
     """
-    Extract role names from playbook that differ from the current role name.
+    level = logging.DEBUG if verbose else logging.INFO
+    logging.basicConfig(
+        level=level,
+        format='%(levelname)s - %(message)s',
+        handlers=[logging.StreamHandler(sys.stdout)]
+    )
+
+
+def get_version() -> str:
+    """Get the current version of docsible.
+
+    Returns:
+        Version string
+    """
+    return constants.VERSION
+
+
+def extract_playbook_role_dependencies(
+    playbook_content: Optional[str],
+    current_role_name: str
+) -> List[str]:
+    """Extract role names from playbook that differ from the current role name.
 
     Searches for roles in:
     - roles: section
@@ -51,6 +80,16 @@ def extract_playbook_role_dependencies(playbook_content, current_role_name):
 
     Returns:
         List of role names (excluding current role)
+
+    Example:
+        >>> content = '''
+        ... - hosts: all
+        ...   roles:
+        ...     - common
+        ...     - webserver
+        ... '''
+        >>> extract_playbook_role_dependencies(content, 'webserver')
+        ['common']
     """
     if not playbook_content:
         return []
@@ -117,7 +156,7 @@ def extract_playbook_role_dependencies(playbook_content, current_role_name):
 
         return playbook_roles
     except Exception as e:
-        print(f"[WARN] Could not extract playbook role dependencies: {e}")
+        logger.warning(f"Could not extract playbook role dependencies: {e}")
         return []
 
 
@@ -147,11 +186,11 @@ def manage_docsible_file_keys(docsible_path):
             existing_data["dt_update"] = datetime.now().strftime("%Y/%m/%d")
             with open(docsible_path, "w", encoding="utf-8") as f:
                 yaml.dump(updated_data, f, default_flow_style=False)
-            print(f"Updated {docsible_path} with new keys.")
+            logger.info(f"Updated {docsible_path} with new keys.")
     else:
         with open(docsible_path, "w", encoding="utf-8") as f:
             yaml.dump(default_data, f, default_flow_style=False)
-        print(f"Initialized {docsible_path} with default keys.")
+        logger.info(f"Initialized {docsible_path} with default keys.")
 
 
 def manage_docsible_tags(content):
