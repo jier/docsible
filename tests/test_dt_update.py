@@ -3,7 +3,7 @@ import pytest
 import yaml
 from datetime import datetime
 from unittest.mock import patch
-from docsible.cli import manage_docsible_file_keys
+from docsible.renderers.tag_manager import manage_docsible_file_keys
 
 def test_dt_update():
     test_file = ".docsible_test_dt_update"
@@ -13,7 +13,7 @@ def test_dt_update():
         fixed_date = datetime(2025, 11, 12, 10, 30, 0)
         expected_date_str = '2025/11/12'
 
-        with patch('docsible.cli.datetime') as mock_datetime:
+        with patch('docsible.renderers.tag_manager.datetime') as mock_datetime:
             mock_datetime.now.return_value = fixed_date
             mock_datetime.strftime = datetime.strftime
 
