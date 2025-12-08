@@ -1,13 +1,14 @@
 ---
 # Monorepo structure
-project_type: monorepo
-roles_dir: ansible/roles
-collections_dir: ansible/collections
-playbooks_dir: ansible/playbooks
-defaults_dir: defaults
-vars_dir: vars
-tasks_dir: tasks
-meta_dir: meta
-yaml_extensions:
-  - .yml
-  - .yaml
+structure:
+  project_type: monorepo
+  roles_dir: ansible/roles
+  collections_dir: ansible/collections
+  playbooks_dir: ansible/playbooks
+  defaults_dir: defaults
+  vars_dir: vars
+  tasks_dir: tasks
+  meta_dir: meta
+  yaml_extensions:
+    - .yml
+    - .yaml

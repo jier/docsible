@@ -200,7 +200,7 @@ class TestConfigValidation:
 
         # Create config with only some keys
         config_path = tmp_path / ".docsible.yml"
-        config_content = {"defaults_dir": "my_defaults"}
+        config_content = {"structure":{"defaults_dir": "my_defaults"}}
         with open(config_path, "w") as f:
             yaml.dump(config_content, f)
 

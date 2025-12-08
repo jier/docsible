@@ -1,13 +1,14 @@
 ---
 # Standard role configuration
-project_type: role
-defaults_dir: defaults
-vars_dir: vars
-tasks_dir: tasks
-meta_dir: meta
-handlers_dir: handlers
-files_dir: files
-templates_dir: templates
-yaml_extensions:
-  - .yml
-  - .yaml
+structure:
+  project_type: role
+  defaults_dir: defaults
+  vars_dir: vars
+  tasks_dir: tasks
+  meta_dir: meta
+  handlers_dir: handlers
+  files_dir: files
+  templates_dir: templates
+  yaml_extensions:
+    - .yml
+    - .yaml
