@@ -53,7 +53,7 @@ class RoleTask(BaseModel):
     """Single task in an Ansible role.
 
     Attributes:
-        name: Task name
+        name: Task name (can be 'Unnamed' if not specified in the task)
         module: Ansible module used (e.g., 'apt', 'copy')
         file: File where task is defined
         line_number: Line number in file
@@ -61,24 +61,22 @@ class RoleTask(BaseModel):
         when: Conditional expression
         notify: List of handlers to notify
         tags: List of task tags
+
+    Note:
+        If a task has no name in the YAML, it will be set to 'Unnamed' by
+        process_special_task_keys(). The extract_task_name_from_module()
+        function can create more meaningful composed names (e.g., "apt: nginx")
+        when needed for display purposes.
     """
 
-    name: str
-    module: str
+    name: str = "Unnamed"
+    module: str = "unknown"
     file: str = "main.yml"
     line_number: int = 0
     description: Optional[str] = None
     when: Optional[str] = None
     notify: Optional[List[str]] = None
     tags: List[str] = Field(default_factory=list)
-
-    @field_validator('name')
-    @classmethod
-    def name_not_empty(cls, v: str) -> str:
-        """Validate task name is not empty."""
-        if not v or not v.strip():
-            raise ValueError('Task name cannot be empty')
-        return v.strip()
 
     model_config = {
         "json_schema_extra": {
