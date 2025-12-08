@@ -1,10 +1,11 @@
 ---
-# title: Complex Role Variables
-# description: Variables with present/absent state support
+title: Complex Role Variables
+description: Variables with present/absent state support
 
-state: present
-# choices: [present, absent]
-# description: Whether to install or remove the application
+state: 
+  default: present
+  choices: [present, absent]
+  description: Whether to install or remove the application
 
 app_name: "myapp"
 app_version: "1.0.0"

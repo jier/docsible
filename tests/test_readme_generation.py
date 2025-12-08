@@ -149,7 +149,7 @@ class TestComplexRoleGeneration:
         content = readme_path.read_text()
 
         # Should detect state support in simplified sequence diagram
-        assert "supports present/absent" in content or "state: present" in content
+        assert "When: **state" in content or "state present" in content
 
     def test_complex_role_dependencies(self, complex_role_path, tmp_path):
         """Test that role dependencies are extracted correctly."""

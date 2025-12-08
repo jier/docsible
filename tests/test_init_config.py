@@ -93,10 +93,10 @@ class TestConfigExamples:
         with open(config_file) as f:
             config = yaml.safe_load(f)
 
-        assert config["project_type"] == "role"
-        assert config["defaults_dir"] == "defaults"
-        assert config["vars_dir"] == "vars"
-        assert config["tasks_dir"] == "tasks"
+        assert config["structure"]["project_type"] == "role"
+        assert config["structure"]["defaults_dir"] == "defaults"
+        assert config["structure"]["vars_dir"] == "vars"
+        assert config["structure"]["tasks_dir"] == "tasks"
 
     def test_custom_directories_config(self, config_examples_path):
         """Test custom directories configuration."""
@@ -106,11 +106,11 @@ class TestConfigExamples:
         with open(config_file) as f:
             config = yaml.safe_load(f)
 
-        assert config["project_type"] == "role"
-        assert config["defaults_dir"] == "config/defaults"
-        assert config["vars_dir"] == "config/variables"
-        assert config["tasks_dir"] == "playbooks/tasks"
-        assert ".YML" in config["yaml_extensions"]
+        assert config["structure"]["project_type"] == "role"
+        assert config["structure"]["defaults_dir"] == "config/defaults"
+        assert config["structure"]["vars_dir"] == "config/variables"
+        assert config["structure"]["tasks_dir"] == "playbooks/tasks"
+        assert ".YML" in config["structure"]["yaml_extensions"]
 
     def test_monorepo_config(self, config_examples_path):
         """Test monorepo configuration."""
@@ -120,10 +120,10 @@ class TestConfigExamples:
         with open(config_file) as f:
             config = yaml.safe_load(f)
 
-        assert config["project_type"] == "monorepo"
-        assert config["roles_dir"] == "ansible/roles"
-        assert config["collections_dir"] == "ansible/collections"
-        assert config["playbooks_dir"] == "ansible/playbooks"
+        assert config["structure"]["project_type"] == "monorepo"
+        assert config["structure"]["roles_dir"] == "ansible/roles"
+        assert config["structure"]["collections_dir"] == "ansible/collections"
+        assert config["structure"]["playbooks_dir"] == "ansible/playbooks"
 
 
 class TestProjectStructureWithConfig:
