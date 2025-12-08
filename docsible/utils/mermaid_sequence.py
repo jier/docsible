@@ -2,19 +2,51 @@
 Mermaid sequence diagram generation for Ansible playbooks and roles.
 Provides both high-level architecture and detailed execution flow visualizations.
 """
+import logging
 import re
 from typing import List, Dict, Any, Optional
+
+from docsible import constants
 from docsible.utils.mermaid import extract_task_name_from_module
+
+logger = logging.getLogger(__name__)
 
 
 def sanitize_participant_name(text: str) -> str:
-    """Sanitize text to be used as a Mermaid participant name."""
+    """Sanitize text to be used as a Mermaid participant name.
+
+    Removes special characters, keeping only alphanumeric and underscores.
+
+    Args:
+        text: Text to sanitize
+
+    Returns:
+        Sanitized text safe for use as Mermaid participant name
+
+    Example:
+        >>> sanitize_participant_name("my-role.name")
+        'my_role_name'
+    """
     # Remove special characters, keep alphanumeric and underscores
     return re.sub(r'[^a-zA-Z0-9_]', '_', text)
 
 
 def sanitize_note_text(text: str, max_length: int = 50) -> str:
-    """Sanitize text for use in notes and messages."""
+    """Sanitize text for use in notes and messages.
+
+    Truncates to max_length and escapes special characters.
+
+    Args:
+        text: Text to sanitize
+        max_length: Maximum length before truncation (default: 50)
+
+    Returns:
+        Sanitized text safe for use in Mermaid notes/messages
+
+    Example:
+        >>> sanitize_note_text('Long text with "quotes"\\nand newlines', 20)
+        'Long text with \\'quote...'
+    """
     # Truncate and escape special characters
     if len(text) > max_length:
         text = text[:max_length] + "..."
@@ -22,8 +54,7 @@ def sanitize_note_text(text: str, max_length: int = 50) -> str:
 
 
 def generate_mermaid_sequence_playbook_high_level(playbook: List[Dict], role_meta: Optional[Dict] = None) -> str:
-    """
-    Generate high-level sequence diagram showing playbook → roles → tasks interaction.
+    """Generate high-level sequence diagram showing playbook → roles → tasks interaction.
 
     Shows:
     - Playbook execution flow
@@ -38,6 +69,12 @@ def generate_mermaid_sequence_playbook_high_level(playbook: List[Dict], role_met
 
     Returns:
         Mermaid sequence diagram as string
+
+    Example:
+        >>> playbook = [{'hosts': 'all', 'roles': ['common']}]
+        >>> diagram = generate_mermaid_sequence_playbook_high_level(playbook)
+        >>> 'sequenceDiagram' in diagram
+        True
     """
     diagram = "sequenceDiagram\n"
     diagram += "    participant User\n"
