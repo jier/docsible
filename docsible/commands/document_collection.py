@@ -13,6 +13,7 @@ from docsible.commands.document_role import build_role_info
 from docsible.renderers.readme_renderer import ReadmeRenderer
 from docsible.utils.git import get_repo_info
 from docsible.utils.project_structure import ProjectStructure
+from docsible.exceptions import CollectionNotFoundError
 
 logger = logging.getLogger(__name__)
 
@@ -58,6 +59,14 @@ def document_collection_roles(
         repo_type: Repository type (github, gitlab, gitea)
         repo_branch: Repository branch name
     """
+
+    collection_path_obj = Path(collection_path)
+    if not collection_path_obj.exists():
+        raise CollectionNotFoundError(f"Collection directory does not exist: {collection_path}")
+    
+    if not collection_path_obj.is_dir():
+        raise CollectionNotFoundError(f"Path is not a directory: {collection_path}")
+    
     # Initialize project structure
     project_structure = ProjectStructure(collection_path)
 

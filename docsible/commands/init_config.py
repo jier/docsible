@@ -33,8 +33,7 @@ def init_config(path: str, force: bool):
 
     if config_path.exists() and not force:
         click.echo(f"❌ Configuration file already exists at {config_path}")
-        click.echo("Use --force to overwrite it.")
-        return
+        raise click.ClickException("Configuration file already exists. Use --force to overwrite.")
 
     try:
         with open(config_path, "w", encoding="utf-8") as f:

@@ -27,6 +27,7 @@ from docsible.utils.yaml import (
     load_yaml_files_from_dir_custom,
     load_yaml_generic,
 )
+from docsible.exceptions import CollectionNotFoundError
 
 logger = logging.getLogger(__name__)
 
@@ -364,24 +365,27 @@ def doc_the_role(
 
     # Determine if documenting a collection or role
     if collection_path:
-        document_collection_roles(
-            collection_path=collection_path,
-            playbook=playbook,
-            graph=generate_graph,
-            no_backup=no_backup,
-            no_docsible=no_docsible,
-            comments=comments,
-            task_line=task_line,
-            md_collection_template=md_collection_template,
-            md_role_template=md_role_template,
-            hybrid=hybrid,
-            no_vars=no_vars,
-            append=append,
-            output=output,
-            repository_url=repository_url,
-            repo_type=repo_type,
-            repo_branch=repo_branch,
-        )
+        try:
+            document_collection_roles(
+                collection_path=collection_path,
+                playbook=playbook,
+                graph=generate_graph,
+                no_backup=no_backup,
+                no_docsible=no_docsible,
+                comments=comments,
+                task_line=task_line,
+                md_collection_template=md_collection_template,
+                md_role_template=md_role_template,
+                hybrid=hybrid,
+                no_vars=no_vars,
+                append=append,
+                output=output,
+                repository_url=repository_url,
+                repo_type=repo_type,
+                repo_branch=repo_branch,
+            )
+        except CollectionNotFoundError as e:
+            raise click.ClickException(str(e))
         return
 
     if not role_path:
@@ -399,6 +403,12 @@ def doc_the_role(
         else:
             logger.warning(f"Playbook file not found: {playbook}")
 
+    if not role_path.exists():
+        raise click.ClickException(f"Role directory does not exist: {role_path}")
+        
+    if not role_path.is_dir():
+        raise click.ClickException(f"Path is not a directory: {role_path}")
+    
     # Build role information
     role_info = build_role_info(
         role_path=role_path,
