@@ -12,8 +12,7 @@ import yaml
 from jinja2 import BaseLoader, Environment, FileSystemLoader
 
 from docsible import constants
-from docsible.hybrid_template import hybrid_role_template
-from docsible.markdown_template import collection_template, static_template
+from docsible.template_loader import TemplateLoader
 from docsible.utils.git import get_repo_info
 from docsible.utils.mermaid import (
     generate_mermaid_playbook,
@@ -215,15 +214,17 @@ def render_readme_template(
     """
     Render the collection README.md using an embedded Jinja template.
     """
-    # Render the static template
+    # Render the template
     if md_collection_template:
+        # Custom template provided
         template_dir = os.path.dirname(md_collection_template)
         template_file = os.path.basename(md_collection_template)
         env = Environment(loader=FileSystemLoader(template_dir))
         template = env.get_template(template_file)
     else:
-        env = Environment(loader=BaseLoader)
-        template = env.from_string(collection_template)
+        # Use built-in collection template
+        loader = TemplateLoader()
+        template = loader.get_collection_template()
     data = {"collection": collection_metadata, "roles": roles_info}
     new_content = template.render(data)
     new_content = manage_docsible_tags(new_content)
@@ -728,13 +729,13 @@ def document_role(
         template = env.get_template(template_file)
     elif hybrid:
         # Use hybrid template
-        env = Environment(loader=BaseLoader)
-        template = env.from_string(hybrid_role_template)
+        loader = TemplateLoader()
+        template = loader.get_role_template('hybrid')
         print("[INFO] Using hybrid template (manual + auto-generated sections)")
     else:
         # Use standard template
-        env = Environment(loader=BaseLoader)
-        template = env.from_string(static_template)
+        loader = TemplateLoader()
+        template = loader.get_role_template('standard')
     new_content = template.render(
         role=role_info,
         mermaid_code_per_file=mermaid_code_per_file,
