@@ -26,16 +26,16 @@ class TestInitConfigCommand:
         config_path = config_examples_path / ".docsible.yml"
         assert config_path.exists()
 
-    def test_init_config_content(self, config_examples_path):
+    def test_init_config_content(self, tmp_path):
         """Test that init-config creates valid YAML with correct structure."""
         runner = CliRunner()
         # Pass --path explicitly to tell it where to create the file
-        result = runner.invoke(init_config, ['--path', str(config_examples_path)])
+        result = runner.invoke(init_config, ['--path', str(tmp_path)])
 
         # Verify command succeeded
         assert result.exit_code == 0
 
-        config_path = config_examples_path / ".docsible.yml"
+        config_path = tmp_path / ".docsible.yml"
         assert config_path.exists(), "Config file was not created"
 
         with open(config_path) as f:
@@ -55,16 +55,16 @@ class TestInitConfigCommand:
         assert config['structure']["tasks_dir"] == "tasks"
         assert ".yml" in config['structure']["yaml_extensions"]
 
-    def test_init_config_not_overwrite_existing(self, config_examples_path):
+    def test_init_config_not_overwrite_existing(self, tmp_path):
         """Test that init-config does not overwrite existing config without --force."""
         # Create initial config
-        config_path = config_examples_path / ".docsible.yml"
+        config_path = tmp_path / ".docsible.yml"
         initial_content = {"custom_key": "custom_value"}
         with open(config_path, "w") as f:
             yaml.dump(initial_content, f)
 
         runner = CliRunner()
-        result = runner.invoke(init_config, ['--path', str(config_examples_path)])
+        result = runner.invoke(init_config, ['--path', str(tmp_path)])
 
        # Verify command succeeded
         assert result.exit_code == 0

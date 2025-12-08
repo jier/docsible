@@ -359,11 +359,12 @@ structure:
   # Directory names (without leading/trailing slashes)
   # Uncomment and modify only what you need to override
 
-  # defaults_dir: 'defaults'           # Where default variables are stored
-  # vars_dir: 'vars'                   # Where role variables are stored
-  # tasks_dir: 'tasks'                 # Where task files are located
-  # meta_dir: 'meta'                   # Where role metadata is stored
-  # roles_dir: 'roles'                 # Where roles are located (for collections/monorepos)
+  defaults_dir: 'defaults'           # Where default variables are stored
+  vars_dir: 'vars'                   # Where role variables are stored
+  tasks_dir: 'tasks'                 # Where task files are located
+  meta_dir: 'meta'                   # Where role metadata is stored
+  roles_dir: 'roles'                 # Where roles are located (for collections/monorepos)
+  handlers_dir: 'handlers'       # Where handlers are located (for collections/monorepos)
 
   # For monorepo structures, you can specify nested paths:
   # roles_dir: 'ansible/roles'         # Example: monorepo with ansible subdirectory
@@ -377,7 +378,7 @@ structure:
   # test_playbook: 'tests/test.yml'    # Default test playbook location
 
   # Advanced: YAML file extensions to recognize
-  # yaml_extensions: ['.yml', '.yaml'] # File extensions to scan
+  yaml_extensions: ['.yml', '.yaml'] # File extensions to scan
 
 # Examples for different project types:
 
