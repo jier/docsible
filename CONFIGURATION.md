@@ -109,7 +109,7 @@ my-collection/
 
 **Detection**: Has `galaxy.yml` or `galaxy.yaml` file
 
-### 3. Multi-Role Repository (NEW)
+### 3. Multi-Role Repository
 
 **Structure**:
 ```
@@ -175,7 +175,13 @@ structure:
   vars_dir: 'vars'                   # Where role variables are stored
   tasks_dir: 'tasks'                 # Where task files are located
   meta_dir: 'meta'                   # Where role metadata is stored
-  handlers_dir: 'handlers'       # Where handlers are located (for collections/monorepos)
+  handlers_dir: 'handlers'           # Where handlers are located (for collections/monorepos)
+   
+  
+  # Custom modules and plugins
+  library_dir: 'library'                     # Custom Ansible modules
+  lookup_plugins_dir: 'lookup_plugins'       # Custom lookup plugins 
+  templates_dir: 'templates'         # Where Jinja2 templates are located
 
   # For collections and monorepos
   roles_dir: 'roles'                 # Where roles are located
@@ -193,16 +199,46 @@ structure:
 
 ### Configuration Fields
 
+#### Standard Role Directories
+
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
 | `defaults_dir` | string | `defaults` | Directory containing default variables |
 | `vars_dir` | string | `vars` | Directory containing role variables |
 | `tasks_dir` | string | `tasks` | Directory containing task files |
 | `meta_dir` | string | `meta` | Directory containing role metadata |
+| `handlers_dir` | string | `handlers` | Directory containing handlers |
+
+#### Custom Modules and Plugins
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `library_dir` | string | `library` | Custom Ansible modules (Python files) |
+| `lookup_plugins_dir` | string | `lookup_plugins` | Custom lookup plugins |
+| `templates_dir` | string | `templates` | Jinja2 template files |
+
+#### Multi-Role Projects
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
 | `roles_dir` | string | `roles` | Directory containing roles (collections/monorepos) |
+
+#### Metadata Files
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
 | `meta_file` | string | `main` | Name of meta file (without extension) |
-| `argument_specs_file` | string | `argument_specs` | Name of argument specs file |
+
+#### Testing
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
 | `test_playbook` | string | `tests/test.yml` | Path to test playbook |
+
+#### File Extensions
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
 | `yaml_extensions` | list | `['.yml', '.yaml']` | Supported YAML file extensions |
 
 ## Examples
@@ -347,6 +383,45 @@ By default, Docsible scans both `.yml` and `.yaml` extensions. No configuration 
 - `meta/main.yaml` ✓
 - `tasks/install.yml` ✓
 - `tasks/configure.yaml` ✓
+
+### Example 7: Plugin-Heavy Role for External Systems
+
+For roles that interact with external systems using custom modules and plugins:
+
+**Directory Structure**:
+```
+external-api-role/ 
+├── defaults/ 
+│ └── main.yml 
+├── tasks/ 
+│ └── main.yml 
+├── library/ # Custom modules for API interaction 
+│ ├── api_client.py 
+│ └── resource_manager.py 
+├── lookup_plugins/ # Lookups for fetching external data 
+│ └── api_lookup.py 
+└── meta/ 
+└── main.yml
+```
+
+**Configuration** (`.docsible.yml`):
+```yaml
+structure:
+  # Standard directories
+  defaults_dir: 'defaults'
+  vars_dir: 'vars'
+  tasks_dir: 'tasks'
+  meta_dir: 'meta'
+
+  # Plugin directories (where most custom code lives)
+  library_dir: 'library'
+  lookup_plugins_dir: 'lookup_plugins'
+```
+**Usage**:
+```bash
+docsible --role ./external-api-role
+```
+Use Case: Roles that execute commands on external systems via APIs rather than managing local files. Common for cloud providers, SaaS platforms, or infrastructure APIs where custom modules and lookups are essential.
 
 ## Variable Comment Tags
 
