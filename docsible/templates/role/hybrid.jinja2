@@ -90,6 +90,18 @@ This sequence diagram shows the detailed interaction between the role, tasks, in
 
 ---
 
+{% if role.handlers and role.handlers|length > 0 %}
+### Handlers
+
+| Handler Name | Module | Listens To | File |
+|--------------|--------|------------|------|
+{% for handler in role.handlers %}
+| {{ handler.name }} | `{{ handler.module }}` | {{ handler.listen if handler.listen else 'N/A' }} | `{{ handler.file }}` |
+{% endfor %}
+{% endif %}
+
+---
+
 {% if not no_vars %}
 ## Role Variables
 

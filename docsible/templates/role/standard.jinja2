@@ -278,6 +278,24 @@ Description: {{ role.meta.galaxy_info.description or 'Not available.' }}
 {%- endfor %}
 {% endfor %}
 
+{% if role.handlers and role.handlers|length > 0 %}
+
+### Handlers
+
+Handlers are triggered by task notifications and typically handle service restarts or configuration reloads.
+
+{% for handler in role.handlers %}
+#### {{ handler.name }}
+
+- **Module**: `{{ handler.module }}`
+- **File**: `{{ handler.file }}`
+{% if handler.listen %}
+- **Listen**: {{ handler.listen }}
+{% endif %}
+
+{% endfor %}
+{% endif %}
+
 {% if mermaid_code_per_file -%}
 ## Task Flow Graphs
 

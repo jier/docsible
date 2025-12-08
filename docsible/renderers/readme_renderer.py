@@ -164,7 +164,9 @@ class ReadmeRenderer:
             file_path: Path to file to backup
         """
         timestamp = datetime.now().strftime(constants.BACKUP_TIMESTAMP_FORMAT)
-        backup_path = file_path.with_suffix(f".{timestamp}.bak")
+        stem = file_path.stem  
+        suffix = file_path.suffix 
+        backup_path = file_path.with_name(f"{stem}_backup_{timestamp}{suffix}")
 
         try:
             import shutil
