@@ -1,9 +1,14 @@
+import logging
 import re
+from typing import Any, Dict, List, Optional, Tuple, Union
+
+from docsible import constants
+
+logger = logging.getLogger(__name__)
 
 
-def extract_task_name_from_module(task, task_index=0):
-    """
-    Extract a meaningful task name from the task dict when 'name' is not provided.
+def extract_task_name_from_module(task: Dict[str, Any], task_index: int = 0) -> str:
+    """Extract a meaningful task name from the task dict when 'name' is not provided.
 
     Uses the module name or action (include_role, import_tasks, etc.) to create
     a descriptive name instead of "Unnamed_task_X".
@@ -14,6 +19,11 @@ def extract_task_name_from_module(task, task_index=0):
 
     Returns:
         A descriptive task name
+
+    Example:
+        >>> task = {'apt': {'name': 'nginx'}}
+        >>> extract_task_name_from_module(task, 0)
+        'apt (task 0)'
     """
     # If task has a name, return it
     if 'name' in task and task['name']:
@@ -76,13 +86,43 @@ def extract_task_name_from_module(task, task_index=0):
     return f"unnamed_task_{task_index}"
 
 
-def sanitize_for_mermaid_id(text):
+def sanitize_for_mermaid_id(text: str) -> str:
+    """Sanitize text to create a valid Mermaid diagram node ID.
+
+    Replaces pipes with underscores and removes non-alphanumeric characters
+    (except French accents).
+
+    Args:
+        text: Text to sanitize
+
+    Returns:
+        Sanitized text safe for use as Mermaid node ID
+
+    Example:
+        >>> sanitize_for_mermaid_id("Install | nginx-1.0")
+        'Install___nginx_1_0'
+    """
     text = text.replace("|", "_")
     # Allowing a-zA-Z0-9 as well as French accents
     return re.sub(r'[^a-zA-Z0-9À-ÿ]', '_', text)
 
 
-def break_text(text, max_length=50):
+def break_text(text: str, max_length: int = 50) -> str:
+    """Break long text into multiple lines for better display in diagrams.
+
+    Splits text at word boundaries to fit within max_length and joins with HTML <br> tags.
+
+    Args:
+        text: Text to break into lines
+        max_length: Maximum length per line (default: 50)
+
+    Returns:
+        Text with <br> tags inserted for line breaks
+
+    Example:
+        >>> break_text("This is a very long text that needs wrapping", 20)
+        'This is a very long<br>text that needs<br>wrapping'
+    """
     words = text.split(' ')
     lines = []
     current_line = []
@@ -99,21 +139,82 @@ def break_text(text, max_length=50):
     return '<br>'.join(lines)
 
 
-def sanitize_for_title(text):
+def sanitize_for_title(text: str) -> str:
+    """Sanitize text for use as diagram title.
+
+    Converts to lowercase, replaces special characters with spaces,
+    and breaks into multiple lines if needed.
+
+    Args:
+        text: Text to sanitize
+
+    Returns:
+        Sanitized and formatted text, or "cannot handle" if error occurs
+
+    Example:
+        >>> sanitize_for_title("Install Package: nginx-1.0")
+        'install package nginx 1 0'
+    """
     # Allowing a-z0-9 as well as French accents, and converting to lower case
     try:
         sanitized_text = re.sub(r'[^a-z0-9À-ÿ]', ' ', text.lower())
         return break_text(sanitized_text)
     except Exception as e:
+        logger.warning(f"Failed to sanitize title '{text}': {e}")
         return "cannot handle"
 
 
-def sanitize_for_condition(text, max_length=50):
+def sanitize_for_condition(text: str, max_length: int = 50) -> str:
+    """Sanitize conditional expression for display in diagrams.
+
+    Converts to lowercase, replaces special characters with spaces,
+    and breaks into lines at max_length.
+
+    Args:
+        text: Conditional expression to sanitize
+        max_length: Maximum length per line (default: 50)
+
+    Returns:
+        Sanitized and formatted conditional text
+
+    Example:
+        >>> sanitize_for_condition("ansible_os_family == 'RedHat'")
+        'ansible os family redhat'
+    """
     sanitized_text = re.sub(r'[^a-z0-9À-ÿ]', ' ', text.lower())
     return break_text(sanitized_text, max_length)
 
 
-def process_tasks(tasks, last_node, mermaid_data, parent_node=None, level=0, in_rescue_block=False):
+def process_tasks(
+    tasks: List[Dict[str, Any]],
+    last_node: str,
+    mermaid_data: str,
+    parent_node: Optional[str] = None,
+    level: int = 0,
+    in_rescue_block: bool = False
+) -> Tuple[str, str]:
+    """Process Ansible tasks and generate Mermaid diagram data.
+
+    Recursively processes tasks including blocks, rescue, and always sections
+    to build a flowchart representation.
+
+    Args:
+        tasks: List of task dictionaries to process
+        last_node: ID of the previous node in the diagram
+        mermaid_data: String accumulating Mermaid diagram syntax
+        parent_node: ID of parent node (for nested blocks)
+        level: Nesting level (for indentation/formatting)
+        in_rescue_block: Whether currently processing rescue tasks
+
+    Returns:
+        Tuple of (last_node_id, mermaid_diagram_string)
+
+    Example:
+        >>> tasks = [{'name': 'Install nginx', 'apt': {'name': 'nginx'}}]
+        >>> last_node, diagram = process_tasks(tasks, 'start', '')
+        >>> print(last_node)
+        'Install_nginx0'
+    """
     for i, task in enumerate(tasks):
         has_rescue = False
         task_name = extract_task_name_from_module(task, i)
@@ -253,7 +354,24 @@ def process_tasks(tasks, last_node, mermaid_data, parent_node=None, level=0, in_
     return last_node, mermaid_data
 
 
-def generate_mermaid_playbook(playbook):
+def generate_mermaid_playbook(playbook: List[Dict[str, Any]]) -> str:
+    """Generate Mermaid flowchart diagram from Ansible playbook.
+
+    Creates a flowchart representation of playbook structure including
+    hosts, roles, and tasks.
+
+    Args:
+        playbook: List of play dictionaries
+
+    Returns:
+        Mermaid diagram as string
+
+    Example:
+        >>> playbook = [{'hosts': 'webservers', 'tasks': [...]}]
+        >>> diagram = generate_mermaid_playbook(playbook)
+        >>> print(diagram[:15])
+        'flowchart TD'
+    """
     mermaid_data = "flowchart TD"
     for play in playbook:
         hosts = play.get("hosts", "UndefinedHost")
@@ -282,7 +400,23 @@ def generate_mermaid_playbook(playbook):
     return mermaid_data
 
 
-def generate_mermaid_role_tasks_per_file(tasks_per_file):
+def generate_mermaid_role_tasks_per_file(tasks_per_file: List[Dict[str, Any]]) -> Dict[str, str]:
+    """Generate Mermaid diagrams for each task file in a role.
+
+    Creates separate flowchart diagrams for each task file.
+
+    Args:
+        tasks_per_file: List of dicts with 'file' and 'mermaid' (task list) keys
+
+    Returns:
+        Dictionary mapping task file names to Mermaid diagram strings
+
+    Example:
+        >>> tasks_info = [{'file': 'main.yml', 'mermaid': [{'name': 'Task 1'}]}]
+        >>> diagrams = generate_mermaid_role_tasks_per_file(tasks_info)
+        >>> 'main.yml' in diagrams
+        True
+    """
     mermaid_codes = {}
     for task_info in tasks_per_file:
         task_file = task_info['file']
