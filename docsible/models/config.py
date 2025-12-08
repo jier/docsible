@@ -41,6 +41,51 @@ class StructureConfig(BaseModel):
     argument_specs_file: str = "argument_specs"
     yaml_extensions: List[str] = Field(default_factory=lambda: ['.yml', '.yaml'])
 
+    @field_validator(
+        'defaults_dir', 'vars_dir', 'tasks_dir', 'meta_dir', 'handlers_dir',
+        'templates_dir', 'files_dir', 'library_dir', 'roles_dir'
+    )
+    @classmethod
+    def validate_dir_name(cls, v: str) -> str:
+        """Ensure directory names don't start or end with slashes.
+
+        Args:
+            v: Directory name to validate
+
+        Returns:
+            Validated directory name
+
+        Raises:
+            ValueError: If directory name starts or ends with slash
+        """
+        if v.startswith('/') or v.endswith('/'):
+            raise ValueError(
+                f"Directory name '{v}' should not start or end with '/'. "
+                "Use relative paths without leading/trailing slashes."
+            )
+        return v
+
+    @field_validator('yaml_extensions')
+    @classmethod
+    def validate_extensions(cls, v: List[str]) -> List[str]:
+        """Ensure YAML extensions start with a dot.
+
+        Args:
+            v: List of file extensions
+
+        Returns:
+            Validated list of extensions
+
+        Raises:
+            ValueError: If any extension doesn't start with a dot
+        """
+        for ext in v:
+            if not ext.startswith('.'):
+                raise ValueError(
+                    f"File extension '{ext}' must start with a dot (e.g., '.yml')"
+                )
+        return v
+
     model_config = {
         "json_schema_extra": {
             "example": {
