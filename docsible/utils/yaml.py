@@ -91,7 +91,7 @@ def get_multiline_indicator(line: str) -> Optional[str]:
     return name
 
 
-def load_yaml_file_custom(filepath):
+def load_yaml_file_custom(file_path):
     """
     Load a YAML file and extract both its data and associated metadata from comments,
     while also tracking the line number for each key and nested item.
@@ -100,16 +100,16 @@ def load_yaml_file_custom(filepath):
     It supports nested dictionaries and lists, and can handle multi-line values and
     extended descriptions via special comment blocks.
     Args:
-        filepath (str): Path to the YAML file.
+        file_path (str): Path to the YAML file.
     Returns:
         dict or None: A dictionary mapping each key path to its value, metadata, and line number,
         or None if the file is empty or an error occurs.
     """
     try:
-        with open(filepath, 'r', encoding='utf-8') as file:
+        with open(file_path, 'r', encoding='utf-8') as file:
             lines = file.readlines()
 
-        with open(filepath, 'r', encoding='utf-8') as file:
+        with open(file_path, 'r', encoding='utf-8') as file:
             data = yaml.safe_load(file)
 
         if not data:
@@ -330,7 +330,7 @@ def load_yaml_file_custom(filepath):
         return result
 
     except (FileNotFoundError, yaml.constructor.ConstructorError, yaml.YAMLError) as e:
-        print(f"Error loading {filepath}: {e}")
+        print(f"Error loading {file_path}: {e}")
         return None
 
 
@@ -367,7 +367,7 @@ def load_yaml_files_from_dir_custom(dir_path):
     return collected_data
 
 
-def get_task_comments(filepath: str) -> list[dict[str, str]]:
+def get_task_comments(file_path: str) -> list[dict[str, str]]:
     """
     Extracts comments for Ansible tasks.
     - For any named task (block or regular), uses any immediately preceding comments.
@@ -379,13 +379,13 @@ def get_task_comments(filepath: str) -> list[dict[str, str]]:
       actual inline comments.
     """
     try:
-        with open(filepath, 'r', encoding='utf-8') as f:
+        with open(file_path, 'r', encoding='utf-8') as f:
             lines = f.readlines()
     except FileNotFoundError:
-        print(f"Error: File not found {filepath}")
+        print(f"Error: File not found {file_path}")
         return []
     except Exception as e:
-        print(f"Error reading file {filepath}: {e}")
+        print(f"Error reading file {file_path}: {e}")
         return []
 
     output_task_comments = []
@@ -461,8 +461,8 @@ def get_task_comments(filepath: str) -> list[dict[str, str]]:
 
     return output_task_comments
 
-def get_task_line_numbers(filepath):
-    with open(filepath, 'r', encoding='utf-8') as f:
+def get_task_line_numbers(file_path):
+    with open(file_path, 'r', encoding='utf-8') as f:
         lines = f.readlines()
 
     tasks_lines = {}

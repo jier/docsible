@@ -6,7 +6,6 @@ import logging
 import re
 from typing import List, Dict, Any, Optional
 
-from docsible import constants
 from docsible.utils.mermaid import extract_task_name_from_module
 
 logger = logging.getLogger(__name__)
@@ -392,7 +391,7 @@ def _generate_simplified_sequence_diagram(role_info: Dict[str, Any], include_han
     role_name = role_info.get('name', 'Role')
     role_participant = sanitize_participant_name(role_name)
 
-    diagram += f"    participant Playbook\n"
+    diagram += "    participant Playbook\n"
     diagram += f"    participant {role_participant}\n"
 
     # Add handlers if any
@@ -408,7 +407,7 @@ def _generate_simplified_sequence_diagram(role_info: Dict[str, Any], include_han
 
     if supports_states:
         # Show alternative flows for present/absent
-        diagram += f"    alt state: present\n"
+        diagram += "    alt state: present\n"
         diagram += f"    Playbook->>+{role_participant}: Execute role (ensure present)\n"
         diagram += f"    activate {role_participant}\n"
     else:
@@ -452,7 +451,7 @@ def _generate_simplified_sequence_diagram(role_info: Dict[str, Any], include_han
 
     # Add "absent" alternative if state support is detected
     if supports_states:
-        diagram += f"    else state: absent\n"
+        diagram += "    else state: absent\n"
         diagram += f"    Playbook->>+{role_participant}: Execute role (ensure absent)\n"
         diagram += f"    activate {role_participant}\n"
 
@@ -468,7 +467,7 @@ def _generate_simplified_sequence_diagram(role_info: Dict[str, Any], include_han
 
         diagram += f"    deactivate {role_participant}\n"
         diagram += f"    {role_participant}-->>-Playbook: Role complete\n"
-        diagram += f"    end\n"
+        diagram += "    end\n"
 
     diagram += f"\n    Note over Playbook: Simplified view - {len(tasks_data)} task files"
     if supports_states:
@@ -501,7 +500,7 @@ def _generate_full_sequence_diagram(role_info: Dict[str, Any], include_handlers:
     role_name = role_info.get('name', 'Role')
     role_participant = sanitize_participant_name(role_name)
 
-    diagram += f"    participant Playbook\n"
+    diagram += "    participant Playbook\n"
     diagram += f"    participant {role_participant}\n"
 
     # Track all participants (tasks files, includes, roles, handlers)
@@ -590,9 +589,9 @@ def _generate_full_sequence_diagram(role_info: Dict[str, Any], include_handlers:
 
                 # Check for rescue
                 if 'rescue' in task:
-                    diagram += f"    alt Block fails\n"
+                    diagram += "    alt Block fails\n"
                     diagram += f"        {task_file_participant}->>{task_file_participant}: Execute rescue\n"
-                    diagram += f"    end\n"
+                    diagram += "    end\n"
 
                 # Check for always
                 if 'always' in task:

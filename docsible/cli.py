@@ -5,7 +5,7 @@ import sys
 from datetime import datetime
 from pathlib import Path
 from shutil import copyfile
-from typing import Dict, List, Optional, Any
+from typing import List, Optional
 
 import click
 import yaml
