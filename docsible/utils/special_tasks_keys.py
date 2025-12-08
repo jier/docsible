@@ -1,8 +1,28 @@
-"""Module with function for manage block and rescue code"""
+"""Module for managing block and rescue code in Ansible tasks."""
+
+import logging
+from typing import Any, Dict, List, Union
+
+logger = logging.getLogger(__name__)
 
 
-def escape_pipes(text):
-    """Function to escape pipes in string or list"""
+def escape_pipes(text: Union[str, List[Any], Any]) -> Union[str, List[Any], Any]:
+    """Escape pipe characters in strings or lists for Mermaid diagram compatibility.
+
+    Replaces '|' with '¦' to prevent syntax issues in Mermaid diagrams.
+
+    Args:
+        text: String, list, or any other type to process
+
+    Returns:
+        Text with escaped pipes if string/list, otherwise unchanged
+
+    Example:
+        >>> escape_pipes("command | grep text")
+        'command ¦ grep text'
+        >>> escape_pipes(["item|1", "item|2"])
+        ['item¦1', 'item¦2']
+    """
     if isinstance(text, str):
         return text.replace("|", r"¦")
     if isinstance(text, list):
@@ -10,8 +30,28 @@ def escape_pipes(text):
     return text  # Return the text as is if it's not a string or list.
 
 
-def process_special_task_keys(task, task_type='task'):
-    """Function to process tasks, including block and rescue constructs."""
+def process_special_task_keys(task: Dict[str, Any], task_type: str = 'task') -> List[Dict[str, Any]]:
+    """Process Ansible tasks, including block and rescue constructs.
+
+    Recursively processes tasks to extract name, module, type, and conditions.
+    Handles special constructs like block, rescue, and always.
+
+    Args:
+        task: Ansible task dictionary
+        task_type: Type of task (default: 'task', or 'block', 'rescue', 'always')
+
+    Returns:
+        List of processed task dictionaries with keys:
+            - name: Task name (with escaped pipes)
+            - module: Module or action name
+            - type: Task type (task, block, rescue, always)
+            - when: Conditional expression (with escaped pipes), or None
+
+    Example:
+        >>> task = {'name': 'Install package', 'apt': {'name': 'nginx'}}
+        >>> process_special_task_keys(task)
+        [{'name': 'Install package', 'module': 'apt', 'type': 'task', 'when': None}]
+    """
     tasks = []
     known_task_params = {
         # All known Ansible task parameters.

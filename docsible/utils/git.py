@@ -1,30 +1,59 @@
 from __future__ import annotations
+import logging
 import re
 import subprocess
 from pathlib import Path
 from typing import Dict
 from urllib.parse import urlparse, urlunparse
 
+logger = logging.getLogger(__name__)
+
 
 class GitInfoError(Exception):
+    """Base exception for git information retrieval errors."""
     pass
 
 
 class GitCommandError(GitInfoError):
+    """Raised when a git command fails."""
+
     def __init__(self, message: str, stderr: str | None = None):
+        """Initialize GitCommandError.
+
+        Args:
+            message: Error message
+            stderr: Standard error output from git command
+        """
         super().__init__(message)
         self.stderr = stderr
 
 
 class GitTimeoutError(GitInfoError):
+    """Raised when a git command times out."""
     pass
 
 
 class NotGitRepositoryError(GitInfoError):
+    """Raised when path is not inside a git repository."""
     pass
 
 
 def clean_and_standardize_url(url: str) -> str:
+    """Clean and standardize git remote URL to HTTPS format.
+
+    Converts SSH-style URLs (git@github.com:user/repo.git) to HTTPS URLs.
+    Removes .git suffix and trailing slashes.
+
+    Args:
+        url: Git remote URL in any format
+
+    Returns:
+        Standardized HTTPS URL, or empty string if parsing fails
+
+    Example:
+        >>> clean_and_standardize_url('git@github.com:user/repo.git')
+        'https://github.com/user/repo'
+    """
     processed_url = url
 
     scp_like_match = re.match(r"^git@([^:]+):(.*)$", processed_url)
@@ -69,6 +98,31 @@ def clean_and_standardize_url(url: str) -> str:
 
 
 def get_repo_info(path: str | Path) -> Dict[str, str]:
+    """Get git repository information from a directory.
+
+    Extracts repository URL, current branch, and repository type.
+
+    Args:
+        path: Path to directory inside git repository
+
+    Returns:
+        Dictionary with keys:
+            - repository: Standardized HTTPS repository URL
+            - branch: Current branch name
+            - repository_type: Type of repository (github, gitlab, gitea, bitbucket, or default)
+
+    Raises:
+        NotGitRepositoryError: If path is not inside a git repository
+        GitCommandError: If a git command fails
+        GitTimeoutError: If a git command times out (after 5 seconds)
+
+    Example:
+        >>> info = get_repo_info('/path/to/repo')
+        >>> print(info['repository'])
+        'https://github.com/user/repo'
+        >>> print(info['branch'])
+        'main'
+    """
     dir_path = str(path)
     timeout = 5
 

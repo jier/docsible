@@ -1,45 +1,53 @@
-"""
-Module for handling flexible Ansible project structures.
+"""Module for handling flexible Ansible project structures.
+
 Supports standard roles, collections, AWX projects, and monorepos.
 """
 
+import logging
 import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import yaml
 
+from docsible import constants
+
+logger = logging.getLogger(__name__)
+
 
 class ProjectStructure:
-    """
-    Handles flexible Ansible project structure detection and path resolution.
+    """Handles flexible Ansible project structure detection and path resolution.
+
     Supports configuration via .docsible.yml and auto-detection.
-
     Priority order: CLI overrides > .docsible.yml config > Auto-detection > Defaults
+
+    Attributes:
+        root_path: Root directory of the project
+        config: Loaded configuration dictionary
+        project_type: Detected project type (collection, awx, monorepo, etc.)
     """
 
-    # Default directory and file patterns
+    # Default directory and file patterns - use constants module
     DEFAULTS = {
-        "defaults_dir": "defaults",
-        "vars_dir": "vars",
-        "tasks_dir": "tasks",
-        "meta_dir": "meta",
-        "meta_file": "main",  # Without extension
-        "handlers_dir": "handlers", 
-        "library_dir": "library",    
-        "templates_dir": "templates", 
-        "lookup_plugins_dir": "lookup_plugins", 
-        "argument_specs_file": "argument_specs",  # Without extension
-        "roles_dir": "roles",
-        "collection_marker_files": ["galaxy.yml", "galaxy.yaml"],
-        "role_marker_files": ["meta/main.yml", "meta/main.yaml"],
-        "yaml_extensions": [".yml", ".yaml"],
-        "test_playbook": "tests/test.yml",
+        "defaults_dir": constants.DEFAULT_DEFAULTS_DIR,
+        "vars_dir": constants.DEFAULT_VARS_DIR,
+        "tasks_dir": constants.DEFAULT_TASKS_DIR,
+        "meta_dir": constants.DEFAULT_META_DIR,
+        "meta_file": constants.DEFAULT_META_FILE,
+        "handlers_dir": constants.DEFAULT_HANDLERS_DIR,
+        "library_dir": constants.DEFAULT_LIBRARY_DIR,
+        "templates_dir": constants.DEFAULT_TEMPLATES_DIR,
+        "lookup_plugins_dir": constants.DEFAULT_LOOKUP_PLUGINS_DIR,
+        "argument_specs_file": constants.DEFAULT_ARGUMENT_SPECS_FILE,
+        "roles_dir": constants.DEFAULT_ROLES_DIR,
+        "collection_marker_files": constants.COLLECTION_MARKER_FILES,
+        "role_marker_files": constants.ROLE_MARKER_FILES,
+        "yaml_extensions": constants.YAML_EXTENSIONS,
+        "test_playbook": constants.DEFAULT_TEST_PLAYBOOK,
     }
 
     def __init__(self, root_path: str, config: Optional[Dict[str, Any]] = None):
-        """
-        Initialize ProjectStructure with a root path and optional configuration.
+        """Initialize ProjectStructure with a root path and optional configuration.
 
         Args:
             root_path: Root directory of the project
@@ -50,9 +58,10 @@ class ProjectStructure:
         self.project_type = self._detect_project_type()
 
     def _load_config(self) -> Dict[str, Any]:
-        """
-        Load configuration from .docsible.yml if it exists.
-        Returns empty dict if no config file found.
+        """Load configuration from .docsible.yml if it exists.
+
+        Returns:
+            Configuration dictionary from 'structure' key, or empty dict if not found
         """
         config_paths = [
             self.root_path / ".docsible.yml",
@@ -64,19 +73,18 @@ class ProjectStructure:
                 try:
                     with open(config_path, "r", encoding="utf-8") as f:
                         loaded_config = yaml.safe_load(f) or {}
-                    print(f"[INFO] Loaded configuration from {config_path}")
+                    logger.info(f"Loaded configuration from {config_path}")
                     return loaded_config.get("structure", {})
                 except Exception as e:
-                    print(f"[WARN] Error loading config from {config_path}: {e}")
+                    logger.warning(f"Error loading config from {config_path}: {e}")
 
         return {}
 
     def _detect_project_type(self) -> str:
-        """
-        Auto-detect the project type based on directory structure.
+        """Auto-detect the project type based on directory structure.
 
         Returns:
-            'collection', 'awx', 'monorepo', 'multi-role', 'role', or 'unknown'
+            Project type: 'collection', 'awx', 'monorepo', 'multi-role', 'role', or 'unknown'
         """
         # Check for collection marker (galaxy.yml/yaml)
         for marker in self.DEFAULTS["collection_marker_files"]:
@@ -102,7 +110,11 @@ class ProjectStructure:
         return "unknown"
 
     def _is_awx_project(self) -> bool:
-        """Detect AWX project structure."""
+        """Detect AWX project structure.
+
+        Returns:
+            True if project has both roles/ and inventory/inventories/ directories
+        """
         # AWX projects must have BOTH:
         # - roles/ directory
         # - inventory/ or inventories/ directory
@@ -114,7 +126,11 @@ class ProjectStructure:
         return has_roles and has_inventory
 
     def _is_monorepo(self) -> bool:
-        """Detect monorepo structure (e.g., ansible/roles/, projects/ansible/)."""
+        """Detect monorepo structure (e.g., ansible/roles/, projects/ansible/).
+
+        Returns:
+            True if roles directory exists at non-root nested path
+        """
         # Look for roles directory not at root level
         monorepo_patterns = [
             "ansible/roles",
@@ -129,7 +145,11 @@ class ProjectStructure:
         return False
 
     def _is_standard_role(self) -> bool:
-        """Detect standard Ansible role structure."""
+        """Detect standard Ansible role structure.
+
+        Returns:
+            True if directory has at least one of: tasks/, defaults/, vars/, meta/
+        """
         # A standard role has at least one of: tasks/, defaults/, vars/, meta/
         role_indicators = [
             (self.root_path / "tasks").is_dir(),
@@ -253,9 +273,15 @@ class ProjectStructure:
         return base / self.DEFAULTS["roles_dir"]
 
     def find_collection_markers(self, search_path: Optional[Path] = None) -> List[Path]:
-        """
-        Find all collection marker files (galaxy.yml/yaml) in the directory tree.
+        """Find all collection marker files (galaxy.yml/yaml) in the directory tree.
+
         Useful for detecting multiple collections in a monorepo.
+
+        Args:
+            search_path: Directory to search (default: project root)
+
+        Returns:
+            List of paths to galaxy.yml/yaml files
         """
         search = search_path or self.root_path
         markers = []
@@ -268,8 +294,10 @@ class ProjectStructure:
         return markers
 
     def find_roles(self, search_path: Optional[Path] = None) -> List[Path]:
-        """
-        Find all role directories in the project.
+        """Find all role directories in the project.
+
+        Args:
+            search_path: Optional search path (currently unused, reserved for future use)
 
         Returns:
             List of Path objects pointing to role directories
@@ -315,9 +343,13 @@ class ProjectStructure:
         return roles
 
     def _is_valid_role(self, path: Path) -> bool:
-        """
-        Check if a directory is a valid Ansible role.
-        A role must have at least one of: tasks/, defaults/, vars/, meta/
+        """Check if a directory is a valid Ansible role.
+
+        Args:
+            path: Directory path to check
+
+        Returns:
+            True if directory has at least one of: tasks/, defaults/, vars/, meta/
         """
         role_indicators = [
             (path / "tasks").is_dir(),
@@ -328,9 +360,13 @@ class ProjectStructure:
         return any(role_indicators)
 
     def get_test_playbook(self, role_path: Optional[Path] = None) -> Optional[Path]:
-        """
-        Get the test playbook path for a role.
-        Returns None if not found.
+        """Get the test playbook path for a role.
+
+        Args:
+            role_path: Role directory path (default: project root)
+
+        Returns:
+            Path to test playbook, or None if not found
         """
         base = role_path or self.root_path
         playbook_path = self.config.get("test_playbook", self.DEFAULTS["test_playbook"])
@@ -339,13 +375,20 @@ class ProjectStructure:
         return full_path if full_path.exists() else None
 
     def get_yaml_extensions(self) -> List[str]:
-        """Get list of supported YAML file extensions."""
+        """Get list of supported YAML file extensions.
+
+        Returns:
+            List of YAML extensions (e.g., ['.yml', '.yaml'])
+        """
         return self.config.get("yaml_extensions", self.DEFAULTS["yaml_extensions"])
 
     def to_dict(self) -> Dict[str, Any]:
-        """
-        Export the current configuration as a dictionary.
+        """Export the current configuration as a dictionary.
+
         Useful for debugging or generating .docsible.yml templates.
+
+        Returns:
+            Dictionary containing project type, paths, and configuration
         """
         return {
             "project_type": self.project_type,
@@ -362,8 +405,10 @@ class ProjectStructure:
 
 
 def create_example_config() -> str:
-    """
-    Generate an example .docsible.yml configuration file content.
+    """Generate an example .docsible.yml configuration file content.
+
+    Returns:
+        Example YAML configuration as string
     """
     example = """# Docsible Project Structure Configuration
 # This file allows you to customize how docsible interprets your Ansible project structure.
