@@ -313,7 +313,35 @@ def build_role_info(
 )
 @click.option(
     "--no-vars", "no_vars", is_flag=True,
-    help="Skip variable documentation generation."
+    help="Hide variable documentation (defaults, vars, argument_specs)."
+)
+@click.option(
+    "--no-tasks", "no_tasks", is_flag=True,
+    help="Hide task lists and task details."
+)
+@click.option(
+    "--no-diagrams", "no_diagrams", is_flag=True,
+    help="Hide all Mermaid diagrams (flowcharts, sequence diagrams)."
+)
+@click.option(
+    "--simplify-diagrams", "simplify_diagrams", is_flag=True,
+    help="Show only high-level diagrams, hide detailed task flowcharts."
+)
+@click.option(
+    "--no-examples", "no_examples", is_flag=True,
+    help="Hide example playbook sections."
+)
+@click.option(
+    "--no-metadata", "no_metadata", is_flag=True,
+    help="Hide role metadata, author, and license information."
+)
+@click.option(
+    "--no-handlers", "no_handlers", is_flag=True,
+    help="Hide handlers section."
+)
+@click.option(
+    "--minimal", "minimal", is_flag=True,
+    help="Generate minimal documentation (enables all --no-* flags)."
 )
 @click.option(
     "--append", "-a", "append", is_flag=True,
@@ -345,6 +373,13 @@ def doc_the_role(
     md_role_template,
     hybrid,
     no_vars,
+    no_tasks,
+    no_diagrams,
+    simplify_diagrams,
+    no_examples,
+    no_metadata,
+    no_handlers,
+    minimal,
     append,
     output,
     repository_url,
@@ -362,6 +397,19 @@ def doc_the_role(
     """
     # Import here to avoid circular imports
     from docsible.commands.document_collection import document_collection_roles
+
+    # If --minimal is set, enable all --no-* flags
+    if minimal:
+        no_vars = True
+        no_tasks = True
+        no_diagrams = True
+        no_examples = True
+        no_metadata = True
+        no_handlers = True
+
+    # If --no-diagrams is set, it overrides --simplify-diagrams
+    if no_diagrams:
+        simplify_diagrams = False
 
     # Determine if documenting a collection or role
     if collection_path:
@@ -465,6 +513,12 @@ def doc_the_role(
         sequence_diagram_high_level=sequence_diagram_high_level,
         sequence_diagram_detailed=sequence_diagram_detailed,
         no_vars=no_vars,
+        no_tasks=no_tasks,
+        no_diagrams=no_diagrams,
+        simplify_diagrams=simplify_diagrams,
+        no_examples=no_examples,
+        no_metadata=no_metadata,
+        no_handlers=no_handlers,
         append=append,
     )
 

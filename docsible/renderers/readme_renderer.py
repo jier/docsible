@@ -49,6 +49,12 @@ class ReadmeRenderer:
         sequence_diagram_high_level: Optional[str] = None,
         sequence_diagram_detailed: Optional[str] = None,
         no_vars: bool = False,
+        no_tasks: bool = False,
+        no_diagrams: bool = False,
+        simplify_diagrams: bool = False,
+        no_examples: bool = False,
+        no_metadata: bool = False,
+        no_handlers: bool = False,
         append: bool = False
     ) -> None:
         """Render role README from template.
@@ -90,6 +96,12 @@ class ReadmeRenderer:
             sequence_diagram_high_level=sequence_diagram_high_level,
             sequence_diagram_detailed=sequence_diagram_detailed,
             no_vars=no_vars,
+            no_tasks=no_tasks,
+            no_diagrams=no_diagrams,
+            simplify_diagrams=simplify_diagrams,
+            no_examples=no_examples,
+            no_metadata=no_metadata,
+            no_handlers=no_handlers,
         )
         new_content = manage_docsible_tags(new_content)
 

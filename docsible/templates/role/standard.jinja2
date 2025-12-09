@@ -255,7 +255,7 @@ Description: {{ role.meta.galaxy_info.description or 'Not available.' }}
 {% endif %}
 
 
-{% if not no_vars %}
+{% if not no_tasks %}
 ### Tasks
 
 {% for taskfile in role.tasks|sort(attribute='file') %}
@@ -277,7 +277,9 @@ Description: {{ role.meta.galaxy_info.description or 'Not available.' }}
 {%- endif %}
 {%- endfor %}
 {% endfor %}
+{% endif %}
 
+{% if not no_handlers %}
 {% if role.handlers and role.handlers|length > 0 %}
 
 ### Handlers
@@ -295,7 +297,9 @@ Handlers are triggered by task notifications and typically handle service restar
 
 {% endfor %}
 {% endif %}
+{% endif %}
 
+{% if not no_diagrams %}
 {% if mermaid_code_per_file -%}
 ## Task Flow Graphs
 
@@ -322,6 +326,7 @@ Handlers are triggered by task notifications and typically handle service restar
 {{ role.playbook.graph }}
 ```
 {%- endif %}
+{% endif %}
 {% endif %}
 
 {% if role.meta.galaxy_info -%}
