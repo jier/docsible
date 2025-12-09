@@ -6,6 +6,8 @@ from typing import Optional
 
 from jinja2 import Environment, FileSystemLoader, Template
 
+from docsible.utils.template_filters import TEMPLATE_FILTERS
+
 logger = logging.getLogger(__name__)
 
 
@@ -41,6 +43,9 @@ class TemplateLoader:
             lstrip_blocks=True,
             keep_trailing_newline=True
         )
+
+        # Register custom filters for safe table rendering
+        self.env.filters.update(TEMPLATE_FILTERS)
 
         logger.debug(f"Initialized TemplateLoader with template_dir: {template_dir}")
 

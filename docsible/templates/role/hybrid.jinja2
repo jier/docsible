@@ -99,7 +99,7 @@ This sequence diagram shows the detailed interaction between the role, tasks, in
 | Handler Name | Module | Listens To | File |
 |--------------|--------|------------|------|
 {% for handler in role.handlers %}
-| {{ handler.name }} | `{{ handler.module }}` | {{ handler.listen if handler.listen else 'N/A' }} | `{{ handler.file }}` |
+| {{ handler.name | escape_table_cell }} | `{{ handler.module | escape_table_cell }}` | {{ handler.listen | escape_table_cell if handler.listen else 'N/A' }} | `{{ handler.file | escape_table_cell }}` |
 {% endfor %}
 {% endif %}
 {% endif %}
@@ -122,7 +122,7 @@ The following variables are defined in `defaults/` with their default values:
 | Variable | Default Value | Type | Description |
 |----------|---------------|------|-------------|
 {% for key, value in defaults_file.data.items() %}
-| `{{ key }}` | {{ '`' + (value.value|string) + '`' if value.value is not mapping and value.value is not sequence else '*See YAML*' }} | {{ value.type }} | {% if value.title %}**{{ value.title }}**<br>{% endif %}{% if value.description %}{{ value.description }}{% endif %}{% if value.required %}<br>**Required:** {{ value.required }}{% endif %}{% if value.choices %}<br>**Choices:** {{ value.choices }}{% endif %} |
+| `{{ key | escape_table_cell }}` | {{ value.value | escape_table_value if value.value is not mapping and value.value is not sequence else '*See YAML*' }} | {{ value.type | escape_table_cell }} | {% if value.title %}**{{ value.title | escape_table_cell }}**<br>{% endif %}{% if value.description %}{{ value.description | escape_table_cell }}{% endif %}{% if value.required %}<br>**Required:** {{ value.required | escape_table_cell }}{% endif %}{% if value.choices %}<br>**Choices:** {{ value.choices | escape_table_cell }}{% endif %} |
 {% endfor %}
 
 {% endfor %}
@@ -141,7 +141,7 @@ The following variables are defined in `vars/`:
 | Variable | Value | Type | Description |
 |----------|-------|------|-------------|
 {% for key, value in vars_file.data.items() %}
-| `{{ key }}` | {{ '`' + (value.value|string) + '`' if value.value is not mapping and value.value is not sequence else '*See YAML*' }} | {{ value.type }} | {% if value.title %}**{{ value.title }}**<br>{% endif %}{% if value.description %}{{ value.description }}{% endif %} |
+| `{{ key | escape_table_cell }}` | {{ value.value | escape_table_value if value.value is not mapping and value.value is not sequence else '*See YAML*' }} | {{ value.type | escape_table_cell }} | {% if value.title %}**{{ value.title | escape_table_cell }}**<br>{% endif %}{% if value.description %}{{ value.description | escape_table_cell }}{% endif %} |
 {% endfor %}
 
 {% endfor %}
@@ -161,7 +161,7 @@ The following variables are defined in `vars/`:
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
 {% for option_name, option_data in spec_data.options.items() %}
-| `{{ option_name }}` | {{ option_data.type | default('str') }} | {{ 'Yes' if option_data.required else 'No' }} | {{ '`' + (option_data.default|string) + '`' if option_data.default is defined else '-' }} | {{ option_data.description | join(' ') if option_data.description is iterable and option_data.description is not string else option_data.description | default('') }} |
+| `{{ option_name | escape_table_cell }}` | {{ option_data.type | default('str') | escape_table_cell }} | {{ 'Yes' if option_data.required else 'No' }} | {{ option_data.default | escape_table_value if option_data.default is defined else '-' }} | {{ option_data.description | safe_join(' ') if option_data.description is iterable and option_data.description is not string else option_data.description | escape_table_cell | default('') }} |
 {% endfor %}
 {% endif %}
 
@@ -269,7 +269,7 @@ This role depends on the following Ansible roles:
 | Task Name | Module | Description |
 |-----------|--------|-------------|
 {% for task in task_info.tasks %}
-| {{ task.name if task.name else '*unnamed*' }} | `{{ task.module }}` | {% if task_info.comments %}{% for comment in task_info.comments %}{% if comment.task_name == task.name %}{{ comment.task_comments }}{% endif %}{% endfor %}{% endif %} |
+| {{ task.name | escape_table_cell if task.name else '*unnamed*' }} | `{{ task.module | escape_table_cell }}` | {% if task_info.comments %}{% for comment in task_info.comments %}{% if comment.task_name == task.name %}{{ comment.task_comments | escape_table_cell }}{% endif %}{% endfor %}{% endif %} |
 {% endfor %}
 {% endif %}
 
