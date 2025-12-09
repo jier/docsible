@@ -344,6 +344,10 @@ def build_role_info(
     help="Generate minimal documentation (enables all --no-* flags)."
 )
 @click.option(
+    "--complexity-report", "complexity_report", is_flag=True,
+    help="Show role complexity analysis before generating documentation."
+)
+@click.option(
     "--append", "-a", "append", is_flag=True,
     help="Append to the existing README.md instead of replacing it."
 )
@@ -380,6 +384,7 @@ def doc_the_role(
     no_metadata,
     no_handlers,
     minimal,
+    complexity_report,
     append,
     output,
     repository_url,
@@ -477,6 +482,14 @@ def doc_the_role(
         repo_type=repo_type,
         repo_branch=repo_branch,
     )
+
+    # Display complexity analysis if requested
+    if complexity_report:
+        from docsible.analyzers import analyze_role_complexity
+        from docsible.utils.console import display_complexity_report
+
+        analysis_report = analyze_role_complexity(role_info)
+        display_complexity_report(analysis_report, role_name=role_info.get("name"))
 
     # Generate Mermaid diagrams if requested
     mermaid_code_per_file = {}
