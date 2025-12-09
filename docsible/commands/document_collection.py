@@ -30,6 +30,13 @@ def document_collection_roles(
     md_role_template: str,
     hybrid: bool,
     no_vars: bool,
+    no_tasks: bool,
+    no_diagrams: bool,
+    simplify_diagrams: bool,
+    no_examples: bool,
+    no_metadata: bool,
+    no_handlers: bool,
+    minimal: bool,
     append: bool,
     output: str,
     repository_url: str,
@@ -52,7 +59,14 @@ def document_collection_roles(
         md_collection_template: Custom collection template path
         md_role_template: Custom role template path
         hybrid: Use hybrid template for roles
-        no_vars: Skip variable documentation
+        no_vars: Hide variable documentation
+        no_tasks: Hide task lists and task details
+        no_diagrams: Hide all Mermaid diagrams
+        simplify_diagrams: Show only high-level diagrams
+        no_examples: Hide example playbook sections
+        no_metadata: Hide role metadata
+        no_handlers: Hide handlers section
+        minimal: Generate minimal documentation
         append: Append to existing README
         output: Output file name
         repository_url: Repository URL
@@ -159,6 +173,12 @@ def document_collection_roles(
                     template_type=template_type,
                     custom_template_path=md_role_template,
                     no_vars=no_vars,
+                    no_tasks=no_tasks,
+                    no_diagrams=no_diagrams,
+                    simplify_diagrams=simplify_diagrams,
+                    no_examples=no_examples,
+                    no_metadata=no_metadata,
+                    no_handlers=no_handlers,
                     append=append,
                 )
 
@@ -173,6 +193,12 @@ def document_collection_roles(
             output_path=readme_path,
             custom_template_path=md_collection_template,
             no_vars=no_vars,
+            no_tasks=no_tasks,
+            no_diagrams=no_diagrams,
+            simplify_diagrams=simplify_diagrams,
+            no_examples=no_examples,
+            no_metadata=no_metadata,
+            no_handlers=no_handlers,
             append=append,
         )
 

@@ -121,6 +121,12 @@ class ReadmeRenderer:
         output_path: Path,
         custom_template_path: Optional[str] = None,
         no_vars: bool = False,
+        no_tasks: bool = False,
+        no_diagrams: bool = False,
+        simplify_diagrams: bool = False,
+        no_examples: bool = False,
+        no_metadata: bool = False,
+        no_handlers: bool = False,
         append: bool = False
     ) -> None:
         """Render collection README from template.
@@ -130,7 +136,13 @@ class ReadmeRenderer:
             roles_info: List of role information dictionaries
             output_path: Path where README will be written
             custom_template_path: Optional custom template file path
-            no_vars: Skip variable documentation
+            no_vars: Hide variable documentation
+            no_tasks: Hide task lists and task details
+            no_diagrams: Hide all Mermaid diagrams
+            simplify_diagrams: Show only high-level diagrams
+            no_examples: Hide example playbook sections
+            no_metadata: Hide role metadata
+            no_handlers: Hide handlers section
             append: Append to existing README instead of replacing
 
         Example:
@@ -155,7 +167,13 @@ class ReadmeRenderer:
         data = {
             "collection": collection_metadata,
             "roles": roles_info,
-            "no_vars": no_vars
+            "no_vars": no_vars,
+            "no_tasks": no_tasks,
+            "no_diagrams": no_diagrams,
+            "simplify_diagrams": simplify_diagrams,
+            "no_examples": no_examples,
+            "no_metadata": no_metadata,
+            "no_handlers": no_handlers,
         }
         new_content = template.render(data)
         new_content = manage_docsible_tags(new_content)
