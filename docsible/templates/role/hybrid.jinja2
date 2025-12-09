@@ -74,6 +74,15 @@ This sequence diagram shows the detailed interaction between the role, tasks, in
 ```
 {% endif %}
 
+{% if state_diagram %}
+### State Transition Diagram
+This diagram shows the workflow phases and state transitions of the role.
+
+```mermaid
+{{ state_diagram }}
+```
+{% endif %}
+
 {% if not simplify_diagrams %}
 {% for task_info in role.tasks %}
 {% if mermaid_code_per_file.get(task_info.file) %}

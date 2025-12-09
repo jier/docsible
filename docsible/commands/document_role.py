@@ -483,18 +483,20 @@ def doc_the_role(
         repo_branch=repo_branch,
     )
 
+    # Analyze complexity for adaptive visualization
+    from docsible.analyzers import analyze_role_complexity
+    analysis_report = analyze_role_complexity(role_info)
+
     # Display complexity analysis if requested
     if complexity_report:
-        from docsible.analyzers import analyze_role_complexity
         from docsible.utils.console import display_complexity_report
-
-        analysis_report = analyze_role_complexity(role_info)
         display_complexity_report(analysis_report, role_name=role_info.get("name"))
 
     # Generate Mermaid diagrams if requested
     mermaid_code_per_file = {}
     sequence_diagram_high_level = None
     sequence_diagram_detailed = None
+    state_diagram = None
 
     if generate_graph:
         mermaid_code_per_file = generate_mermaid_role_tasks_per_file(role_info["tasks"])
@@ -523,6 +525,17 @@ def doc_the_role(
         except Exception as e:
             logger.warning(f"Could not generate detailed sequence diagram: {e}")
 
+        # Generate state transition diagram for MEDIUM complexity roles
+        # State diagrams show workflow phases (install -> configure -> validate -> start)
+        try:
+            from docsible.utils.state_diagram import generate_state_diagram, should_generate_state_diagram
+
+            if should_generate_state_diagram(role_info, analysis_report.category.value):
+                state_diagram = generate_state_diagram(role_info, role_name=role_info.get("name"))
+                logger.info(f"Generated state transition diagram for MEDIUM complexity role")
+        except Exception as e:
+            logger.warning(f"Could not generate state diagram: {e}")
+
     # Determine template type
     template_type = 'hybrid' if hybrid else 'standard'
 
@@ -538,6 +551,7 @@ def doc_the_role(
         mermaid_code_per_file=mermaid_code_per_file,
         sequence_diagram_high_level=sequence_diagram_high_level,
         sequence_diagram_detailed=sequence_diagram_detailed,
+        state_diagram=state_diagram,
         no_vars=no_vars,
         no_tasks=no_tasks,
         no_diagrams=no_diagrams,

@@ -300,6 +300,16 @@ Handlers are triggered by task notifications and typically handle service restar
 {% endif %}
 
 {% if not no_diagrams %}
+{% if state_diagram -%}
+## State Transition Diagram
+
+This diagram shows the workflow phases and state transitions of the role.
+
+```mermaid
+{{ state_diagram }}
+```
+{%- endif %}
+
 {% if mermaid_code_per_file -%}
 ## Task Flow Graphs
 
