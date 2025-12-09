@@ -39,8 +39,8 @@ class TemplateLoader:
         self.template_dir = template_dir
         self.env = Environment(
             loader=FileSystemLoader(str(template_dir)),
-            trim_blocks=True,
-            lstrip_blocks=True,
+            trim_blocks=False,
+            lstrip_blocks=False,
             keep_trailing_newline=True
         )
 
