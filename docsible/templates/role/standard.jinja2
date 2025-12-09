@@ -300,18 +300,17 @@ Handlers are triggered by task notifications and typically handle service restar
 {% endif %}
 
 {% if not no_diagrams %}
-  {% if mermaid_code_per_file -%}
-  ## Task Flow Graphs
+{% if mermaid_code_per_file -%}
+## Task Flow Graphs
 
-  {% for task_file, mermaid_code in mermaid_code_per_file | dictsort %}
+{% for task_file, mermaid_code in mermaid_code_per_file | dictsort %}
 
-    ### Graph for {{ task_file }}
+### Graph for {{ task_file }}
 
-    ```mermaid
-    {{ mermaid_code }}
-  ```
-  {% endfor %}
-  {%- endif %}
+```mermaid
+{{ mermaid_code }}
+```
+{% endfor %}
 {%- endif %}
 {% endif %}
 
