@@ -490,9 +490,15 @@ def doc_the_role(
                 logger.warning(f"Could not generate high-level sequence diagram: {e}")
 
         # Detailed sequence diagram (role → tasks → handlers)
+        # Only simplify if --minimal or --simplify-diagrams is set
+        # Otherwise, always show full detailed task execution flow
         try:
+            should_simplify = minimal or simplify_diagrams
             sequence_diagram_detailed = generate_mermaid_sequence_role_detailed(
-                role_info, include_handlers=len(role_info.get("handlers", [])) > 0
+                role_info,
+                include_handlers=len(role_info.get("handlers", [])) > 0,
+                simplify_large=should_simplify,
+                max_lines=20
             )
         except Exception as e:
             logger.warning(f"Could not generate detailed sequence diagram: {e}")

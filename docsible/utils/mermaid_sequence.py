@@ -293,7 +293,7 @@ def _add_task_details(diagram: str, tasks: List[Dict], executor: str, participan
     return diagram
 
 
-def generate_mermaid_sequence_role_detailed(role_info: Dict[str, Any], include_handlers: bool = True, simplify_large: bool = True, max_lines: int = 20) -> str:
+def generate_mermaid_sequence_role_detailed(role_info: Dict[str, Any], include_handlers: bool = True, simplify_large: bool = False, max_lines: int = 20) -> str:
     """
     Generate detailed sequence diagram showing role → tasks → handlers interaction.
 
@@ -307,7 +307,8 @@ def generate_mermaid_sequence_role_detailed(role_info: Dict[str, Any], include_h
     Args:
         role_info: Role information dict with tasks, handlers, meta
         include_handlers: Whether to include handler interactions
-        simplify_large: If True, simplifies diagrams with more than max_lines
+        simplify_large: If True, simplifies diagrams with more than max_lines.
+                       Only set to True when --minimal or --simplify-diagrams flags are used.
         max_lines: Maximum lines before simplification kicks in
 
     Returns:
