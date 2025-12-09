@@ -11,6 +11,7 @@ from docsible.analyzers.complexity_analyzer import (
     ComplexityCategory,
     ComplexityMetrics,
     ComplexityReport,
+    IntegrationPoint,
     analyze_role_complexity,
 )
 
@@ -18,5 +19,6 @@ __all__ = [
     "ComplexityCategory",
     "ComplexityMetrics",
     "ComplexityReport",
+    "IntegrationPoint",
     "analyze_role_complexity",
 ]
