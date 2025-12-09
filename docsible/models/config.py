@@ -38,6 +38,13 @@ class StructureConfig(BaseModel):
     library_dir: str = "library"
     roles_dir: str = "roles"
     meta_file: str = "main"
+    lookup_plugins_dir: str = "lookup_plugins"
+    test_playbook: str = "tests/test.yml"  
+    # Optional support
+    # filter_plugins_dir: str = "filter_plugins"
+    # module_utils_dir: str = "module_utils"
+ 
+
     argument_specs_file: str = "argument_specs"
     yaml_extensions: List[str] = Field(default_factory=lambda: ['.yml', '.yaml'])
 

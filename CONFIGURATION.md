@@ -30,10 +30,10 @@ If your project follows the standard Ansible structure, just run Docsible as usu
 
 ```bash
 # Standard role
-docsible --role ./my-role
+docsible role --role ./my-role
 
 # Standard collection
-docsible --collection ./my-collection
+docsible  role --collection ./my-collection
 ```
 
 ### For Custom Structures
@@ -41,7 +41,7 @@ docsible --collection ./my-collection
 1. Generate an example configuration file:
 
 ```bash
-docsible-init-config --path /path/to/your/project
+docsible init --path /path/to/your/project
 ```
 
 2. Edit `.docsible.yml` to match your structure:
@@ -55,7 +55,7 @@ structure:
 3. Run Docsible:
 
 ```bash
-docsible --role ./my-role
+docsible role --role ./my-role
 ```
 
 ## Configuration Priority
@@ -179,22 +179,27 @@ structure:
    
   
   # Custom modules and plugins
-  library_dir: 'library'                     # Custom Ansible modules
-  lookup_plugins_dir: 'lookup_plugins'       # Custom lookup plugins 
-  templates_dir: 'templates'         # Where Jinja2 templates are located
+  library_dir: 'library'                      # Custom Ansible modules
+  lookup_plugins_dir: 'lookup_plugins'        # Custom lookup plugins 
+  templates_dir: 'templates'                  # Where Jinja2 templates are located
+  files_dir: 'files'                          # Where static files are located
+  
+  # Optional Plugin directories
+  filter_plugins_dir: 'filter_plugins'       # Custom filter plugins
+  module_utils_dir: 'module_utils'           # Module utilities
 
   # For collections and monorepos
-  roles_dir: 'roles'                 # Where roles are located
+  roles_dir: 'roles'                          # Where roles are located
 
   # File names (without extensions)
-  meta_file: 'main'                  # Meta file name (meta/main.yml)
-  argument_specs_file: 'argument_specs'  # Argument specs file name
+  meta_file: 'main'                           # Meta file name (meta/main.yml)
+  argument_specs_file: 'argument_specs'       # Argument specs file name
 
   # Test playbook
-  test_playbook: 'tests/test.yml'    # Default test playbook location
+  test_playbook: 'tests/test.yml'             # Default test playbook location
 
   # File extensions
-  yaml_extensions: ['.yml', '.yaml'] # YAML file extensions to scan
+  yaml_extensions: ['.yml', '.yaml']          # YAML file extensions to scan
 ```
 
 ### Configuration Fields
@@ -208,6 +213,8 @@ structure:
 | `tasks_dir` | string | `tasks` | Directory containing task files |
 | `meta_dir` | string | `meta` | Directory containing role metadata |
 | `handlers_dir` | string | `handlers` | Directory containing handlers |
+| `files_dir` | string | `files` | Directory containing static files |
+
 
 #### Custom Modules and Plugins
 
@@ -265,7 +272,7 @@ structure:
 **Usage**:
 ```bash
 cd company-automation
-docsible --collection .
+docsible role --collection .
 ```
 
 ### Example 2: Custom Directory Names
@@ -294,7 +301,7 @@ structure:
 
 **Usage**:
 ```bash
-docsible --role ./custom-role
+docsible role --role ./custom-role
 ```
 
 ### Example 3: Multi-Role Repository
@@ -324,7 +331,7 @@ ansible-roles/
 **Usage**:
 ```bash
 # Documents all roles in the roles/ directory
-docsible --collection ./ansible-roles
+docsible role --collection ./ansible-roles
 ```
 
 **Result**: Creates a README.md at the root and individual role documentation in each role directory.
@@ -346,7 +353,7 @@ awx-project/
 
 **Usage**:
 ```bash
-docsible --collection ./awx-project
+docsible role --collection ./awx-project
 ```
 
 ### Example 5: Multiple Collections in Monorepo
@@ -369,7 +376,7 @@ ansible-monorepo/
 **Usage**:
 ```bash
 cd ansible-monorepo
-docsible --collection .
+docsible role --collection .
 ```
 
 All `galaxy.yml` files will be found and each collection documented.
@@ -414,12 +421,15 @@ structure:
   meta_dir: 'meta'
 
   # Plugin directories (where most custom code lives)
-  library_dir: 'library'
-  lookup_plugins_dir: 'lookup_plugins'
+  library_dir: 'library'              # Custom modules
+  lookup_plugins_dir: 'lookup_plugins' # Custom lookups
+  filter_plugins_dir: 'filter_plugins' # Custom filters
+  module_utils_dir: 'module_utils'    # Shared utilities
+
 ```
 **Usage**:
 ```bash
-docsible --role ./external-api-role
+docsible role --role ./external-api-role
 ```
 Use Case: Roles that execute commands on external systems via APIs rather than managing local files. Common for cloud providers, SaaS platforms, or infrastructure APIs where custom modules and lookups are essential.
 
@@ -467,30 +477,78 @@ Generate documentation for roles or collections:
 
 ```bash
 # Document a role
-docsible --role ./my-role
+docsible role --role ./my-role
 
 # Document a collection
-docsible --collection ./my-collection
+docsible role --collection ./my-collection
 
 # With custom options
-docsible --role ./my-role --graph --comments --task-line
+docsible  role --role ./my-role --graph --comments --task-line
+
+# Enable verbose logging for troubleshooting
+docsible --verbose role --role ./my-role
+```
+```yaml
+Available Options:
+
+--role, -r: Path to Ansible role directory
+--collection, -c: Path to Ansible collection directory
+--playbook, -p: Path to playbook file
+--graph, -g: Generate Mermaid diagrams
+--hybrid: Use hybrid template (manual + auto-generated sections)
+--no-vars: Skip variable documentation
+--comments, -com: Read comments from task files
+--task-line, -tl: Read line numbers from tasks
+--append, -a: Append to existing README instead of replacing
+--no-backup, -nob: Don't create backup before overwriting
+--output, -o: Output filename (default: README.md)
+
+Global Options:
+
+--verbose, -v: Enable debug logging
+--version: Show version
 ```
 
-### New Command: `docsible-init-config`
+### New Command: `docsible int`
 
 Generate an example `.docsible.yml` configuration file:
 
 ```bash
 # Create config in current directory
-docsible-init-config
+docsible init
 
 # Create config in specific directory
-docsible-init-config --path /path/to/project
+docsible init --path /path/to/project
 
 # Overwrite existing config
-docsible-init-config --force
+docsible init --force
 ```
 
+```yaml
+Options:
+
+--path, -p: Directory where to create .docsible.yml (default: current directory)
+--force, -f: Overwrite existing configuration **file**
+```
+
+### Enable Verbose Logging
+
+**Problem**: Need detailed information about what Docsible is doing
+
+**Solution**:
+Use the `--verbose` or `-v` flag to enable debug logging:
+
+```bash
+docsible --verbose role --role ./my-role
+
+```
+**Example output:**
+```bash
+DEBUG - Initialized TemplateLoader with template_dir: /path/to/templates
+DEBUG - Loading template: role/standard.jinja2
+INFO - Loaded configuration from .docsible.yml
+INFO - Using hybrid template (manual + auto-generated sections)
+```
 ## Migration Guide
 
 ### Migrating from Pre-0.8.0 Versions
@@ -504,14 +562,14 @@ If you want to document projects with non-standard structures:
 1. **Generate config template**:
    ```bash
    cd /path/to/your/project
-   docsible-init-config
+   docsible init
    ```
 
 2. **Customize** `.docsible.yml` to match your structure
 
 3. **Test** the configuration:
    ```bash
-   docsible --role .
+   docsible role --role .
    ```
 
 4. **Commit** `.docsible.yml` to your repository
