@@ -298,7 +298,8 @@ def generate_mermaid_sequence_role_detailed(role_info: Dict[str, Any], include_h
     Generate detailed sequence diagram showing role → tasks → handlers interaction.
 
     Shows:
-    - Task execution order
+    - Task execution order (limited to first 10 tasks per file for clarity)
+    - Remaining tasks count if more than 10 tasks exist per file
     - include_tasks/import_tasks as separate participants
     - include_role/import_role as separate participants
     - Handler notifications and execution
@@ -313,6 +314,11 @@ def generate_mermaid_sequence_role_detailed(role_info: Dict[str, Any], include_h
 
     Returns:
         Mermaid sequence diagram as string
+
+    Note:
+        The detailed diagram shows up to 10 individual tasks per file.
+        If a file has more than 10 tasks, remaining tasks are indicated by count.
+        Use simplify_large=True to show only file-level summaries without task details.
     """
     # First, generate the full diagram
     diagram = _generate_full_sequence_diagram(role_info, include_handlers)
@@ -483,7 +489,8 @@ def _generate_full_sequence_diagram(role_info: Dict[str, Any], include_handlers:
     Generate detailed sequence diagram showing role → tasks → handlers interaction.
 
     Shows:
-    - Task execution order
+    - Task execution order (first 10 tasks shown individually per file)
+    - Remaining tasks shown as count if more than 10 tasks exist
     - include_tasks/import_tasks as separate participants
     - include_role/import_role as separate participants
     - Handler notifications and execution
@@ -495,6 +502,10 @@ def _generate_full_sequence_diagram(role_info: Dict[str, Any], include_handlers:
 
     Returns:
         Mermaid sequence diagram as string
+
+    Note:
+        To prevent overwhelming diagrams, only the first 10 tasks per file are shown
+        in detail. If more than 10 tasks exist, a note indicates the remaining count.
     """
     diagram = "sequenceDiagram\n"
 
@@ -538,8 +549,14 @@ def _generate_full_sequence_diagram(role_info: Dict[str, Any], include_handlers:
         diagram += f"    Note over {role_participant},{task_file_participant}: File: {task_file}\n"
         diagram += f"    {role_participant}->>+{task_file_participant}: Load tasks\n\n"
 
-        # Process each task
-        for task_idx, task in enumerate(tasks):
+        # Limit detailed task display to first 10 tasks
+        max_detailed_tasks = 10
+        total_tasks = len(tasks)
+        tasks_to_show = tasks[:max_detailed_tasks]
+        remaining_tasks = total_tasks - max_detailed_tasks
+
+        # Process each task (up to max_detailed_tasks)
+        for task_idx, task in enumerate(tasks_to_show):
             # Get task name - use extract_task_name_from_module for unnamed tasks
             if 'name' not in task or not task['name']:
                 # Try to extract from original task data if available
@@ -613,6 +630,11 @@ def _generate_full_sequence_diagram(role_info: Dict[str, Any], include_handlers:
 
                 diagram += f"    {task_file_participant}->>Handlers: Notify: {sanitize_note_text(handler_names, 30)}\n"
 
+            diagram += "\n"
+
+        # Show remaining tasks count if there are more than max_detailed_tasks
+        if remaining_tasks > 0:
+            diagram += f"    Note over {task_file_participant}: ... and {remaining_tasks} more tasks\n"
             diagram += "\n"
 
         diagram += f"    {task_file_participant}-->>-{role_participant}: Tasks complete\n\n"
