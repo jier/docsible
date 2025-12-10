@@ -1,4 +1,4 @@
-{% if role.belongs_to_collection %}
+{%- if role.belongs_to_collection %}
 ```
 Role belongs to {{ role.belongs_to_collection.namespace }}/{{ role.belongs_to_collection.name }}
 Namespace - {{ role.belongs_to_collection.namespace }}
@@ -6,4 +6,4 @@ Collection - {{ role.belongs_to_collection.name }}
 Version - {{ role.belongs_to_collection.version }}
 Repository - {{ role.belongs_to_collection.repository }}
 ```
-{% endif %}
+{%- endif %}

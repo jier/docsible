@@ -5,7 +5,9 @@
 ```
 {% endif %}
 {% for file, code in mermaid_code_per_file.items() %}
-## Task in {{file}}
-    {{code}}
+## Task in {{ file }}
+```mermaid
+{{ code }}
+```
 {% endfor %}
 
