@@ -536,6 +536,23 @@ def doc_the_role(
         except Exception as e:
             logger.warning(f"Could not generate state diagram: {e}")
 
+    # Generate integration boundary diagram
+    integration_boundary_diagram = None
+    if generate_graph and analysis_report.integration_points:
+        try:
+            from docsible.utils.integration_diagram import (
+                generate_integration_boundary,
+                should_generate_integration_diagram
+            )
+
+            if should_generate_integration_diagram(analysis_report.integration_points):
+                integration_boundary_diagram = generate_integration_boundary(
+                    analysis_report.integration_points
+                )
+                logger.info(f"Generated integration boundary diagram ({len(analysis_report.integration_points)} integrations)")
+        except Exception as e:
+            logger.warning(f"Could not generate integration boundary diagram: {e}")
+
     # Determine template type
     template_type = 'hybrid' if hybrid else 'standard_modular'
 
@@ -552,6 +569,8 @@ def doc_the_role(
         sequence_diagram_high_level=sequence_diagram_high_level,
         sequence_diagram_detailed=sequence_diagram_detailed,
         state_diagram=state_diagram,
+        integration_boundary_diagram=integration_boundary_diagram,
+        complexity_report=analysis_report,
         no_vars=no_vars,
         no_tasks=no_tasks,
         no_diagrams=no_diagrams,

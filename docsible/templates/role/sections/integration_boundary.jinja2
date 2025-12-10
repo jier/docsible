@@ -1,0 +1,34 @@
+{# Integration boundary diagram section #}
+{% if integration_boundary_diagram %}
+## Integration Architecture
+<!-- DOCSIBLE GENERATED -->
+
+This diagram shows how the role integrates with external systems:
+
+```mermaid
+{{ integration_boundary_diagram }}
+```
+
+### Integration Details
+{% if complexity_report and complexity_report.integration_points %}
+{% for integration in complexity_report.integration_points %}
+#### {{ integration.system_name }}
+- **Type:** {{ integration.type.value }}
+- **Modules Used:** {{ integration.modules_used|join(', ') }}
+- **Task Count:** {{ integration.task_count }}
+{% if integration.uses_credentials %}
+- **Authentication:** ⚠️ Requires credentials (configure via vars or vault)
+{% endif %}
+
+{% endfor %}
+{% endif %}
+
+### Security Considerations
+{% if complexity_report and complexity_report.integration_points %}
+{% for integration in complexity_report.integration_points %}
+{% if integration.uses_credentials %}
+- **{{ integration.system_name }}**: Store credentials securely using Ansible Vault or external secrets management
+{% endif %}
+{% endfor %}
+{% endif %}
+{% endif %}
