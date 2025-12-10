@@ -1,21 +1,52 @@
 {# Small, pure functions with no side effects #}
 
 {% macro detect_dynamic_columns(file_data) -%}
-  {# Scans data and returns namespace with flags #}
+  {% set ns = namespace(has_required=false, has_title=false, has_choices=false) %}
+  {%- for key, details in file_data.items() -%}
+    {%- if details.required is not none -%}{% set ns.has_required = true %}{%- endif -%}
+    {%- if details.title is not none -%}{% set ns.has_title = true %}{%- endif -%}
+    {%- if details.choices != None -%}{% set ns.has_choices = true %}{%- endif -%}
+  {%- endfor %}
+  {{- ns -}}
 {%- endmacro %}
+
 
 {% macro format_key_name(key) -%}
-  {# Handles dotted keys #}
+  {%- if '.' in key -%}
+    {{ key.rsplit('.', 1)[0] ~ '.**' ~ key.rsplit('.', 1)[1] ~ '**' }}
+  {%- else -%}
+    {{ key }}
+  {%- endif -%}
 {%- endmacro %}
+
 
 {% macro format_variable_value(details) -%}
-  {# Formats value with empty/multiline handling #}
+  {%- if details.value is string and details.value | length == 0 -%}
+    {# Empty string - render nothing #}
+  {%- else -%}
+    {{ details.value | escape_table_value }}
+  {%- endif -%}
 {%- endmacro %}
 
-{% macro should_skip_empty_value(details) -%}
-  {# Returns true if value should be skipped #}
-{%- endmacro %}
 
 {% macro render_repo_link_for_key(key, file_path, line, role) -%}
-  {# Generates repository URL #}
+  {%- if role.repository and file_path and line is not none -%}
+    {%- if role.belongs_to_collection -%}
+      {%- set full_path = 'roles/' ~ role.name ~ '/' ~ file_path -%}
+    {%- else -%}
+      {%- set full_path = file_path -%}
+    {%- endif %}
+    {%- set encoded_path = full_path | replace(' ', '%20') -%}
+    {%- if role.repository_type == 'github' -%}
+      {{ role.repository }}/blob/{{ role.repository_branch }}/{{ encoded_path }}#L{{ line }}
+    {%- elif role.repository_type == 'gitlab' -%}
+      {{ role.repository }}/-/blob/{{ role.repository_branch }}/{{ encoded_path }}#L{{ line }}
+    {%- elif role.repository_type == 'gitea' -%}
+      {{ role.repository }}/src/branch/{{ role.repository_branch }}/{{ encoded_path }}#L{{ line }}
+    {%- else -%}
+      {{ role.repository }}/{{ encoded_path }}#L{{ line }}
+    {%- endif %}
+  {%- else -%}
+    {{ file_path }}#L{{ line }}
+  {%- endif %}
 {%- endmacro %}

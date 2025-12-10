@@ -6,34 +6,3 @@
 {{ tables.render_variable_table(defaults_file.data, 'defaults/' ~ defaults_file.file, role) }}
 {% endfor %}
 
-{# Dynamic column detection #}
-{% set ns = namespace(has_choices=false, has_required=false, has_title=false) %}
-{% for key, details in defaults_file.data.items() %}
-  {% if details.choices %}{% set ns.has_choices = true %}{% endif %}
-  {% if details.required %}{% set ns.has_required = true %}{% endif %}
-  {% if details.title %}{% set ns.has_title = true %}{% endif %}
-{% endfor %}
-
-| Var | Type | Value |{% if ns.has_choices %} Choices |{% endif %}{% if ns.has_required %} Required |{% endif %}{% if ns.has_title %} Title |{% endif %}
-|-----|------|-------|{% if ns.has_choices %}---------|{% endif %}{% if ns.has_required %}----------|{% endif %}{% if ns.has_title %}-------|{% endif %}
-
-{% for key, details in defaults_file.data.items() %}
-| [`{{ key | escape_table_cell }}`]({{ links.render_repo_link(...) }}) | {{ details.type | escape_table_cell }} | {{ details.value | escape_table_value }} |{% if ns.has_choices %} {{ details.choices | escape_table_cell }} |{% endif %}...
-{% endfor %}
-
-{# Descriptions section if any exist #}
-{% if defaults_file.data.values() | selectattr('description') | list | length > 0 %}
-<details>
-<summary><b>Full descriptions</b></summary>
-<table>
-<th>Var</th><th>Description</th>
-{% for key, details in defaults_file.data.items() %}
-  {% if details.description %}
-  <tr><td><b>{{ key | escape_table_cell }}</b></td><td>{{ details.description | escape_table_cell }}</td></tr>
-  {% endif %}
-{% endfor %}
-</table>
-</details>
-{% endif %}
-{% endfor %}
-

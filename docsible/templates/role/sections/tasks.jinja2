@@ -16,7 +16,7 @@
 
 {% for task in task_file.tasks %}
 {% if task_file.lines and task_file.lines[task.name] %}
-  | [{{ task.name | escape_table_cell }}]({{ links.render_repo_link(..., task_file.lines[task.name], ...) }}) |
+    | [{{ task.name | escape_table_cell }}]({{ links.render_repo_link(role.repository, role.name, 'tasks/' ~ task_file.file, task_file.lines[task.name], role.repository_type, role.repository_branch, role.belongs_to_collection) }}) |
 {% else %}
   | {{ task.name | escape_table_cell }} |
 {% endif %}
