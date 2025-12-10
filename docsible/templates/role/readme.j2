@@ -1,0 +1,30 @@
+{% extends 'base.j2' %}
+{% import 'macros/utils.j2' as utils %}
+{% import 'macros/repo_links.j2' as links %}
+{% import 'macros/arguments.j2' as args %}
+{% import 'macros/tables.j2' as tables %}
+{% block content %}
+<!-- DOCSIBLE START -->
+# 📃 Role Overview
+## {{ role.name }}
+{% include 'sections/overview.j2' %}
+{% include 'sections/galaxy_info.j2' %}
+{% if role.defaults %}
+    {% include 'sections/defaults.j2' %}
+{% endif %}
+{% if role.vars %}
+    {% include 'sections/vars.j2' %}
+{% endif %}
+{% if not no_tasks %}
+    {% include 'sections/tasks.j2' %}
+{% endif %}
+{% if not no_handlers %}
+    {% include 'sections/handlers.j2' %}
+{% endif %}
+{% if not no_diagrams %}
+    {% include 'sections/diagrams.j2' %}
+{% endif %}
+{% include 'sections/playbook.j2' %}
+{% include 'sections/dependencies.j2' %}
+<!-- DOCSIBLE END -->
+{% endblock %}

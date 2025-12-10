@@ -1,0 +1,8 @@
+{% macro render_variable_table(file_data, file_path, role) -%}
+| Variable | Value | Type | Description |
+|----------|-------|------|-------------|
+{% for key, details in file_data.items() %}
+| [`{{ key | escape }}`]({{ links.render_repo_link(role.repository, role.name, file_path, details.line, role.repository_type, role.repository_branch) }}) |
+{{ details.value | escape }} | {{ details.type | default('str') }} | {{ details.description | escape if details.description else '' }} |
+{% endfor %}
+{%- endmacro %}

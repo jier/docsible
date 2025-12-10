@@ -71,7 +71,7 @@ def escape_table_cell(value: Any, max_length: Optional[int] = None, truncate_ind
     if max_length and len(s) > max_length:
         s = s[:max_length] + truncate_indicator
 
-    return s
+    return s.strip()
 
 
 def escape_table_value(value: Any, as_code: bool = True, max_length: Optional[int] = None) -> str:
@@ -108,7 +108,7 @@ def escape_table_value(value: Any, as_code: bool = True, max_length: Optional[in
         return ""
 
     # Wrap in backticks if requested (for code formatting)
-    if as_code:
+    if as_code and escaped:
         # For code blocks, we need to be extra careful with backticks
         # We already escaped them above, so we're safe to wrap
         return f"`{escaped}`"

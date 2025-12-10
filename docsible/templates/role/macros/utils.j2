@@ -1,0 +1,13 @@
+{% macro escape(value) -%}
+  {{ value | replace('|', '¦') | replace('\n', '<br>') | replace('\r', '') | replace('`', '\\`') }}
+{%- endmacro %}
+
+{% macro safe_join(items, sep=", ", max_items=None) -%}
+  {% if items is none %} {% return "" %} {% endif %}
+  {% set lst = items if items is iterable and items is not string else [items] %}
+  {% if max_items and lst|length > max_items %}
+    {{ lst[:max_items]|map('string')|join(sep) }} (+{{ lst|length - max_items }} more)
+  {% else %}
+    {{ lst|map('string')|join(sep) }}
+  {% endif %}
+{%- endmacro %}

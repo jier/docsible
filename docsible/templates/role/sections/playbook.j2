@@ -1,0 +1,12 @@
+{% if role.playbook.content %}
+## Playbook
+```yaml
+{{ role.playbook.content }}
+```
+{% endif %}
+{% if role.playbook.graph %}
+## Playbook graph
+```mermaid
+{{ role.playbook.graph }}
+```
+{% endif %}

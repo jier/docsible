@@ -1,0 +1,11 @@
+{% macro render_arguments(arguments) -%}
+{% for arg_name, arg in arguments.items() %}
+- **{{ arg_name }}** ({{ arg.type or "str" }}){% if arg.required %} - Required{% endif %}
+  - Default: {{ arg.default | escape if arg.default is defined else 'None' }}
+  - Description: {% if arg.description is iterable and arg.description is not string %}
+      {% for d in arg.description %}- {{ d }}{% endfor %}
+    {% else %}
+      {{ arg.description | escape }}
+    {% endif %}
+{% endfor %}
+{%- endmacro %}

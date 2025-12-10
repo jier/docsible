@@ -1,0 +1,51 @@
+{% if role.meta and role.meta.galaxy_info %}
+### Author Information
+- **Author**: {{ role.meta.galaxy_info.author or 'Unknown' }}
+- **License**: {{ role.meta.galaxy_info.license or 'Not specified' }}
+- **Platforms**:
+{% for platform in role.meta.galaxy_info.platforms %}
+- {{ platform.name }}: {{ platform.versions }}
+{% endfor %}
+{% if role.meta.galaxy_info.description and (role.meta.galaxy_info.description is not string and role.meta.galaxy_info.description is not mapping) %}
+Description:
+{% for role_desc in role.meta.galaxy_info.description %}
+    - {{ role_desc }}
+{% endfor %}
+{% else %}
+Description: {{ role.meta.galaxy_info.description or 'Not available.' }}
+{% endif %}
+{% endif %}
+
+{% if role.docsible %}
+  | Field                | Value           |
+  |--------------------- |-----------------|
+  {% if role.docsible.description %}
+    | Functional description | {{ role.docsible.description  }} |
+  {% endif %}
+  {% if role.docsible.requester %}
+    | Requester            | {{ role.docsible.requester  }} |
+  {% endif %}
+  {% if role.docsible.users %}| Users                | {{ role.docsible.users  }} |{% endif %}
+  {% if role.docsible.dt_dev %}| Date dev             | {{ role.docsible.dt_dev  }} |{% endif %}
+  {% if role.docsible.dt_prod %}| Date prod            | {{ role.docsible.dt_prod  }} |{% endif %}
+  {% if role.docsible.dt_update %}
+    | Readme update        | {{ role.docsible.dt_update  }} |
+  {% endif %}
+  {% if role.docsible.version %}| Version              | {{ role.docsible.version  }} |{% endif %}
+  {% if role.docsible.time_saving %}
+    | Time Saving          | {{ role.docsible.time_saving  }} |
+  {% endif %}
+  {% if role.docsible.category %}
+    | Category             | {{ role.docsible.category  }} |
+  {% endif %}
+  {% if role.docsible.subCategory %}
+    | Sub category         | {{ role.docsible.subCategory  }} |
+  {% endif %}
+  {% if role.docsible.aap_hub %}| AAP Hub              | {{ role.docsible.aap_hub  }} |{% endif %}
+  {% if role.docsible.automation_kind %}
+    | Automation Kind      | {{ role.docsible.automation_kind  }} |
+  {% endif %}
+  {% if role.docsible.critical %}
+    | Critical ⚠️          | {{ role.docsible.critical  }} |
+  {% endif %}
+{% endif %}

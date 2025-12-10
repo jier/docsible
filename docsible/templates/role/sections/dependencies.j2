@@ -1,0 +1,15 @@
+{% if role.playbook.dependencies %}
+### Playbook Dependencies
+{% for dep in role.playbook.dependencies %}
+- `{{ dep }}`
+{% endfor %}
+{% endif %}
+
+{% if role.meta.dependencies %}
+### Role Dependencies
+{% for dep in role.meta.dependencies %}
+- `{{ dep.role if dep.role else dep }}`
+{% endfor %}
+{% else %}
+*No role dependencies*
+{% endif %}

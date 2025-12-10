@@ -194,7 +194,7 @@ def build_role_info(
         "vars": vars_data,
         "tasks": [],
         "handlers": [],
-        "meta": load_yaml_generic(str(meta_path)) or {},
+        "meta": load_yaml_generic(str(meta_path)) if meta_path.exists() else {},
         "playbook": {
             "content": playbook_content,
             "graph": (
