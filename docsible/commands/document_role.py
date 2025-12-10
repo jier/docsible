@@ -553,6 +553,21 @@ def doc_the_role(
         except Exception as e:
             logger.warning(f"Could not generate integration boundary diagram: {e}")
 
+    # Generate component architecture diagram for complex roles
+    architecture_diagram = None
+    if generate_graph:
+        try:
+            from docsible.utils.architecture_diagram import (
+                generate_component_architecture,
+                should_generate_architecture_diagram
+            )
+
+            if should_generate_architecture_diagram(analysis_report):
+                architecture_diagram = generate_component_architecture(role_info, analysis_report)
+                logger.info(f"Generated component architecture diagram for {analysis_report.category.value.upper()} role")
+        except Exception as e:
+            logger.warning(f"Could not generate architecture diagram: {e}")
+
     # Determine template type
     template_type = 'hybrid' if hybrid else 'standard_modular'
 
@@ -570,6 +585,7 @@ def doc_the_role(
         sequence_diagram_detailed=sequence_diagram_detailed,
         state_diagram=state_diagram,
         integration_boundary_diagram=integration_boundary_diagram,
+        architecture_diagram=architecture_diagram,
         complexity_report=analysis_report,
         no_vars=no_vars,
         no_tasks=no_tasks,

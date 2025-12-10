@@ -61,6 +61,22 @@ This role contains **{{ complexity_report.metrics.total_tasks }} tasks** across 
 - Task Includes: {{ complexity_report.metrics.task_includes }}
 - Role Dependencies: {{ complexity_report.metrics.role_dependencies }}
 
+{% if architecture_diagram %}
+### Component Architecture
+This diagram shows the internal structure and data flow of the role:
+
+```mermaid
+{{ architecture_diagram }}
+```
+
+**Legend:**
+- 📋 **Variables:** Default values and configuration
+- ⚙️ **Tasks:** Execution units organized by file
+- 🔔 **Handlers:** Triggered by task notifications
+- 🌐 **External Systems:** Third-party integrations
+
+{% endif %}
+
 {% if complexity_report.integration_points %}
 ### External Integrations
 This role integrates with {{ complexity_report.integration_points|length }} external system(s):

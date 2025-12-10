@@ -1,0 +1,382 @@
+"""Tests for component architecture diagram generation."""
+
+import pytest
+from docsible.analyzers.complexity_analyzer import (
+    ComplexityReport,
+    ComplexityMetrics,
+    ComplexityCategory,
+    IntegrationPoint,
+    IntegrationType
+)
+from docsible.utils.architecture_diagram import (
+    generate_component_architecture,
+    should_generate_architecture_diagram
+)
+
+
+class TestArchitectureDiagram:
+    """Test component architecture diagram generation."""
+
+    def test_generate_with_simple_role(self):
+        """Test diagram generation for simple role structure."""
+        role_info = {
+            'name': 'test_role',
+            'defaults': [{'file': 'main.yml', 'data': {'var1': 'value1', 'var2': 'value2'}}],
+            'vars': [],
+            'tasks': [{'file': 'main.yml', 'tasks': [{'name': 'Task 1'}, {'name': 'Task 2'}]}],
+            'handlers': []
+        }
+
+        complexity_report = ComplexityReport(
+            metrics=ComplexityMetrics(
+                total_tasks=2,
+                task_files=1,
+                handlers=0,
+                conditional_tasks=0,
+                max_tasks_per_file=2,
+                avg_tasks_per_file=2.0
+            ),
+            category=ComplexityCategory.SIMPLE,
+            integration_points=[]
+        )
+
+        diagram = generate_component_architecture(role_info, complexity_report)
+
+        assert diagram is not None
+        assert "graph TB" in diagram
+        assert "defaults" in diagram
+        assert "2 variables" in diagram
+        assert "tasks_main_yml" in diagram
+        assert "2 tasks" in diagram
+        assert "varStyle" in diagram
+        assert "taskStyle" in diagram
+
+    def test_generate_with_vars_only(self):
+        """Test diagram with vars but no defaults."""
+        role_info = {
+            'name': 'test_role',
+            'defaults': [],
+            'vars': [{'file': 'main.yml', 'data': {'var1': 'val1', 'var2': 'val2', 'var3': 'val3'}}],
+            'tasks': [{'file': 'main.yml', 'tasks': [{'name': 'Task 1'}]}],
+            'handlers': []
+        }
+
+        complexity_report = ComplexityReport(
+            metrics=ComplexityMetrics(
+                total_tasks=1,
+                task_files=1,
+                handlers=0,
+                conditional_tasks=0,
+                max_tasks_per_file=1,
+                avg_tasks_per_file=1.0
+            ),
+            category=ComplexityCategory.SIMPLE,
+            integration_points=[]
+        )
+
+        diagram = generate_component_architecture(role_info, complexity_report)
+
+        assert diagram is not None
+        assert "vars" in diagram
+        assert "3 variables" in diagram
+        assert "defaults" not in diagram  # No defaults section
+
+    def test_generate_with_multiple_task_files(self):
+        """Test diagram with multiple task files."""
+        role_info = {
+            'name': 'test_role',
+            'defaults': [{'file': 'main.yml', 'data': {'var1': 'value1'}}],
+            'vars': [],
+            'tasks': [
+                {'file': 'install.yml', 'tasks': [{'name': 'Install package'}] * 5},
+                {'file': 'configure.yml', 'tasks': [{'name': 'Configure app'}] * 10},
+                {'file': 'validate.yml', 'tasks': [{'name': 'Validate config'}] * 3}
+            ],
+            'handlers': []
+        }
+
+        complexity_report = ComplexityReport(
+            metrics=ComplexityMetrics(
+                total_tasks=18,
+                task_files=3,
+                handlers=0,
+                conditional_tasks=5,
+                max_tasks_per_file=10,
+                avg_tasks_per_file=6.0
+            ),
+            category=ComplexityCategory.MEDIUM,
+            integration_points=[]
+        )
+
+        diagram = generate_component_architecture(role_info, complexity_report)
+
+        assert diagram is not None
+        assert "tasks_install_yml" in diagram
+        assert "tasks_configure_yml" in diagram
+        assert "tasks_validate_yml" in diagram
+        assert "5 tasks" in diagram
+        assert "10 tasks" in diagram
+        assert "3 tasks" in diagram
+        # Should show flow from first to last
+        assert "tasks_install_yml --> tasks_validate_yml" in diagram
+
+    def test_generate_with_handlers(self):
+        """Test diagram with handlers."""
+        role_info = {
+            'name': 'test_role',
+            'defaults': [],
+            'vars': [],
+            'tasks': [{'file': 'main.yml', 'tasks': [{'name': 'Task 1'}, {'name': 'Task 2'}]}],
+            'handlers': [
+                {'name': 'restart service', 'module': 'service'},
+                {'name': 'reload config', 'module': 'command'}
+            ]
+        }
+
+        complexity_report = ComplexityReport(
+            metrics=ComplexityMetrics(
+                total_tasks=2,
+                task_files=1,
+                handlers=2,
+                conditional_tasks=0,
+                max_tasks_per_file=2,
+                avg_tasks_per_file=2.0
+            ),
+            category=ComplexityCategory.SIMPLE,
+            integration_points=[]
+        )
+
+        diagram = generate_component_architecture(role_info, complexity_report)
+
+        assert diagram is not None
+        assert "handlers" in diagram
+        assert "2 handlers" in diagram
+        assert "notify" in diagram
+        assert "handlerStyle" in diagram
+
+    def test_generate_with_external_integrations(self):
+        """Test diagram with external system integrations."""
+        role_info = {
+            'name': 'test_role',
+            'defaults': [],
+            'vars': [],
+            'tasks': [
+                {
+                    'file': 'api_calls.yml',
+                    'tasks': [
+                        {'name': 'Call API', 'module': 'uri'},
+                        {'name': 'Download file', 'module': 'get_url'}
+                    ]
+                }
+            ],
+            'handlers': []
+        }
+
+        integration_points = [
+            IntegrationPoint(
+                type=IntegrationType.API,
+                system_name="REST APIs",
+                modules_used=["uri", "get_url"],
+                task_count=2,
+                uses_credentials=True
+            )
+        ]
+
+        complexity_report = ComplexityReport(
+            metrics=ComplexityMetrics(
+                total_tasks=2,
+                task_files=1,
+                handlers=0,
+                conditional_tasks=0,
+                external_integrations=1,
+                max_tasks_per_file=2,
+                avg_tasks_per_file=2.0
+            ),
+            category=ComplexityCategory.SIMPLE,
+            integration_points=integration_points
+        )
+
+        diagram = generate_component_architecture(role_info, complexity_report)
+
+        assert diagram is not None
+        assert "external" in diagram
+        assert "External Systems" in diagram
+        assert "REST APIs" in diagram
+        assert "externalStyle" in diagram
+        # Should show connection from tasks to external
+        assert "tasks_api_calls_yml --> external" in diagram
+
+    def test_generate_complex_role_full_diagram(self):
+        """Test diagram for complex role with all components."""
+        role_info = {
+            'name': 'complex_role',
+            'defaults': [{'file': 'main.yml', 'data': {'var' + str(i): f'val{i}' for i in range(15)}}],
+            'vars': [{'file': 'main.yml', 'data': {'var' + str(i): f'val{i}' for i in range(8)}}],
+            'tasks': [
+                {'file': 'install.yml', 'tasks': [{'name': f'Task {i}', 'module': 'package'} for i in range(12)]},
+                {'file': 'configure.yml', 'tasks': [{'name': f'Task {i}', 'module': 'uri'} for i in range(18)]}
+            ],
+            'handlers': [
+                {'name': 'restart app', 'module': 'service'},
+                {'name': 'reload config', 'module': 'command'},
+                {'name': 'notify admin', 'module': 'mail'}
+            ]
+        }
+
+        integration_points = [
+            IntegrationPoint(
+                type=IntegrationType.API,
+                system_name="REST APIs",
+                modules_used=["uri"],
+                task_count=18,
+                uses_credentials=False
+            )
+        ]
+
+        complexity_report = ComplexityReport(
+            metrics=ComplexityMetrics(
+                total_tasks=30,
+                task_files=2,
+                handlers=3,
+                conditional_tasks=10,
+                external_integrations=1,
+                max_tasks_per_file=18,
+                avg_tasks_per_file=15.0
+            ),
+            category=ComplexityCategory.COMPLEX,
+            integration_points=integration_points
+        )
+
+        diagram = generate_component_architecture(role_info, complexity_report)
+
+        assert diagram is not None
+        # Check all major sections present
+        assert "subgraph Variables" in diagram
+        assert "subgraph Tasks" in diagram
+        assert "15 variables" in diagram
+        assert "8 variables" in diagram
+        assert "12 tasks" in diagram
+        assert "18 tasks" in diagram
+        assert "3 handlers" in diagram
+        assert "REST APIs" in diagram
+        # Check data flow
+        assert "defaults --> tasks_install_yml" in diagram
+        assert "vars --> tasks_configure_yml" in diagram
+        assert "notify" in diagram
+        assert "tasks_configure_yml --> external" in diagram
+
+    def test_generate_with_no_role_info(self):
+        """Test that None is returned when role_info is None."""
+        diagram = generate_component_architecture(None, None)
+        assert diagram is None
+
+    def test_should_generate_for_complex_role(self):
+        """Test decision logic for COMPLEX role."""
+        complexity_report = ComplexityReport(
+            metrics=ComplexityMetrics(
+                total_tasks=30,
+                task_files=5,
+                handlers=2,
+                conditional_tasks=10,
+                max_tasks_per_file=10,
+                avg_tasks_per_file=6.0
+            ),
+            category=ComplexityCategory.COMPLEX,
+            integration_points=[]
+        )
+
+        assert should_generate_architecture_diagram(complexity_report) is True
+
+    def test_should_generate_for_medium_with_high_composition(self):
+        """Test decision logic for MEDIUM role with high composition score."""
+        complexity_report = ComplexityReport(
+            metrics=ComplexityMetrics(
+                total_tasks=15,
+                task_files=3,
+                handlers=1,
+                conditional_tasks=5,
+                role_dependencies=2,  # composition_score = 2*2 = 4
+                role_includes=1,      # +1 = 5
+                task_includes=0,
+                max_tasks_per_file=7,
+                avg_tasks_per_file=5.0
+            ),
+            category=ComplexityCategory.MEDIUM,
+            integration_points=[]
+        )
+
+        assert should_generate_architecture_diagram(complexity_report) is True
+
+    def test_should_not_generate_for_simple_role(self):
+        """Test decision logic for SIMPLE role."""
+        complexity_report = ComplexityReport(
+            metrics=ComplexityMetrics(
+                total_tasks=5,
+                task_files=1,
+                handlers=0,
+                conditional_tasks=0,
+                max_tasks_per_file=5,
+                avg_tasks_per_file=5.0
+            ),
+            category=ComplexityCategory.SIMPLE,
+            integration_points=[]
+        )
+
+        assert should_generate_architecture_diagram(complexity_report) is False
+
+    def test_should_not_generate_for_medium_low_composition(self):
+        """Test decision logic for MEDIUM role with low composition score."""
+        complexity_report = ComplexityReport(
+            metrics=ComplexityMetrics(
+                total_tasks=12,
+                task_files=2,
+                handlers=1,
+                conditional_tasks=3,
+                role_dependencies=0,  # composition_score = 0
+                role_includes=0,
+                task_includes=0,
+                max_tasks_per_file=7,
+                avg_tasks_per_file=6.0
+            ),
+            category=ComplexityCategory.MEDIUM,
+            integration_points=[]
+        )
+
+        assert should_generate_architecture_diagram(complexity_report) is False
+
+    def test_should_not_generate_with_no_report(self):
+        """Test decision logic with no complexity report."""
+        assert should_generate_architecture_diagram(None) is False
+
+    def test_diagram_has_valid_mermaid_syntax(self):
+        """Test that generated diagram has valid Mermaid syntax."""
+        role_info = {
+            'name': 'test_role',
+            'defaults': [{'file': 'main.yml', 'data': {'var1': 'value1'}}],
+            'vars': [],
+            'tasks': [{'file': 'main.yml', 'tasks': [{'name': 'Task 1'}]}],
+            'handlers': [{'name': 'handler1', 'module': 'service'}]
+        }
+
+        complexity_report = ComplexityReport(
+            metrics=ComplexityMetrics(
+                total_tasks=1,
+                task_files=1,
+                handlers=1,
+                conditional_tasks=0,
+                max_tasks_per_file=1,
+                avg_tasks_per_file=1.0
+            ),
+            category=ComplexityCategory.SIMPLE,
+            integration_points=[]
+        )
+
+        diagram = generate_component_architecture(role_info, complexity_report)
+
+        # Check basic Mermaid syntax
+        assert diagram.startswith("graph TB")
+        assert "subgraph" in diagram
+        assert "end" in diagram
+        assert "-->" in diagram or "-.notify.->" in diagram
+        assert "classDef" in diagram
+        assert "class" in diagram
