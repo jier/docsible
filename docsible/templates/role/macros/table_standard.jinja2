@@ -1,37 +1,30 @@
-{% from 'macros/table_utils.jinja2' import 
+{% from 'macros/table_utils.jinja2' import
   detect_dynamic_columns,
   format_key_name,
   format_variable_value,
   render_repo_link_for_key
 %}
-
 {% macro render_header(columns) -%}
 | Var | Type | Value |
 {%- if columns.has_choices %} Choices |{% endif %}
 {%- if columns.has_required %} Required |{% endif %}
 {%- if columns.has_title %} Title |{% endif %}
-
 |-----|------|-------|
 {%- if columns.has_choices %}---------|{% endif %}
 {%- if columns.has_required %}----------|{% endif %}
 {%- if columns.has_title %}-------|{% endif %}
 {%- endmacro %}
-
-
 {% macro render_row(key, details, file_path, role, columns) -%}
 | [{{ format_key_name(key) }}]({{ render_repo_link_for_key(key, file_path, details.line, role) }}) | {{ details.value.__class__.__name__ | escape_table_cell }} | {{ format_variable_value(details) }} |
 {%- if columns.has_choices %} {{ details.choices | escape_table_cell }} |{% endif %}
 {%- if columns.has_required %} {{ details.required | escape_table_cell }} |{% endif %}
 {%- if columns.has_title %} {{ details.title | escape_table_cell }} |{% endif %}
 {%- endmacro %}
-
-
 {% macro render_descriptions_section(file_data, file_name) -%}
-  {%- set ns = namespace(has_descriptions=false) -%}
-  {%- for key, details in file_data.items() -%}
-    {%- if details.description != None -%}{% set ns.has_descriptions = true %}{% endif -%}
+{%- set ns = namespace(has_descriptions=false) -%}
+{%- for key, details in file_data.items() -%}
+{%- if details.description != None -%}{% set ns.has_descriptions = true %}{% endif -%}
   {%- endfor -%}
-  
   {%- if ns.has_descriptions %}
 <details>
   <summary>
@@ -54,7 +47,6 @@
 </details>
   {%- endif %}
 {%- endmacro %}
-
 {% macro render_table(file_data, file_path, role) -%}
 {%- set columns = detect_dynamic_columns(file_data) -%}
 {{ render_header(columns) }}
