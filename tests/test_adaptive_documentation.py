@@ -184,7 +184,8 @@ class TestAdaptiveDocumentation:
 
         result = template.render(
             complexity_report=None,
-            state_diagram="stateDiagram-v2\n    [*] --> Done"
+            state_diagram="stateDiagram-v2\n    [*] --> Done",
+            mermaid_code_per_file={"main.yml": "graph TD\n    A --> B"}
         )
 
         # Should include the fallback standard diagrams

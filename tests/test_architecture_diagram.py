@@ -259,9 +259,10 @@ class TestArchitectureDiagram:
         assert "18 tasks" in diagram
         assert "3 handlers" in diagram
         assert "REST APIs" in diagram
-        # Check data flow
+        # Check data flow (variables flow to first task file)
         assert "defaults --> tasks_install_yml" in diagram
-        assert "vars --> tasks_configure_yml" in diagram
+        assert "vars --> tasks_install_yml" in diagram
+        assert "tasks_install_yml --> tasks_configure_yml" in diagram
         assert "notify" in diagram
         assert "tasks_configure_yml --> external" in diagram
 
