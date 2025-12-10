@@ -1,7 +1,0 @@
-{% if role.handlers %}
-| Handler Name | Module | Listens To | File |
-|--------------|--------|------------|------|
-{% for handler in role.handlers %}
-| {{ handler.name | escape }} | `{{ handler.module | escape }}` | {{ handler.listen | escape if handler.listen else 'N/A' }} | `{{ handler.file | escape }}` |
-{% endfor %}
-{% endif %}

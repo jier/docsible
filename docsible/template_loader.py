@@ -37,8 +37,16 @@ class TemplateLoader:
             template_dir = Path(__file__).parent / 'templates'
 
         self.template_dir = template_dir
+        # Define search paths in priority order
+        # When a template does {% import 'macros/utils.j2' %},
+        # Jinja2 will search these paths in order:
+        search_paths = [
+            str(self.template_dir / 'role'),        # 1. role/macros/utils.j2
+            str(self.template_dir / 'collection'),  # 2. collection/macros/utils.j2  
+            str(self.template_dir),                 # 3. macros/utils.j2 (fallback)
+        ]
         self.env = Environment(
-            loader=FileSystemLoader(str(template_dir)),
+            loader=FileSystemLoader(search_paths),
             trim_blocks=False,
             lstrip_blocks=False,
             keep_trailing_newline=True
@@ -47,7 +55,7 @@ class TemplateLoader:
         # Register custom filters for safe table rendering
         self.env.filters.update(TEMPLATE_FILTERS)
 
-        logger.debug(f"Initialized TemplateLoader with template_dir: {template_dir}")
+        logger.debug(f"Initialized TemplateLoader with search paths: {search_paths}")
 
     def get_template(self, name: str) -> Template:
         """Load template by name.
@@ -85,7 +93,8 @@ class TemplateLoader:
         """
         template_map = {
             'standard': 'role/standard.jinja2',
-            'hybrid': 'role/hybrid.jinja2',
+            'standard_modular': 'role/standard_modular.jinja2',
+            'hybrid': 'role/hybrid.jinja2'
         }
 
         template_name = template_map.get(template_type)

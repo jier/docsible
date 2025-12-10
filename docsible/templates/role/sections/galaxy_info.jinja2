@@ -20,32 +20,32 @@ Description: {{ role.meta.galaxy_info.description or 'Not available.' }}
   | Field                | Value           |
   |--------------------- |-----------------|
   {% if role.docsible.description %}
-    | Functional description | {{ role.docsible.description  }} |
+    | Functional description | {{ role.docsible.description | escape_table_cell  }} |
   {% endif %}
   {% if role.docsible.requester %}
-    | Requester            | {{ role.docsible.requester  }} |
+    | Requester            | {{ role.docsible.requester | escape_table_cell  }} |
   {% endif %}
-  {% if role.docsible.users %}| Users                | {{ role.docsible.users  }} |{% endif %}
-  {% if role.docsible.dt_dev %}| Date dev             | {{ role.docsible.dt_dev  }} |{% endif %}
-  {% if role.docsible.dt_prod %}| Date prod            | {{ role.docsible.dt_prod  }} |{% endif %}
+  {% if role.docsible.users %}| Users                | {{ role.docsible.users | escape_table_cell  }} |{% endif %}
+  {% if role.docsible.dt_dev %}| Date dev             | {{ role.docsible.dt_dev | escape_table_cell  }} |{% endif %}
+  {% if role.docsible.dt_prod %}| Date prod            | {{ role.docsible.dt_prod | escape_table_cell  }} |{% endif %}
   {% if role.docsible.dt_update %}
     | Readme update        | {{ role.docsible.dt_update  }} |
   {% endif %}
-  {% if role.docsible.version %}| Version              | {{ role.docsible.version  }} |{% endif %}
+  {% if role.docsible.version %}| Version              | {{ role.docsible.version | escape_table_cell  }} |{% endif %}
   {% if role.docsible.time_saving %}
-    | Time Saving          | {{ role.docsible.time_saving  }} |
+    | Time Saving          | {{ role.docsible.time_saving | escape_table_cell  }} |
   {% endif %}
   {% if role.docsible.category %}
-    | Category             | {{ role.docsible.category  }} |
+    | Category             | {{ role.docsible.category | escape_table_cell  }} |
   {% endif %}
   {% if role.docsible.subCategory %}
-    | Sub category         | {{ role.docsible.subCategory  }} |
+    | Sub category         | {{ role.docsible.subCategory | escape_table_cell  }} |
   {% endif %}
-  {% if role.docsible.aap_hub %}| AAP Hub              | {{ role.docsible.aap_hub  }} |{% endif %}
+  {% if role.docsible.aap_hub %}| AAP Hub              | {{ role.docsible.aap_hub | escape_table_cell  }} |{% endif %}
   {% if role.docsible.automation_kind %}
-    | Automation Kind      | {{ role.docsible.automation_kind  }} |
+    | Automation Kind      | {{ role.docsible.automation_kind | escape_table_cell  }} |
   {% endif %}
   {% if role.docsible.critical %}
-    | Critical ⚠️          | {{ role.docsible.critical  }} |
+    | Critical ⚠️          | {{ role.docsible.critical  | escape_table_cell }} |
   {% endif %}
 {% endif %}

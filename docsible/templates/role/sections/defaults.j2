@@ -1,4 +1,0 @@
-{% for defaults_file in role.defaults %}
-#### File: defaults/{{ defaults_file.file }}
-{{ tables.render_variable_table(defaults_file.data, 'defaults/' ~ defaults_file.file, role) }}
-{% endfor %}

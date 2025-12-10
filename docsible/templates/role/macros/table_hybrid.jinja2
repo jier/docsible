@@ -1,0 +1,22 @@
+{% from 'macros/table_utils.jinja2' import render_repo_link_for_key %}
+
+{% macro format_packed_description(details) -%}
+  {# Combines title + description + required + choices #}
+{%- endmacro %}
+
+{% macro format_value(details) -%}
+  {# Shows *See YAML* for complex types #}
+{%- endmacro %}
+
+{% macro render_row(key, details, file_path, role) -%}
+  {# Single row for hybrid style #}
+{%- endmacro %}
+
+{% macro render_table(file_data, file_path, role) -%}
+  {# Main entry point #}
+  | Variable | Default Value | Type | Description |
+  |----------|---------------|------|-------------|
+  {% for key, details in file_data.items() %}
+    {{ render_row(key, details, file_path, role) }}
+  {% endfor %}
+{%- endmacro %}

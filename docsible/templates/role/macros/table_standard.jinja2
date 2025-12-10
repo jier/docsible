@@ -1,0 +1,28 @@
+{% from 'macros/table_utils.jinja2' import 
+  detect_dynamic_columns,
+  format_key_name,
+  format_variable_value,
+  render_repo_link_for_key
+%}
+
+{% macro render_header(columns) -%}
+  {# Dynamic header generation #}
+{%- endmacro %}
+
+{% macro render_row(key, details, file_path, role, columns) -%}
+  {# Single row with all standard logic #}
+{%- endmacro %}
+
+{% macro render_descriptions_section(file_data, file_name) -%}
+  {# Collapsible HTML table #}
+{%- endmacro %}
+
+{% macro render_table(file_data, file_path, role) -%}
+  {# Main entry point - composes all pieces #}
+  {% set columns = detect_dynamic_columns(file_data) %}
+  {{ render_header(columns) }}
+  {% for key, details in file_data.items() %}
+    {{ render_row(key, details, file_path, role, columns) }}
+  {% endfor %}
+  {{ render_descriptions_section(file_data, file_path) }}
+{%- endmacro %}

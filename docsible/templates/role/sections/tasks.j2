@@ -1,8 +1,0 @@
-{% for task_file in role.tasks %}
-#### File: tasks/{{ task_file.file }}
-| Name | Module | Has Conditions |
-|------|--------|----------------|
-{% for task in task_file.tasks %}
-| {{ task.name | escape }} | `{{ task.module | escape }}` | {{ 'Yes' if task.when else 'No' }} |
-{% endfor %}
-{% endfor %}

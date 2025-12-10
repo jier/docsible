@@ -1,6 +1,6 @@
-{% macro render_repo_link(repo, role_name, file_path, line, repo_type, branch) -%}
+{% macro render_repo_link(repo, role_name, file_path, line, repo_type, branch, in_collection) -%}
   {% if repo and file_path and line is not none %}
-    {% if role_name %}
+    {% if in_collection %}
       {% set full_path = 'roles/' ~ role_name ~ '/' ~ file_path %}
     {% else %}
       {% set full_path = file_path %}

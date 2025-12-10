@@ -537,7 +537,7 @@ def doc_the_role(
             logger.warning(f"Could not generate state diagram: {e}")
 
     # Determine template type
-    template_type = 'hybrid' if hybrid else 'standard'
+    template_type = 'hybrid' if hybrid else 'standard_modular'
 
     # Render README
     renderer = ReadmeRenderer(backup=not no_backup)
