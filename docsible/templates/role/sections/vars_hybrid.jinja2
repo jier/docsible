@@ -1,0 +1,8 @@
+{% if role.vars %}
+### Role Variables
+The following variables are defined in `vars/`:
+{% for vars_file in role.vars %}
+#### File: `vars/{{ vars_file.file }}`
+{{ tables.render_variable_table_hybrid(vars_file.data, 'vars/' ~ vars_file.file, role) }}
+{% endfor %}
+{% endif %}

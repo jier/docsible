@@ -1,0 +1,30 @@
+{% if role.meta %}
+{% if role.meta.galaxy_info %}
+### Galaxy Info
+- **Author**: {{ role.meta.galaxy_info.author | default('Not specified') }}
+- **Company**: {{ role.meta.galaxy_info.company | default('Not specified') }}
+- **License**: {{ role.meta.galaxy_info.license | default('Not specified') }}
+- **Min Ansible Version**: {{ role.meta.galaxy_info.min_ansible_version | default('Not specified') }}
+{% if role.meta.galaxy_info.platforms %}
+#### Supported Platforms
+{% for platform in role.meta.galaxy_info.platforms %}
+- {{ platform.name }}{% if platform.versions %}: {{ platform.versions | join(', ') }}{% endif %}
+{% endfor %}
+{% endif %}
+{% if role.meta.galaxy_info.galaxy_tags %}
+#### Galaxy Tags
+{{ role.meta.galaxy_info.galaxy_tags | join(', ') }}
+{% endif %}
+{% endif %}
+{% endif %}
+{% if role.docsible %}
+---
+## Documentation Metadata
+{% if role.docsible.description %}**Description**: {{ role.docsible.description }}{% endif %}
+{% if role.docsible.version %}**Version**: {{ role.docsible.version }}{% endif %}
+{% if role.docsible.category %}
+**Category**: {{ role.docsible.category }}
+{% if role.docsible.subCategory %}> {{ role.docsible.subCategory }}{% endif %}
+{% endif %}
+{% if role.docsible.dt_update %}**Last Updated**: {{ role.docsible.dt_update }}{% endif %}
+{% endif %}

@@ -1,0 +1,10 @@
+{% if role.defaults %}
+### Default Variables
+The following variables are defined in `defaults/` with their default values:
+{% for defaults_file in role.defaults %}
+#### File: `defaults/{{ defaults_file.file }}`
+{{ tables.render_variable_table_hybrid(defaults_file.data, 'defaults/' ~ defaults_file.file, role) }}
+{% endfor %}
+{% else %}
+*No default variables defined for this role.*
+{% endif %}

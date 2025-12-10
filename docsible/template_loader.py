@@ -94,7 +94,8 @@ class TemplateLoader:
         template_map = {
             'standard': 'role/standard.jinja2',
             'standard_modular': 'role/standard_modular.jinja2',
-            'hybrid': 'role/hybrid.jinja2'
+            'hybrid': 'role/hybrid.jinja2',
+            'hybrid_modular': 'role/hybrid_modular.jinja2'
         }
 
         template_name = template_map.get(template_type)

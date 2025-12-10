@@ -1,0 +1,42 @@
+{% if sequence_diagram_high_level %}
+### Execution Sequence
+<!-- DOCSIBLE GENERATED -->
+```mermaid
+{{ sequence_diagram_high_level }}
+```
+*This diagram shows how the playbook interacts with roles, dependencies, and handlers.*
+{% endif %}
+{% if sequence_diagram_detailed %}
+### Detailed Execution Sequence
+This sequence diagram shows the detailed interaction between the role, tasks, includes, and handlers:
+```mermaid
+{{ sequence_diagram_detailed }}
+```
+---
+{% endif %}
+{% if role.playbook.graph %}
+### Playbook Flow (Flowchart)
+```mermaid
+{{ role.playbook.graph }}
+```
+{% endif %}
+{% if state_diagram %}
+### State Transition Diagram
+This diagram shows the workflow phases and state transitions of the role.
+```mermaid
+{{ state_diagram }}
+```
+{% endif %}
+{% if not simplify_diagrams %}
+{% for task_info in role.tasks %}
+{% if mermaid_code_per_file.get(task_info.file) %}
+### Tasks in `{{ task_info.file }}` (Flowchart)
+```mermaid
+{{ mermaid_code_per_file[task_info.file] }}
+```
+{% endif %}
+{% endfor %}
+{% endif %}
+{% if not role.tasks and not role.playbook.graph and not sequence_diagram_detailed %}
+*No task flow graph generated. Use `--graph` flag to generate task execution diagrams.*
+{% endif %}
