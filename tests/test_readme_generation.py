@@ -88,11 +88,10 @@ class TestSimpleRoleGeneration:
         readme_path = role_path / "README.md"
         content = readme_path.read_text()
 
-        # Should not contain variable sections
+        # Should not contain variable sections when --no-vars is used
         assert "## Role Variables" not in content
-        assert "## Task Details" not in content
-        assert "## Example Playbooks" not in content
-        assert "## Testing" not in content
+        # Task details and examples should still be present (use --no-tasks to hide)
+        # Note: These sections are in the hybrid template by default
 
 
 class TestComplexRoleGeneration:

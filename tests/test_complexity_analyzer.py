@@ -12,6 +12,7 @@ from docsible.analyzers.complexity_analyzer import (
     ComplexityCategory,
     ComplexityMetrics,
     IntegrationType,
+    IntegrationPoint,
 )
 
 
@@ -505,10 +506,10 @@ def test_recommendations_for_multiple_integrations():
     )
 
     integration_points = [
-        {"type": "api", "system_name": "REST API", "uses_credentials": True},
-        {"type": "database", "system_name": "PostgreSQL", "uses_credentials": True},
-        {"type": "vault", "system_name": "Vault", "uses_credentials": True},
-        {"type": "api", "system_name": "GraphQL API", "uses_credentials": False},
+        IntegrationPoint(type=IntegrationType.API, system_name="REST API", modules_used=["uri"], task_count=2, uses_credentials=True),
+        IntegrationPoint(type=IntegrationType.DATABASE, system_name="PostgreSQL", modules_used=["postgresql_db"], task_count=3, uses_credentials=True),
+        IntegrationPoint(type=IntegrationType.VAULT, system_name="Vault", modules_used=["hashi_vault"], task_count=1, uses_credentials=True),
+        IntegrationPoint(type=IntegrationType.API, system_name="GraphQL API", modules_used=["uri"], task_count=1, uses_credentials=False),
     ]
 
     recommendations = generate_recommendations(metrics, ComplexityCategory.MEDIUM, integration_points)

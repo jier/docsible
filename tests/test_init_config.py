@@ -17,13 +17,13 @@ def config_examples_path() -> Path:
 class TestInitConfigCommand:
     """Test the init config command."""
 
-    def test_init_config_creates_file(self, config_examples_path):
+    def test_init_config_creates_file(self, tmp_path):
         """Test that init-config creates .docsible.yml file."""
         runner = CliRunner()
-        result = runner.invoke(init_config, ['--path', str(config_examples_path)])
+        result = runner.invoke(init_config, ['--path', str(tmp_path)])
 
-        assert result.exit_code == 0
-        config_path = config_examples_path / ".docsible.yml"
+        assert result.exit_code == 0, f"Command failed with: {result.output}"
+        config_path = tmp_path / ".docsible.yml"
         assert config_path.exists()
 
     def test_init_config_content(self, tmp_path):
@@ -72,9 +72,10 @@ class TestInitConfigCommand:
         runner = CliRunner()
         result = runner.invoke(init_config, ['--path', str(tmp_path)])
 
-       # Verify command succeeded
-        assert result.exit_code == 0
-        # Command should indicate file exists (not exit_code 0)
+        # Command should fail when file exists without --force
+        assert result.exit_code == 1
+        assert "already exists" in result.output.lower()
+
         # The file should remain unchanged
         with open(config_path) as f:
             config = yaml.safe_load(f)
