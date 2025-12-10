@@ -25,7 +25,10 @@ class IntegrationType(str, Enum):
     API = "api"
     DATABASE = "database"
     VAULT = "vault"
-    # Future: CLOUD, CONTAINER, MONITORING, etc.
+    CLOUD = "cloud"
+    NETWORK = "network"
+    CONTAINER = "container"
+    MONITORING = "monitoring"
 
 
 class IntegrationPoint(BaseModel):
@@ -35,6 +38,11 @@ class IntegrationPoint(BaseModel):
     modules_used: List[str]
     task_count: int
     uses_credentials: bool = False
+    # Type-specific details
+    endpoints: List[str] = Field(default_factory=list, description="API endpoints or URLs")
+    ports: List[int] = Field(default_factory=list, description="Network ports used")
+    services: List[str] = Field(default_factory=list, description="Cloud services or container images")
+    details: Dict[str, Any] = Field(default_factory=dict, description="Additional type-specific details")
 
 
 class ComplexityMetrics(BaseModel):
@@ -234,6 +242,29 @@ def detect_integrations(role_info: Dict[str, Any]) -> List[IntegrationPoint]:
         'community.mysql', 'community.postgresql', 'community.mongodb'
     ]
     VAULT_MODULES = ['hashi_vault', 'community.hashi_vault']
+    CLOUD_MODULES = [
+        'aws_', 'amazon.aws', 'ec2', 's3', 'rds', 'lambda',  # AWS
+        'azure_', 'azure.azcollection',  # Azure
+        'gcp_', 'google.cloud',  # GCP
+        'openstack', 'os_'  # OpenStack
+    ]
+    NETWORK_MODULES = [
+        'firewalld', 'iptables', 'ufw',  # Firewall
+        'nmcli', 'network', 'route',  # Network config
+        'cisco', 'junos', 'vyos',  # Network devices
+        'ansible.builtin.iptables', 'community.general.ufw'
+    ]
+    CONTAINER_MODULES = [
+        'docker', 'docker_', 'community.docker',  # Docker
+        'podman', 'containers.podman',  # Podman
+        'kubernetes', 'k8s', 'community.kubernetes'  # Kubernetes
+    ]
+    MONITORING_MODULES = [
+        'datadog', 'newrelic',  # APM
+        'prometheus', 'grafana',  # Metrics
+        'pagerduty', 'opsgenie',  # Alerting
+        'nagios', 'zabbix'  # Monitoring
+    ]
 
     # Ansible composition modules to exclude
     COMPOSITION_MODULES = [
@@ -260,6 +291,14 @@ def detect_integrations(role_info: Dict[str, Any]) -> List[IntegrationPoint]:
                 int_type = IntegrationType.DATABASE
             elif any(v in module for v in VAULT_MODULES):
                 int_type = IntegrationType.VAULT
+            elif any(module.startswith(cloud) or cloud in module for cloud in CLOUD_MODULES):
+                int_type = IntegrationType.CLOUD
+            elif any(module.startswith(net) or net in module for net in NETWORK_MODULES):
+                int_type = IntegrationType.NETWORK
+            elif any(module.startswith(cont) or cont in module for cont in CONTAINER_MODULES):
+                int_type = IntegrationType.CONTAINER
+            elif any(module.startswith(mon) or mon in module for mon in MONITORING_MODULES):
+                int_type = IntegrationType.MONITORING
 
             if int_type:
                 if int_type not in integration_map:
@@ -281,11 +320,20 @@ def detect_integrations(role_info: Dict[str, Any]) -> List[IntegrationPoint]:
             _task_uses_credentials(t['task']) for t in tasks
         )
 
+        # Extract type-specific details
+        endpoints = _extract_endpoints([t['task'] for t in tasks]) if int_type == IntegrationType.API else []
+        ports = _extract_ports([t['task'] for t in tasks]) if int_type == IntegrationType.NETWORK else []
+        services = _extract_services(modules_used, int_type)
+
         # Determine system name
         system_name = {
             IntegrationType.API: "REST APIs",
             IntegrationType.DATABASE: _detect_database_type(modules_used),
             IntegrationType.VAULT: "HashiCorp Vault",
+            IntegrationType.CLOUD: _detect_cloud_provider(modules_used),
+            IntegrationType.NETWORK: "Network Infrastructure",
+            IntegrationType.CONTAINER: _detect_container_platform(modules_used),
+            IntegrationType.MONITORING: _detect_monitoring_platform(modules_used),
         }.get(int_type, str(int_type))
 
         integration_points.append(IntegrationPoint(
@@ -294,9 +342,132 @@ def detect_integrations(role_info: Dict[str, Any]) -> List[IntegrationPoint]:
             modules_used=modules_used,
             task_count=task_count,
             uses_credentials=uses_credentials,
+            endpoints=endpoints,
+            ports=ports,
+            services=services,
         ))
 
     return integration_points
+
+
+def _extract_endpoints(tasks: List[Dict[str, Any]]) -> List[str]:
+    """Extract API endpoints/URLs from tasks."""
+    endpoints = []
+    for task in tasks:
+        # Check common URL parameters
+        for param in ['url', 'uri', 'dest', 'src']:
+            if param in task and isinstance(task[param], str):
+                url = task[param]
+                # Extract just the base URL/domain
+                if url.startswith(('http://', 'https://')):
+                    # Extract domain from URL
+                    from urllib.parse import urlparse
+                    parsed = urlparse(url)
+                    endpoint = f"{parsed.scheme}://{parsed.netloc}{parsed.path}"
+                    endpoints.append(endpoint)
+    return list(set(endpoints))[:5]  # Limit to first 5 unique endpoints
+
+
+def _extract_ports(tasks: List[Dict[str, Any]]) -> List[int]:
+    """Extract network ports from tasks."""
+    ports = []
+    for task in tasks:
+        # Check common port parameters
+        for param in ['port', 'ports', 'dest_port', 'source_port']:
+            if param in task:
+                port_val = task[param]
+                if isinstance(port_val, int):
+                    ports.append(port_val)
+                elif isinstance(port_val, str) and port_val.isdigit():
+                    ports.append(int(port_val))
+    return sorted(list(set(ports)))[:10]  # Limit to first 10 unique ports
+
+
+def _extract_services(modules: List[str], int_type: IntegrationType) -> List[str]:
+    """Extract service names based on integration type and modules used."""
+    services = []
+
+    if int_type == IntegrationType.CLOUD:
+        # Extract AWS services
+        aws_services = {
+            'ec2': 'EC2', 's3': 'S3', 'rds': 'RDS', 'lambda': 'Lambda',
+            'iam': 'IAM', 'vpc': 'VPC', 'elb': 'ELB', 'cloudformation': 'CloudFormation'
+        }
+        for module in modules:
+            for key, service in aws_services.items():
+                if key in module.lower():
+                    services.append(service)
+
+        # Azure/GCP detection
+        if any('azure' in m for m in modules):
+            services.append("Azure")
+        if any('gcp' in m or 'google' in m for m in modules):
+            services.append("GCP")
+
+    elif int_type == IntegrationType.CONTAINER:
+        if any('docker' in m for m in modules):
+            services.append("Docker")
+        if any('podman' in m for m in modules):
+            services.append("Podman")
+        if any('k8s' in m or 'kubernetes' in m for m in modules):
+            services.append("Kubernetes")
+
+    elif int_type == IntegrationType.MONITORING:
+        monitoring_map = {
+            'datadog': 'Datadog', 'newrelic': 'New Relic',
+            'prometheus': 'Prometheus', 'grafana': 'Grafana',
+            'pagerduty': 'PagerDuty', 'nagios': 'Nagios'
+        }
+        for module in modules:
+            for key, service in monitoring_map.items():
+                if key in module.lower():
+                    services.append(service)
+
+    return list(set(services))
+
+
+def _detect_cloud_provider(modules: List[str]) -> str:
+    """Detect specific cloud provider from modules."""
+    if any('aws' in m or 'ec2' in m or 's3' in m or 'amazon' in m for m in modules):
+        return "AWS (Amazon Web Services)"
+    elif any('azure' in m for m in modules):
+        return "Microsoft Azure"
+    elif any('gcp' in m or 'google.cloud' in m for m in modules):
+        return "Google Cloud Platform"
+    elif any('openstack' in m for m in modules):
+        return "OpenStack"
+    else:
+        return "Cloud Provider"
+
+
+def _detect_container_platform(modules: List[str]) -> str:
+    """Detect specific container platform from modules."""
+    if any('kubernetes' in m or 'k8s' in m for m in modules):
+        return "Kubernetes"
+    elif any('docker' in m for m in modules):
+        return "Docker"
+    elif any('podman' in m for m in modules):
+        return "Podman"
+    else:
+        return "Container Platform"
+
+
+def _detect_monitoring_platform(modules: List[str]) -> str:
+    """Detect specific monitoring platform from modules."""
+    if any('datadog' in m for m in modules):
+        return "Datadog"
+    elif any('prometheus' in m for m in modules):
+        return "Prometheus"
+    elif any('grafana' in m for m in modules):
+        return "Grafana"
+    elif any('newrelic' in m for m in modules):
+        return "New Relic"
+    elif any('nagios' in m for m in modules):
+        return "Nagios"
+    elif any('zabbix' in m for m in modules):
+        return "Zabbix"
+    else:
+        return "Monitoring Platform"
 
 
 def _task_uses_credentials(task: Dict[str, Any]) -> bool:

@@ -19,6 +19,18 @@ This diagram shows how the role integrates with external systems:
 {% if integration.uses_credentials %}
 - **Authentication:** ⚠️ Requires credentials (configure via vars or vault)
 {% endif %}
+{% if integration.endpoints %}
+- **Endpoints:**
+  {% for endpoint in integration.endpoints %}
+  - `{{ endpoint }}`
+  {% endfor %}
+{% endif %}
+{% if integration.ports %}
+- **Ports:** {{ integration.ports|join(', ') }}
+{% endif %}
+{% if integration.services %}
+- **Services:** {{ integration.services|join(', ') }}
+{% endif %}
 
 {% endfor %}
 {% endif %}
