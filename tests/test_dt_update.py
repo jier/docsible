@@ -4,6 +4,7 @@ import yaml
 from pathlib import Path
 from docsible.renderers.tag_manager import manage_docsible_file_keys
 
+
 def test_dt_update():
     """Test that manage_docsible_file_keys initializes file with default keys."""
     test_file = Path(".docsible_test_dt_update")
@@ -16,16 +17,16 @@ def test_dt_update():
         assert test_file.exists()
 
         # Verify result contains expected keys
-        assert 'dt_update' in result
-        assert 'description' in result
-        assert 'version' in result
+        assert "dt_update" in result
+        assert "description" in result
+        assert "version" in result
 
         # Read file and verify structure
         with open(test_file, "r") as f:
             data = yaml.safe_load(f)
 
         # dt_update should exist (even if empty initially)
-        assert 'dt_update' in data
+        assert "dt_update" in data
 
     finally:
         # Cleanup: remove the test file if it exists

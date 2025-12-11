@@ -8,8 +8,8 @@ from docsible.renderers.tag_manager import (
 )
 
 __all__ = [
-    'ReadmeRenderer',
-    'manage_docsible_file_keys',
-    'manage_docsible_tags',
-    'replace_between_tags',
+    "ReadmeRenderer",
+    "manage_docsible_file_keys",
+    "manage_docsible_tags",
+    "replace_between_tags",
 ]

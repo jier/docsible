@@ -73,11 +73,7 @@ class SequenceDiagramBuilder(DiagramBuilder):
             logger.debug(f"Added participant: {name}")
 
     def add_message(
-        self,
-        from_actor: str,
-        to_actor: str,
-        message: str,
-        arrow_type: str = "->>"
+        self, from_actor: str, to_actor: str, message: str, arrow_type: str = "->>"
     ) -> None:
         """Add a message between two actors.
 
@@ -127,12 +123,7 @@ class SequenceDiagramBuilder(DiagramBuilder):
         safe_actor = escape_pipes(actor)
         self.add_line(f"    deactivate {safe_actor}")
 
-    def add_note(
-        self,
-        actor: str,
-        note_text: str,
-        position: str = "right"
-    ) -> None:
+    def add_note(self, actor: str, note_text: str, position: str = "right") -> None:
         """Add a note next to an actor.
 
         Args:

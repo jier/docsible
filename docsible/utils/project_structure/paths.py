@@ -1,4 +1,5 @@
 """Path resolution utilities for Ansible project structures."""
+
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -34,42 +35,82 @@ def resolve_path(
     return base_path / default
 
 
-def get_defaults_dir(root_path: Path, config: Dict[str, Any], defaults: Dict[str, Any], role_path: Optional[Path] = None) -> Path:
+def get_defaults_dir(
+    root_path: Path,
+    config: Dict[str, Any],
+    defaults: Dict[str, Any],
+    role_path: Optional[Path] = None,
+) -> Path:
     """Get the defaults directory for a role."""
     return resolve_path("defaults_dir", config, defaults, role_path or root_path)
 
 
-def get_vars_dir(root_path: Path, config: Dict[str, Any], defaults: Dict[str, Any], role_path: Optional[Path] = None) -> Path:
+def get_vars_dir(
+    root_path: Path,
+    config: Dict[str, Any],
+    defaults: Dict[str, Any],
+    role_path: Optional[Path] = None,
+) -> Path:
     """Get the vars directory for a role."""
     return resolve_path("vars_dir", config, defaults, role_path or root_path)
 
 
-def get_tasks_dir(root_path: Path, config: Dict[str, Any], defaults: Dict[str, Any], role_path: Optional[Path] = None) -> Path:
+def get_tasks_dir(
+    root_path: Path,
+    config: Dict[str, Any],
+    defaults: Dict[str, Any],
+    role_path: Optional[Path] = None,
+) -> Path:
     """Get the tasks directory for a role."""
     return resolve_path("tasks_dir", config, defaults, role_path or root_path)
 
 
-def get_library_dir(root_path: Path, config: Dict[str, Any], defaults: Dict[str, Any], role_path: Optional[Path] = None) -> Path:
+def get_library_dir(
+    root_path: Path,
+    config: Dict[str, Any],
+    defaults: Dict[str, Any],
+    role_path: Optional[Path] = None,
+) -> Path:
     """Get the library directory for a role (custom modules)."""
     return resolve_path("library_dir", config, defaults, role_path or root_path)
 
 
-def get_lookup_plugins_dir(root_path: Path, config: Dict[str, Any], defaults: Dict[str, Any], role_path: Optional[Path] = None) -> Path:
+def get_lookup_plugins_dir(
+    root_path: Path,
+    config: Dict[str, Any],
+    defaults: Dict[str, Any],
+    role_path: Optional[Path] = None,
+) -> Path:
     """Get the lookup_plugins directory for a role."""
     return resolve_path("lookup_plugins_dir", config, defaults, role_path or root_path)
 
 
-def get_templates_dir(root_path: Path, config: Dict[str, Any], defaults: Dict[str, Any], role_path: Optional[Path] = None) -> Path:
+def get_templates_dir(
+    root_path: Path,
+    config: Dict[str, Any],
+    defaults: Dict[str, Any],
+    role_path: Optional[Path] = None,
+) -> Path:
     """Get the templates directory for a role."""
     return resolve_path("templates_dir", config, defaults, role_path or root_path)
 
 
-def get_meta_dir(root_path: Path, config: Dict[str, Any], defaults: Dict[str, Any], role_path: Optional[Path] = None) -> Path:
+def get_meta_dir(
+    root_path: Path,
+    config: Dict[str, Any],
+    defaults: Dict[str, Any],
+    role_path: Optional[Path] = None,
+) -> Path:
     """Get the meta directory for a role."""
     return resolve_path("meta_dir", config, defaults, role_path or root_path)
 
 
-def get_meta_file(root_path: Path, config: Dict[str, Any], defaults: Dict[str, Any], role_path: Optional[Path] = None) -> Optional[Path]:
+def get_meta_file(
+    root_path: Path,
+    config: Dict[str, Any],
+    defaults: Dict[str, Any],
+    role_path: Optional[Path] = None,
+) -> Optional[Path]:
     """
     Get the meta/main.yml or meta/main.yaml file for a role.
     Returns None if not found.
@@ -86,16 +127,17 @@ def get_meta_file(root_path: Path, config: Dict[str, Any], defaults: Dict[str, A
 
 
 def get_argument_specs_file(
-    root_path: Path, config: Dict[str, Any], defaults: Dict[str, Any], role_path: Optional[Path] = None
+    root_path: Path,
+    config: Dict[str, Any],
+    defaults: Dict[str, Any],
+    role_path: Optional[Path] = None,
 ) -> Optional[Path]:
     """
     Get the meta/argument_specs.yml or .yaml file for a role.
     Returns None if not found.
     """
     meta_dir = get_meta_dir(root_path, config, defaults, role_path)
-    specs_filename = config.get(
-        "argument_specs_file", defaults["argument_specs_file"]
-    )
+    specs_filename = config.get("argument_specs_file", defaults["argument_specs_file"])
 
     for ext in defaults["yaml_extensions"]:
         specs_path = meta_dir / f"{specs_filename}{ext}"
@@ -105,7 +147,13 @@ def get_argument_specs_file(
     return None
 
 
-def get_roles_dir(root_path: Path, config: Dict[str, Any], defaults: Dict[str, Any], project_type: str, collection_path: Optional[Path] = None) -> Path:
+def get_roles_dir(
+    root_path: Path,
+    config: Dict[str, Any],
+    defaults: Dict[str, Any],
+    project_type: str,
+    collection_path: Optional[Path] = None,
+) -> Path:
     """Get the roles directory for a collection or monorepo."""
     base = collection_path or root_path
 
@@ -131,7 +179,12 @@ def get_roles_dir(root_path: Path, config: Dict[str, Any], defaults: Dict[str, A
     return base / defaults["roles_dir"]
 
 
-def get_test_playbook(root_path: Path, config: Dict[str, Any], defaults: Dict[str, Any], role_path: Optional[Path] = None) -> Optional[Path]:
+def get_test_playbook(
+    root_path: Path,
+    config: Dict[str, Any],
+    defaults: Dict[str, Any],
+    role_path: Optional[Path] = None,
+) -> Optional[Path]:
     """Get the test playbook path for a role.
 
     Args:

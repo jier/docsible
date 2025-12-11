@@ -43,7 +43,7 @@ class ReadmeRenderer:
         self,
         role_info: Dict[str, Any],
         output_path: Path,
-        template_type: str = 'standard',
+        template_type: str = "standard",
         custom_template_path: Optional[str] = None,
         mermaid_code_per_file: Optional[Dict[str, str]] = None,
         sequence_diagram_high_level: Optional[str] = None,
@@ -59,7 +59,7 @@ class ReadmeRenderer:
         no_examples: bool = False,
         no_metadata: bool = False,
         no_handlers: bool = False,
-        append: bool = False
+        append: bool = False,
     ) -> None:
         """Render role README from template.
 
@@ -90,7 +90,7 @@ class ReadmeRenderer:
             template = self._load_custom_template(custom_template_path)
         else:
             template = self.template_loader.get_role_template(template_type)
-            if template_type == 'hybrid':
+            if template_type in ["hybrid", "hybrid_modular"]:
                 logger.info("Using hybrid template (manual + auto-generated sections)")
 
         # Render template
@@ -135,7 +135,7 @@ class ReadmeRenderer:
         no_examples: bool = False,
         no_metadata: bool = False,
         no_handlers: bool = False,
-        append: bool = False
+        append: bool = False,
     ) -> None:
         """Render collection README from template.
 
@@ -202,12 +202,13 @@ class ReadmeRenderer:
             file_path: Path to file to backup
         """
         timestamp = datetime.now().strftime(constants.BACKUP_TIMESTAMP_FORMAT)
-        stem = file_path.stem  
-        suffix = file_path.suffix 
+        stem = file_path.stem
+        suffix = file_path.suffix
         backup_path = file_path.with_name(f"{stem}_backup_{timestamp}{suffix}")
 
         try:
             import shutil
+
             shutil.copy2(file_path, backup_path)
             logger.info(f"Backup created: {backup_path}")
         except Exception as e:
@@ -248,8 +249,10 @@ class ReadmeRenderer:
             return new_content
 
         # Append mode: replace between tags or append to end
-        if (constants.DOCSIBLE_START_TAG in existing_content
-                and constants.DOCSIBLE_END_TAG in existing_content):
+        if (
+            constants.DOCSIBLE_START_TAG in existing_content
+            and constants.DOCSIBLE_END_TAG in existing_content
+        ):
             return replace_between_tags(existing_content, new_content)
         else:
             return f"{existing_content}\n{new_content}"

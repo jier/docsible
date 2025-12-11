@@ -8,10 +8,10 @@ from .generation import add_generation_options
 from .repository import add_repository_options
 
 __all__ = [
-    'add_path_options',
-    'add_output_options',
-    'add_content_options',
-    'add_template_options',
-    'add_generation_options',
-    'add_repository_options',
+    "add_path_options",
+    "add_output_options",
+    "add_content_options",
+    "add_template_options",
+    "add_generation_options",
+    "add_repository_options",
 ]

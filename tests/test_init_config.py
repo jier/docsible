@@ -1,6 +1,7 @@
 """
 Test cases for docsible-init-config command.
 """
+
 import os
 from pathlib import Path
 import pytest
@@ -9,10 +10,12 @@ from click.testing import CliRunner
 
 from docsible.cli import init_config
 
+
 @pytest.fixture
 def config_examples_path() -> Path:
     """Path to config examples."""
     return Path(__file__).parent / "fixtures" / "init_config_examples"
+
 
 class TestInitConfigCommand:
     """Test the init config command."""
@@ -20,7 +23,7 @@ class TestInitConfigCommand:
     def test_init_config_creates_file(self, tmp_path):
         """Test that init-config creates .docsible.yml file."""
         runner = CliRunner()
-        result = runner.invoke(init_config, ['--path', str(tmp_path)])
+        result = runner.invoke(init_config, ["--path", str(tmp_path)])
 
         assert result.exit_code == 0, f"Command failed with: {result.output}"
         config_path = tmp_path / ".docsible.yml"
@@ -30,7 +33,7 @@ class TestInitConfigCommand:
         """Test that init-config creates valid YAML with correct structure."""
         runner = CliRunner()
         # Pass --path explicitly to tell it where to create the file
-        result = runner.invoke(init_config, ['--path', str(tmp_path)])
+        result = runner.invoke(init_config, ["--path", str(tmp_path)])
 
         # Verify command succeeded
         assert result.exit_code == 0
@@ -42,24 +45,24 @@ class TestInitConfigCommand:
             config = yaml.safe_load(f)
 
         # Check for standard keys
-        assert "defaults_dir" in config['structure']
-        assert "vars_dir" in config['structure']
-        assert "tasks_dir" in config['structure']
-        assert "meta_dir" in config['structure']
-        assert "handlers_dir" in config['structure']
-        assert "yaml_extensions" in config['structure']
-        assert "library_dir" in config['structure']  
-        assert "templates_dir" in config['structure']
-        assert "lookup_plugins_dir" in config['structure'] 
+        assert "defaults_dir" in config["structure"]
+        assert "vars_dir" in config["structure"]
+        assert "tasks_dir" in config["structure"]
+        assert "meta_dir" in config["structure"]
+        assert "handlers_dir" in config["structure"]
+        assert "yaml_extensions" in config["structure"]
+        assert "library_dir" in config["structure"]
+        assert "templates_dir" in config["structure"]
+        assert "lookup_plugins_dir" in config["structure"]
 
         # Check default values
-        assert config['structure']["defaults_dir"] == "defaults"
-        assert config['structure']["vars_dir"] == "vars"
-        assert config['structure']["tasks_dir"] == "tasks"
-        assert config['structure']["library_dir"] == "library"    
-        assert config['structure']["templates_dir"] == "templates"
-        assert config['structure']["lookup_plugins_dir"] == "lookup_plugins"  
-        assert ".yml" in config['structure']["yaml_extensions"]
+        assert config["structure"]["defaults_dir"] == "defaults"
+        assert config["structure"]["vars_dir"] == "vars"
+        assert config["structure"]["tasks_dir"] == "tasks"
+        assert config["structure"]["library_dir"] == "library"
+        assert config["structure"]["templates_dir"] == "templates"
+        assert config["structure"]["lookup_plugins_dir"] == "lookup_plugins"
+        assert ".yml" in config["structure"]["yaml_extensions"]
 
     def test_init_config_not_overwrite_existing(self, tmp_path):
         """Test that init-config does not overwrite existing config without --force."""
@@ -70,7 +73,7 @@ class TestInitConfigCommand:
             yaml.dump(initial_content, f)
 
         runner = CliRunner()
-        result = runner.invoke(init_config, ['--path', str(tmp_path)])
+        result = runner.invoke(init_config, ["--path", str(tmp_path)])
 
         # Command should fail when file exists without --force
         assert result.exit_code == 1
@@ -143,6 +146,7 @@ class TestProjectStructureWithConfig:
         # Copy custom config to temp directory
         config_file = config_examples_path / "custom_directories_config.yml"
         import shutil
+
         shutil.copy(config_file, tmp_path / ".docsible.yml")
 
         # Create structure
@@ -173,6 +177,7 @@ class TestProjectStructureWithConfig:
         # Copy monorepo config
         config_file = config_examples_path / "monorepo_config.yml"
         import shutil
+
         shutil.copy(config_file, tmp_path / ".docsible.yml")
 
         # Create monorepo structure
@@ -207,7 +212,7 @@ class TestConfigValidation:
 
         # Create config with only some keys
         config_path = tmp_path / ".docsible.yml"
-        config_content = {"structure":{"defaults_dir": "my_defaults"}}
+        config_content = {"structure": {"defaults_dir": "my_defaults"}}
         with open(config_path, "w") as f:
             yaml.dump(config_content, f)
 

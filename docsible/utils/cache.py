@@ -13,7 +13,7 @@ from typing import Any, Callable, Dict, Optional, Tuple, TypeVar
 logger = logging.getLogger(__name__)
 
 # Type variables for generic caching
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 def cache_by_file_mtime(func: Callable[[Path], T]) -> Callable[[Path], T]:
@@ -74,9 +74,7 @@ def cache_by_file_mtime(func: Callable[[Path], T]) -> Callable[[Path], T]:
             return func(path)  # Let the original function handle the error
 
     def _clean_old_entries(
-        cache_dict: Dict[Tuple[str, float], T],
-        file_path: str,
-        current_mtime: float
+        cache_dict: Dict[Tuple[str, float], T], file_path: str, current_mtime: float
     ) -> None:
         """Remove old cache entries for the same file path.
 
@@ -86,7 +84,8 @@ def cache_by_file_mtime(func: Callable[[Path], T]) -> Callable[[Path], T]:
             current_mtime: Current modification time
         """
         keys_to_remove = [
-            key for key in cache_dict.keys()
+            key
+            for key in cache_dict.keys()
             if key[0] == file_path and key[1] != current_mtime
         ]
         for key in keys_to_remove:
@@ -94,10 +93,7 @@ def cache_by_file_mtime(func: Callable[[Path], T]) -> Callable[[Path], T]:
             logger.debug(f"Removed stale cache entry: {key}")
 
     # Add cache inspection methods
-    wrapper.cache_info = lambda: {
-        "size": len(cache),
-        "entries": list(cache.keys())
-    }
+    wrapper.cache_info = lambda: {"size": len(cache), "entries": list(cache.keys())}
     wrapper.cache_clear = lambda: cache.clear()
 
     return wrapper
@@ -132,7 +128,7 @@ def cache_by_content_hash(func: Callable[[str], T]) -> Callable[[str], T]:
     def wrapper(content: str) -> T:
         """Wrapper function that implements content-based caching."""
         # Generate hash of content
-        content_hash = hashlib.md5(content.encode('utf-8')).hexdigest()
+        content_hash = hashlib.md5(content.encode("utf-8")).hexdigest()
 
         # Return cached result if available
         if content_hash in cache:
@@ -147,10 +143,7 @@ def cache_by_content_hash(func: Callable[[str], T]) -> Callable[[str], T]:
         return result
 
     # Add cache inspection methods
-    wrapper.cache_info = lambda: {
-        "size": len(cache),
-        "hashes": list(cache.keys())
-    }
+    wrapper.cache_info = lambda: {"size": len(cache), "hashes": list(cache.keys())}
     wrapper.cache_clear = lambda: cache.clear()
 
     return wrapper

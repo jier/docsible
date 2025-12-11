@@ -4,7 +4,7 @@ import pytest
 from docsible.analyzers.complexity_analyzer import IntegrationPoint, IntegrationType
 from docsible.utils.integration_diagram import (
     generate_integration_boundary,
-    should_generate_integration_diagram
+    should_generate_integration_diagram,
 )
 
 
@@ -19,7 +19,7 @@ class TestIntegrationDiagram:
                 system_name="REST APIs",
                 modules_used=["uri", "get_url"],
                 task_count=3,
-                uses_credentials=True
+                uses_credentials=True,
             )
         ]
 
@@ -41,7 +41,7 @@ class TestIntegrationDiagram:
                 system_name="PostgreSQL Database",
                 modules_used=["postgresql_db", "postgresql_user"],
                 task_count=5,
-                uses_credentials=True
+                uses_credentials=True,
             )
         ]
 
@@ -61,7 +61,7 @@ class TestIntegrationDiagram:
                 system_name="HashiCorp Vault",
                 modules_used=["hashi_vault"],
                 task_count=2,
-                uses_credentials=False
+                uses_credentials=False,
             )
         ]
 
@@ -79,15 +79,15 @@ class TestIntegrationDiagram:
                 system_name="REST APIs",
                 modules_used=["uri"],
                 task_count=2,
-                uses_credentials=True
+                uses_credentials=True,
             ),
             IntegrationPoint(
                 type=IntegrationType.DATABASE,
                 system_name="MySQL/MariaDB Database",
                 modules_used=["mysql_db"],
                 task_count=3,
-                uses_credentials=True
-            )
+                uses_credentials=True,
+            ),
         ]
 
         diagram = generate_integration_boundary(integrations)
@@ -104,9 +104,14 @@ class TestIntegrationDiagram:
             IntegrationPoint(
                 type=IntegrationType.API,
                 system_name="REST APIs",
-                modules_used=["uri", "get_url", "ansible.builtin.uri", "custom_api_module"],
+                modules_used=[
+                    "uri",
+                    "get_url",
+                    "ansible.builtin.uri",
+                    "custom_api_module",
+                ],
                 task_count=10,
-                uses_credentials=False
+                uses_credentials=False,
             )
         ]
 
@@ -133,7 +138,7 @@ class TestIntegrationDiagram:
                 system_name="REST APIs",
                 modules_used=["uri"],
                 task_count=1,
-                uses_credentials=False
+                uses_credentials=False,
             )
         ]
         assert should_generate_integration_diagram(integrations) is False
@@ -146,7 +151,7 @@ class TestIntegrationDiagram:
                 system_name="PostgreSQL",
                 modules_used=["postgresql_db"],
                 task_count=1,
-                uses_credentials=True
+                uses_credentials=True,
             )
         ]
         assert should_generate_integration_diagram(integrations) is True
@@ -159,15 +164,15 @@ class TestIntegrationDiagram:
                 system_name="API 1",
                 modules_used=["uri"],
                 task_count=1,
-                uses_credentials=False
+                uses_credentials=False,
             ),
             IntegrationPoint(
                 type=IntegrationType.API,
                 system_name="API 2",
                 modules_used=["get_url"],
                 task_count=1,
-                uses_credentials=False
-            )
+                uses_credentials=False,
+            ),
         ]
         assert should_generate_integration_diagram(integrations) is True
 
@@ -179,7 +184,7 @@ class TestIntegrationDiagram:
                 system_name="Test API",
                 modules_used=["uri"],
                 task_count=1,
-                uses_credentials=True
+                uses_credentials=True,
             )
         ]
 

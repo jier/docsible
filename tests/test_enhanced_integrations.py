@@ -20,13 +20,13 @@ class TestNewIntegrationTypes:
     def test_cloud_aws_detection(self):
         """Test AWS cloud integration detection."""
         role_info = {
-            'tasks': [
+            "tasks": [
                 {
-                    'file': 'main.yml',
-                    'tasks': [
-                        {'name': 'Create EC2 instance', 'module': 'amazon.aws.ec2'},
-                        {'name': 'Upload to S3', 'module': 's3'},
-                    ]
+                    "file": "main.yml",
+                    "tasks": [
+                        {"name": "Create EC2 instance", "module": "amazon.aws.ec2"},
+                        {"name": "Upload to S3", "module": "s3"},
+                    ],
                 }
             ]
         }
@@ -37,17 +37,20 @@ class TestNewIntegrationTypes:
         assert integrations[0].type == IntegrationType.CLOUD
         assert integrations[0].system_name == "AWS (Amazon Web Services)"
         assert integrations[0].task_count == 2
-        assert 'EC2' in integrations[0].services or 'S3' in integrations[0].services
+        assert "EC2" in integrations[0].services or "S3" in integrations[0].services
 
     def test_cloud_azure_detection(self):
         """Test Azure cloud integration detection."""
         role_info = {
-            'tasks': [
+            "tasks": [
                 {
-                    'file': 'main.yml',
-                    'tasks': [
-                        {'name': 'Create VM', 'module': 'azure.azcollection.azure_rm_virtualmachine'},
-                    ]
+                    "file": "main.yml",
+                    "tasks": [
+                        {
+                            "name": "Create VM",
+                            "module": "azure.azcollection.azure_rm_virtualmachine",
+                        },
+                    ],
                 }
             ]
         }
@@ -61,13 +64,21 @@ class TestNewIntegrationTypes:
     def test_network_firewall_detection(self):
         """Test network/firewall integration detection."""
         role_info = {
-            'tasks': [
+            "tasks": [
                 {
-                    'file': 'firewall.yml',
-                    'tasks': [
-                        {'name': 'Configure firewall', 'module': 'firewalld', 'port': 443},
-                        {'name': 'Set iptables rule', 'module': 'iptables', 'port': '80'},
-                    ]
+                    "file": "firewall.yml",
+                    "tasks": [
+                        {
+                            "name": "Configure firewall",
+                            "module": "firewalld",
+                            "port": 443,
+                        },
+                        {
+                            "name": "Set iptables rule",
+                            "module": "iptables",
+                            "port": "80",
+                        },
+                    ],
                 }
             ]
         }
@@ -84,13 +95,16 @@ class TestNewIntegrationTypes:
     def test_container_docker_detection(self):
         """Test Docker container integration detection."""
         role_info = {
-            'tasks': [
+            "tasks": [
                 {
-                    'file': 'container.yml',
-                    'tasks': [
-                        {'name': 'Pull image', 'module': 'community.docker.docker_image'},
-                        {'name': 'Run container', 'module': 'docker_container'},
-                    ]
+                    "file": "container.yml",
+                    "tasks": [
+                        {
+                            "name": "Pull image",
+                            "module": "community.docker.docker_image",
+                        },
+                        {"name": "Run container", "module": "docker_container"},
+                    ],
                 }
             ]
         }
@@ -100,17 +114,17 @@ class TestNewIntegrationTypes:
         assert len(integrations) == 1
         assert integrations[0].type == IntegrationType.CONTAINER
         assert integrations[0].system_name == "Docker"
-        assert 'Docker' in integrations[0].services
+        assert "Docker" in integrations[0].services
 
     def test_container_kubernetes_detection(self):
         """Test Kubernetes container integration detection."""
         role_info = {
-            'tasks': [
+            "tasks": [
                 {
-                    'file': 'k8s.yml',
-                    'tasks': [
-                        {'name': 'Deploy pod', 'module': 'community.kubernetes.k8s'},
-                    ]
+                    "file": "k8s.yml",
+                    "tasks": [
+                        {"name": "Deploy pod", "module": "community.kubernetes.k8s"},
+                    ],
                 }
             ]
         }
@@ -124,12 +138,12 @@ class TestNewIntegrationTypes:
     def test_monitoring_datadog_detection(self):
         """Test Datadog monitoring integration detection."""
         role_info = {
-            'tasks': [
+            "tasks": [
                 {
-                    'file': 'monitoring.yml',
-                    'tasks': [
-                        {'name': 'Install Datadog agent', 'module': 'datadog.agent'},
-                    ]
+                    "file": "monitoring.yml",
+                    "tasks": [
+                        {"name": "Install Datadog agent", "module": "datadog.agent"},
+                    ],
                 }
             ]
         }
@@ -143,12 +157,12 @@ class TestNewIntegrationTypes:
     def test_monitoring_prometheus_detection(self):
         """Test Prometheus monitoring integration detection."""
         role_info = {
-            'tasks': [
+            "tasks": [
                 {
-                    'file': 'monitoring.yml',
-                    'tasks': [
-                        {'name': 'Configure Prometheus', 'module': 'prometheus.config'},
-                    ]
+                    "file": "monitoring.yml",
+                    "tasks": [
+                        {"name": "Configure Prometheus", "module": "prometheus.config"},
+                    ],
                 }
             ]
         }
@@ -166,13 +180,21 @@ class TestEnhancedDetails:
     def test_api_endpoints_extracted(self):
         """Test API endpoint extraction through detect_integrations."""
         role_info = {
-            'tasks': [
+            "tasks": [
                 {
-                    'file': 'api.yml',
-                    'tasks': [
-                        {'name': 'Call API', 'module': 'uri', 'url': 'https://api.example.com/v1/users'},
-                        {'name': 'Get data', 'module': 'uri', 'url': 'https://api.example.com/v1/posts'},
-                    ]
+                    "file": "api.yml",
+                    "tasks": [
+                        {
+                            "name": "Call API",
+                            "module": "uri",
+                            "url": "https://api.example.com/v1/users",
+                        },
+                        {
+                            "name": "Get data",
+                            "module": "uri",
+                            "url": "https://api.example.com/v1/posts",
+                        },
+                    ],
                 }
             ]
         }
@@ -183,18 +205,18 @@ class TestEnhancedDetails:
         assert integrations[0].type == IntegrationType.API
         # Endpoints should be extracted
         assert len(integrations[0].endpoints) > 0
-        assert any('api.example.com' in ep for ep in integrations[0].endpoints)
+        assert any("api.example.com" in ep for ep in integrations[0].endpoints)
 
     def test_network_ports_extracted(self):
         """Test network port extraction through detect_integrations."""
         role_info = {
-            'tasks': [
+            "tasks": [
                 {
-                    'file': 'firewall.yml',
-                    'tasks': [
-                        {'name': 'Open HTTPS', 'module': 'firewalld', 'port': 443},
-                        {'name': 'Open HTTP', 'module': 'iptables', 'port': '80'},
-                    ]
+                    "file": "firewall.yml",
+                    "tasks": [
+                        {"name": "Open HTTPS", "module": "firewalld", "port": 443},
+                        {"name": "Open HTTP", "module": "iptables", "port": "80"},
+                    ],
                 }
             ]
         }
@@ -211,13 +233,13 @@ class TestEnhancedDetails:
     def test_cloud_services_extracted(self):
         """Test cloud service extraction through detect_integrations."""
         role_info = {
-            'tasks': [
+            "tasks": [
                 {
-                    'file': 'cloud.yml',
-                    'tasks': [
-                        {'name': 'Create instance', 'module': 'amazon.aws.ec2'},
-                        {'name': 'Upload file', 'module': 's3_bucket'},
-                    ]
+                    "file": "cloud.yml",
+                    "tasks": [
+                        {"name": "Create instance", "module": "amazon.aws.ec2"},
+                        {"name": "Upload file", "module": "s3_bucket"},
+                    ],
                 }
             ]
         }
@@ -228,7 +250,7 @@ class TestEnhancedDetails:
         assert integrations[0].type == IntegrationType.CLOUD
         # Services should be extracted
         assert len(integrations[0].services) > 0
-        assert 'EC2' in integrations[0].services or 'S3' in integrations[0].services
+        assert "EC2" in integrations[0].services or "S3" in integrations[0].services
 
 
 class TestEnhancedDiagrams:
@@ -429,8 +451,8 @@ class TestNetworkTopology:
 
         details = format_integration_details(integration)
 
-        assert 'endpoints' in details
-        assert len(details['endpoints']) == 2
+        assert "endpoints" in details
+        assert len(details["endpoints"]) == 2
 
     def test_format_integration_details_network(self):
         """Test formatting network integration details."""
@@ -445,9 +467,9 @@ class TestNetworkTopology:
 
         details = format_integration_details(integration)
 
-        assert 'ports' in details
-        assert '80' in details['ports']
-        assert '443' in details['ports']
+        assert "ports" in details
+        assert "80" in details["ports"]
+        assert "443" in details["ports"]
 
     def test_format_integration_details_cloud(self):
         """Test formatting cloud integration details."""
@@ -462,6 +484,6 @@ class TestNetworkTopology:
 
         details = format_integration_details(integration)
 
-        assert 'services' in details
-        assert 'EC2' in details['services']
-        assert 'S3' in details['services']
+        assert "services" in details
+        assert "EC2" in details["services"]
+        assert "S3" in details["services"]

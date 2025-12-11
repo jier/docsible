@@ -6,11 +6,11 @@ from docsible.analyzers.complexity_analyzer import (
     ComplexityMetrics,
     ComplexityCategory,
     IntegrationPoint,
-    IntegrationType
+    IntegrationType,
 )
 from docsible.utils.architecture_diagram import (
     generate_component_architecture,
-    should_generate_architecture_diagram
+    should_generate_architecture_diagram,
 )
 
 
@@ -20,11 +20,15 @@ class TestArchitectureDiagram:
     def test_generate_with_simple_role(self):
         """Test diagram generation for simple role structure."""
         role_info = {
-            'name': 'test_role',
-            'defaults': [{'file': 'main.yml', 'data': {'var1': 'value1', 'var2': 'value2'}}],
-            'vars': [],
-            'tasks': [{'file': 'main.yml', 'tasks': [{'name': 'Task 1'}, {'name': 'Task 2'}]}],
-            'handlers': []
+            "name": "test_role",
+            "defaults": [
+                {"file": "main.yml", "data": {"var1": "value1", "var2": "value2"}}
+            ],
+            "vars": [],
+            "tasks": [
+                {"file": "main.yml", "tasks": [{"name": "Task 1"}, {"name": "Task 2"}]}
+            ],
+            "handlers": [],
         }
 
         complexity_report = ComplexityReport(
@@ -34,10 +38,10 @@ class TestArchitectureDiagram:
                 handlers=0,
                 conditional_tasks=0,
                 max_tasks_per_file=2,
-                avg_tasks_per_file=2.0
+                avg_tasks_per_file=2.0,
             ),
             category=ComplexityCategory.SIMPLE,
-            integration_points=[]
+            integration_points=[],
         )
 
         diagram = generate_component_architecture(role_info, complexity_report)
@@ -54,11 +58,16 @@ class TestArchitectureDiagram:
     def test_generate_with_vars_only(self):
         """Test diagram with vars but no defaults."""
         role_info = {
-            'name': 'test_role',
-            'defaults': [],
-            'vars': [{'file': 'main.yml', 'data': {'var1': 'val1', 'var2': 'val2', 'var3': 'val3'}}],
-            'tasks': [{'file': 'main.yml', 'tasks': [{'name': 'Task 1'}]}],
-            'handlers': []
+            "name": "test_role",
+            "defaults": [],
+            "vars": [
+                {
+                    "file": "main.yml",
+                    "data": {"var1": "val1", "var2": "val2", "var3": "val3"},
+                }
+            ],
+            "tasks": [{"file": "main.yml", "tasks": [{"name": "Task 1"}]}],
+            "handlers": [],
         }
 
         complexity_report = ComplexityReport(
@@ -68,10 +77,10 @@ class TestArchitectureDiagram:
                 handlers=0,
                 conditional_tasks=0,
                 max_tasks_per_file=1,
-                avg_tasks_per_file=1.0
+                avg_tasks_per_file=1.0,
             ),
             category=ComplexityCategory.SIMPLE,
-            integration_points=[]
+            integration_points=[],
         )
 
         diagram = generate_component_architecture(role_info, complexity_report)
@@ -84,15 +93,15 @@ class TestArchitectureDiagram:
     def test_generate_with_multiple_task_files(self):
         """Test diagram with multiple task files."""
         role_info = {
-            'name': 'test_role',
-            'defaults': [{'file': 'main.yml', 'data': {'var1': 'value1'}}],
-            'vars': [],
-            'tasks': [
-                {'file': 'install.yml', 'tasks': [{'name': 'Install package'}] * 5},
-                {'file': 'configure.yml', 'tasks': [{'name': 'Configure app'}] * 10},
-                {'file': 'validate.yml', 'tasks': [{'name': 'Validate config'}] * 3}
+            "name": "test_role",
+            "defaults": [{"file": "main.yml", "data": {"var1": "value1"}}],
+            "vars": [],
+            "tasks": [
+                {"file": "install.yml", "tasks": [{"name": "Install package"}] * 5},
+                {"file": "configure.yml", "tasks": [{"name": "Configure app"}] * 10},
+                {"file": "validate.yml", "tasks": [{"name": "Validate config"}] * 3},
             ],
-            'handlers': []
+            "handlers": [],
         }
 
         complexity_report = ComplexityReport(
@@ -102,10 +111,10 @@ class TestArchitectureDiagram:
                 handlers=0,
                 conditional_tasks=5,
                 max_tasks_per_file=10,
-                avg_tasks_per_file=6.0
+                avg_tasks_per_file=6.0,
             ),
             category=ComplexityCategory.MEDIUM,
-            integration_points=[]
+            integration_points=[],
         )
 
         diagram = generate_component_architecture(role_info, complexity_report)
@@ -123,14 +132,16 @@ class TestArchitectureDiagram:
     def test_generate_with_handlers(self):
         """Test diagram with handlers."""
         role_info = {
-            'name': 'test_role',
-            'defaults': [],
-            'vars': [],
-            'tasks': [{'file': 'main.yml', 'tasks': [{'name': 'Task 1'}, {'name': 'Task 2'}]}],
-            'handlers': [
-                {'name': 'restart service', 'module': 'service'},
-                {'name': 'reload config', 'module': 'command'}
-            ]
+            "name": "test_role",
+            "defaults": [],
+            "vars": [],
+            "tasks": [
+                {"file": "main.yml", "tasks": [{"name": "Task 1"}, {"name": "Task 2"}]}
+            ],
+            "handlers": [
+                {"name": "restart service", "module": "service"},
+                {"name": "reload config", "module": "command"},
+            ],
         }
 
         complexity_report = ComplexityReport(
@@ -140,10 +151,10 @@ class TestArchitectureDiagram:
                 handlers=2,
                 conditional_tasks=0,
                 max_tasks_per_file=2,
-                avg_tasks_per_file=2.0
+                avg_tasks_per_file=2.0,
             ),
             category=ComplexityCategory.SIMPLE,
-            integration_points=[]
+            integration_points=[],
         )
 
         diagram = generate_component_architecture(role_info, complexity_report)
@@ -157,19 +168,19 @@ class TestArchitectureDiagram:
     def test_generate_with_external_integrations(self):
         """Test diagram with external system integrations."""
         role_info = {
-            'name': 'test_role',
-            'defaults': [],
-            'vars': [],
-            'tasks': [
+            "name": "test_role",
+            "defaults": [],
+            "vars": [],
+            "tasks": [
                 {
-                    'file': 'api_calls.yml',
-                    'tasks': [
-                        {'name': 'Call API', 'module': 'uri'},
-                        {'name': 'Download file', 'module': 'get_url'}
-                    ]
+                    "file": "api_calls.yml",
+                    "tasks": [
+                        {"name": "Call API", "module": "uri"},
+                        {"name": "Download file", "module": "get_url"},
+                    ],
                 }
             ],
-            'handlers': []
+            "handlers": [],
         }
 
         integration_points = [
@@ -178,7 +189,7 @@ class TestArchitectureDiagram:
                 system_name="REST APIs",
                 modules_used=["uri", "get_url"],
                 task_count=2,
-                uses_credentials=True
+                uses_credentials=True,
             )
         ]
 
@@ -190,10 +201,10 @@ class TestArchitectureDiagram:
                 conditional_tasks=0,
                 external_integrations=1,
                 max_tasks_per_file=2,
-                avg_tasks_per_file=2.0
+                avg_tasks_per_file=2.0,
             ),
             category=ComplexityCategory.SIMPLE,
-            integration_points=integration_points
+            integration_points=integration_points,
         )
 
         diagram = generate_component_architecture(role_info, complexity_report)
@@ -209,18 +220,38 @@ class TestArchitectureDiagram:
     def test_generate_complex_role_full_diagram(self):
         """Test diagram for complex role with all components."""
         role_info = {
-            'name': 'complex_role',
-            'defaults': [{'file': 'main.yml', 'data': {'var' + str(i): f'val{i}' for i in range(15)}}],
-            'vars': [{'file': 'main.yml', 'data': {'var' + str(i): f'val{i}' for i in range(8)}}],
-            'tasks': [
-                {'file': 'install.yml', 'tasks': [{'name': f'Task {i}', 'module': 'package'} for i in range(12)]},
-                {'file': 'configure.yml', 'tasks': [{'name': f'Task {i}', 'module': 'uri'} for i in range(18)]}
+            "name": "complex_role",
+            "defaults": [
+                {
+                    "file": "main.yml",
+                    "data": {"var" + str(i): f"val{i}" for i in range(15)},
+                }
             ],
-            'handlers': [
-                {'name': 'restart app', 'module': 'service'},
-                {'name': 'reload config', 'module': 'command'},
-                {'name': 'notify admin', 'module': 'mail'}
-            ]
+            "vars": [
+                {
+                    "file": "main.yml",
+                    "data": {"var" + str(i): f"val{i}" for i in range(8)},
+                }
+            ],
+            "tasks": [
+                {
+                    "file": "install.yml",
+                    "tasks": [
+                        {"name": f"Task {i}", "module": "package"} for i in range(12)
+                    ],
+                },
+                {
+                    "file": "configure.yml",
+                    "tasks": [
+                        {"name": f"Task {i}", "module": "uri"} for i in range(18)
+                    ],
+                },
+            ],
+            "handlers": [
+                {"name": "restart app", "module": "service"},
+                {"name": "reload config", "module": "command"},
+                {"name": "notify admin", "module": "mail"},
+            ],
         }
 
         integration_points = [
@@ -229,7 +260,7 @@ class TestArchitectureDiagram:
                 system_name="REST APIs",
                 modules_used=["uri"],
                 task_count=18,
-                uses_credentials=False
+                uses_credentials=False,
             )
         ]
 
@@ -241,10 +272,10 @@ class TestArchitectureDiagram:
                 conditional_tasks=10,
                 external_integrations=1,
                 max_tasks_per_file=18,
-                avg_tasks_per_file=15.0
+                avg_tasks_per_file=15.0,
             ),
             category=ComplexityCategory.COMPLEX,
-            integration_points=integration_points
+            integration_points=integration_points,
         )
 
         diagram = generate_component_architecture(role_info, complexity_report)
@@ -280,10 +311,10 @@ class TestArchitectureDiagram:
                 handlers=2,
                 conditional_tasks=10,
                 max_tasks_per_file=10,
-                avg_tasks_per_file=6.0
+                avg_tasks_per_file=6.0,
             ),
             category=ComplexityCategory.COMPLEX,
-            integration_points=[]
+            integration_points=[],
         )
 
         assert should_generate_architecture_diagram(complexity_report) is True
@@ -297,13 +328,13 @@ class TestArchitectureDiagram:
                 handlers=1,
                 conditional_tasks=5,
                 role_dependencies=2,  # composition_score = 2*2 = 4
-                role_includes=1,      # +1 = 5
+                role_includes=1,  # +1 = 5
                 task_includes=0,
                 max_tasks_per_file=7,
-                avg_tasks_per_file=5.0
+                avg_tasks_per_file=5.0,
             ),
             category=ComplexityCategory.MEDIUM,
-            integration_points=[]
+            integration_points=[],
         )
 
         assert should_generate_architecture_diagram(complexity_report) is True
@@ -317,10 +348,10 @@ class TestArchitectureDiagram:
                 handlers=0,
                 conditional_tasks=0,
                 max_tasks_per_file=5,
-                avg_tasks_per_file=5.0
+                avg_tasks_per_file=5.0,
             ),
             category=ComplexityCategory.SIMPLE,
-            integration_points=[]
+            integration_points=[],
         )
 
         assert should_generate_architecture_diagram(complexity_report) is False
@@ -337,10 +368,10 @@ class TestArchitectureDiagram:
                 role_includes=0,
                 task_includes=0,
                 max_tasks_per_file=7,
-                avg_tasks_per_file=6.0
+                avg_tasks_per_file=6.0,
             ),
             category=ComplexityCategory.MEDIUM,
-            integration_points=[]
+            integration_points=[],
         )
 
         assert should_generate_architecture_diagram(complexity_report) is False
@@ -352,11 +383,11 @@ class TestArchitectureDiagram:
     def test_diagram_has_valid_mermaid_syntax(self):
         """Test that generated diagram has valid Mermaid syntax."""
         role_info = {
-            'name': 'test_role',
-            'defaults': [{'file': 'main.yml', 'data': {'var1': 'value1'}}],
-            'vars': [],
-            'tasks': [{'file': 'main.yml', 'tasks': [{'name': 'Task 1'}]}],
-            'handlers': [{'name': 'handler1', 'module': 'service'}]
+            "name": "test_role",
+            "defaults": [{"file": "main.yml", "data": {"var1": "value1"}}],
+            "vars": [],
+            "tasks": [{"file": "main.yml", "tasks": [{"name": "Task 1"}]}],
+            "handlers": [{"name": "handler1", "module": "service"}],
         }
 
         complexity_report = ComplexityReport(
@@ -366,10 +397,10 @@ class TestArchitectureDiagram:
                 handlers=1,
                 conditional_tasks=0,
                 max_tasks_per_file=1,
-                avg_tasks_per_file=1.0
+                avg_tasks_per_file=1.0,
             ),
             category=ComplexityCategory.SIMPLE,
-            integration_points=[]
+            integration_points=[],
         )
 
         diagram = generate_component_architecture(role_info, complexity_report)

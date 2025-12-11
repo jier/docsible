@@ -60,10 +60,7 @@ class FlowchartBuilder(DiagramBuilder):
             self.add_line(f"    %% {safe_title}")
 
     def add_task(
-        self,
-        task_name: str,
-        task_id: Optional[str] = None,
-        shape: str = "rectangle"
+        self, task_name: str, task_id: Optional[str] = None, shape: str = "rectangle"
     ) -> str:
         """Add a task node to the flowchart.
 
@@ -101,11 +98,7 @@ class FlowchartBuilder(DiagramBuilder):
         self.add_line(node_def)
         return safe_id
 
-    def add_decision(
-        self,
-        condition: str,
-        decision_id: Optional[str] = None
-    ) -> str:
+    def add_decision(self, condition: str, decision_id: Optional[str] = None) -> str:
         """Add a decision/conditional node (rhombus shape).
 
         Args:
@@ -129,7 +122,7 @@ class FlowchartBuilder(DiagramBuilder):
         from_id: str,
         to_id: str,
         label: Optional[str] = None,
-        style: str = "arrow"
+        style: str = "arrow",
     ) -> None:
         """Add a flow/edge between two nodes.
 
@@ -180,11 +173,7 @@ class FlowchartBuilder(DiagramBuilder):
 
         return self.add_task(node_type.capitalize(), node_id, shape="circle")
 
-    def add_subgraph(
-        self,
-        title: str,
-        node_ids: List[str]
-    ) -> None:
+    def add_subgraph(self, title: str, node_ids: List[str]) -> None:
         """Add a subgraph grouping related nodes.
 
         Args:

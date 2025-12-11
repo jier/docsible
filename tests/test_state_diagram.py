@@ -18,6 +18,7 @@ from docsible.utils.state_diagram import (
 
 # Test Phase Detection
 
+
 def test_detect_install_phase():
     """Test detection of install phase from task names."""
     assert detect_phase_from_task_name("Install nginx package") == Phase.INSTALL
@@ -90,6 +91,7 @@ def test_phase_detection_case_insensitive():
 
 # Test State Management Detection
 
+
 def test_has_state_management_with_state_modules():
     """Test state management detection for common state modules."""
     assert has_state_management({"module": "package", "name": "nginx"}) is True
@@ -107,6 +109,7 @@ def test_has_state_management_without_state_modules():
 
 
 # Test Condition Extraction
+
 
 def test_extract_condition_string():
     """Test extraction of when condition as string."""
@@ -127,6 +130,7 @@ def test_extract_condition_none():
 
 
 # Test Phase Analysis
+
 
 def test_analyze_phases_single_phase():
     """Test phase analysis with tasks in single phase."""
@@ -195,7 +199,11 @@ def test_analyze_phases_with_conditions():
             {
                 "file": "main.yml",
                 "tasks": [
-                    {"name": "Install nginx", "module": "apt", "when": "ansible_os_family == 'Debian'"},
+                    {
+                        "name": "Install nginx",
+                        "module": "apt",
+                        "when": "ansible_os_family == 'Debian'",
+                    },
                 ],
             }
         ],
@@ -207,15 +215,36 @@ def test_analyze_phases_with_conditions():
 
 # Test Transition Inference
 
+
 def test_infer_transitions_standard_flow():
     """Test transition inference for standard workflow."""
     from docsible.utils.state_diagram import PhaseInfo
 
     phases = [
-        PhaseInfo(phase=Phase.INSTALL, tasks=[{"name": "Install"}], has_state_check=True, has_conditions=False),
-        PhaseInfo(phase=Phase.CONFIGURE, tasks=[{"name": "Configure"}], has_state_check=False, has_conditions=False),
-        PhaseInfo(phase=Phase.VALIDATE, tasks=[{"name": "Validate"}], has_state_check=False, has_conditions=True),
-        PhaseInfo(phase=Phase.START, tasks=[{"name": "Start"}], has_state_check=True, has_conditions=False),
+        PhaseInfo(
+            phase=Phase.INSTALL,
+            tasks=[{"name": "Install"}],
+            has_state_check=True,
+            has_conditions=False,
+        ),
+        PhaseInfo(
+            phase=Phase.CONFIGURE,
+            tasks=[{"name": "Configure"}],
+            has_state_check=False,
+            has_conditions=False,
+        ),
+        PhaseInfo(
+            phase=Phase.VALIDATE,
+            tasks=[{"name": "Validate"}],
+            has_state_check=False,
+            has_conditions=True,
+        ),
+        PhaseInfo(
+            phase=Phase.START,
+            tasks=[{"name": "Start"}],
+            has_state_check=True,
+            has_conditions=False,
+        ),
     ]
 
     transitions = infer_transitions(phases)
@@ -233,8 +262,18 @@ def test_infer_transitions_with_cleanup():
     from docsible.utils.state_diagram import PhaseInfo
 
     phases = [
-        PhaseInfo(phase=Phase.STOP, tasks=[{"name": "Stop"}], has_state_check=False, has_conditions=False),
-        PhaseInfo(phase=Phase.CLEANUP, tasks=[{"name": "Clean"}], has_state_check=False, has_conditions=False),
+        PhaseInfo(
+            phase=Phase.STOP,
+            tasks=[{"name": "Stop"}],
+            has_state_check=False,
+            has_conditions=False,
+        ),
+        PhaseInfo(
+            phase=Phase.CLEANUP,
+            tasks=[{"name": "Clean"}],
+            has_state_check=False,
+            has_conditions=False,
+        ),
     ]
 
     transitions = infer_transitions(phases)
@@ -245,6 +284,7 @@ def test_infer_transitions_with_cleanup():
 
 
 # Test Diagram Generation
+
 
 def test_generate_state_diagram_basic():
     """Test basic state diagram generation."""
@@ -320,11 +360,15 @@ def test_generate_state_diagram_no_tasks():
 
 # Test Diagram Generation Decision
 
+
 def test_should_generate_for_medium_complexity():
     """Test that state diagrams are generated for MEDIUM complexity roles."""
     role_info = {
         "tasks": [
-            {"file": "main.yml", "tasks": [{"name": f"Task {i}", "module": "debug"} for i in range(15)]}
+            {
+                "file": "main.yml",
+                "tasks": [{"name": f"Task {i}", "module": "debug"} for i in range(15)],
+            }
         ],
     }
 
@@ -335,7 +379,10 @@ def test_should_not_generate_for_simple_complexity():
     """Test that state diagrams are not generated for SIMPLE complexity roles."""
     role_info = {
         "tasks": [
-            {"file": "main.yml", "tasks": [{"name": f"Task {i}", "module": "debug"} for i in range(8)]}
+            {
+                "file": "main.yml",
+                "tasks": [{"name": f"Task {i}", "module": "debug"} for i in range(8)],
+            }
         ],
     }
 
@@ -346,7 +393,10 @@ def test_should_not_generate_for_complex_complexity():
     """Test that state diagrams are not generated for COMPLEX complexity roles."""
     role_info = {
         "tasks": [
-            {"file": "main.yml", "tasks": [{"name": f"Task {i}", "module": "debug"} for i in range(30)]}
+            {
+                "file": "main.yml",
+                "tasks": [{"name": f"Task {i}", "module": "debug"} for i in range(30)],
+            }
         ],
     }
 
@@ -357,7 +407,10 @@ def test_should_not_generate_with_too_few_tasks():
     """Test that state diagrams are not generated for roles with < 5 tasks."""
     role_info = {
         "tasks": [
-            {"file": "main.yml", "tasks": [{"name": f"Task {i}", "module": "debug"} for i in range(3)]}
+            {
+                "file": "main.yml",
+                "tasks": [{"name": f"Task {i}", "module": "debug"} for i in range(3)],
+            }
         ],
     }
 

@@ -1,6 +1,7 @@
 """
 State transition inference and formatting for Mermaid diagrams.
 """
+
 from typing import List, Optional
 from dataclasses import dataclass
 
@@ -10,6 +11,7 @@ from .analyzer import Phase, PhaseInfo
 @dataclass
 class StateTransition:
     """Represents a state transition in the role workflow."""
+
     from_phase: Phase
     to_phase: Phase
     condition: Optional[str] = None  # from 'when' clause
@@ -51,13 +53,15 @@ def infer_transitions(phases: List[PhaseInfo]) -> List[StateTransition]:
         if from_phase in available_phases and to_phase in available_phases:
             # Check if the 'to' phase has conditions
             to_phase_info = next((p for p in phases if p.phase == to_phase), None)
-            actual_condition = condition if to_phase_info and to_phase_info.has_conditions else None
+            actual_condition = (
+                condition if to_phase_info and to_phase_info.has_conditions else None
+            )
 
-            transitions.append(StateTransition(
-                from_phase=from_phase,
-                to_phase=to_phase,
-                condition=actual_condition
-            ))
+            transitions.append(
+                StateTransition(
+                    from_phase=from_phase, to_phase=to_phase, condition=actual_condition
+                )
+            )
 
     # Handle EXECUTE phase - it can be entry point or follow other phases
     if Phase.EXECUTE in available_phases:
@@ -71,9 +75,8 @@ def infer_transitions(phases: List[PhaseInfo]) -> List[StateTransition]:
                     # Check if there's already a transition from this phase
                     has_transition = any(t.from_phase == phase for t in transitions)
                     if not has_transition:
-                        transitions.append(StateTransition(
-                            from_phase=phase,
-                            to_phase=Phase.EXECUTE
-                        ))
+                        transitions.append(
+                            StateTransition(from_phase=phase, to_phase=Phase.EXECUTE)
+                        )
 
     return transitions

@@ -24,7 +24,9 @@ CYAN = "\033[96m"
 MAGENTA = "\033[95m"
 
 
-def display_complexity_report(report: ComplexityReport, role_name: Optional[str] = None) -> None:
+def display_complexity_report(
+    report: ComplexityReport, role_name: Optional[str] = None
+) -> None:
     """
     Display a formatted complexity analysis report to console.
 
@@ -40,9 +42,15 @@ def display_complexity_report(report: ComplexityReport, role_name: Optional[str]
 
     # Header
     print()
-    print(f"{BOLD}{BLUE}╔══════════════════════════════════════════════════════════╗{RESET}")
-    print(f"{BOLD}{BLUE}║         ROLE COMPLEXITY ANALYSIS                         ║{RESET}")
-    print(f"{BOLD}{BLUE}╚══════════════════════════════════════════════════════════╝{RESET}")
+    print(
+        f"{BOLD}{BLUE}╔══════════════════════════════════════════════════════════╗{RESET}"
+    )
+    print(
+        f"{BOLD}{BLUE}║         ROLE COMPLEXITY ANALYSIS                        ║{RESET}"
+    )
+    print(
+        f"{BOLD}{BLUE}╚══════════════════════════════════════════════════════════╝{RESET}"
+    )
     print()
 
     if role_name:
@@ -54,7 +62,9 @@ def display_complexity_report(report: ComplexityReport, role_name: Optional[str]
     print(f"  Total Tasks:         {metrics.total_tasks}")
     print(f"  Task Files:          {metrics.task_files}")
     print(f"  Handlers:            {metrics.handlers}")
-    print(f"  Conditional Tasks:   {metrics.conditional_tasks} ({metrics.conditional_percentage:.0f}% have conditions)")
+    print(
+        f"  Conditional Tasks:   {metrics.conditional_tasks} ({metrics.conditional_percentage:.0f}% have conditions)"
+    )
 
     if metrics.max_tasks_per_file > 0:
         print(f"  Max Tasks/File:      {metrics.max_tasks_per_file}")
@@ -68,25 +78,44 @@ def display_complexity_report(report: ComplexityReport, role_name: Optional[str]
     print(f"  Task Includes:       {metrics.task_includes} (include_tasks in tasks)")
 
     composition_score = metrics.composition_score
-    composition_level = "Low" if composition_score < 4 else "Medium" if composition_score < 8 else "High"
-    composition_color = GREEN if composition_score < 4 else YELLOW if composition_score < 8 else RED
-    print(f"  Composition Score:   {composition_color}{composition_score} ({composition_level}){RESET}")
+    composition_level = (
+        "Low"
+        if composition_score < 4
+        else "Medium"
+        if composition_score < 8
+        else "High"
+    )
+    composition_color = (
+        GREEN if composition_score < 4 else YELLOW if composition_score < 8 else RED
+    )
+    print(
+        f"  Composition Score:   {composition_color}{composition_score} ({composition_level}){RESET}"
+    )
     print()
 
     # External Integrations Section
     integration_count = len(report.integration_points)
     if integration_count > 0:
-        print(f"{BOLD}{YELLOW}🔌 External Integrations ({integration_count} detected):{RESET}")
+        print(
+            f"{BOLD}{YELLOW}🔌 External Integrations ({integration_count} detected):{RESET}"
+        )
 
         for idx, integration in enumerate(report.integration_points, 1):
-            credential_icon = " 🔑 Uses credentials" if integration.uses_credentials else ""
-            print(f"  {idx}. {integration.system_name} ({integration.task_count} tasks){credential_icon}")
+            credential_icon = (
+                " 🔑 Uses credentials" if integration.uses_credentials else ""
+            )
+            print(
+                f"  {idx}. {integration.system_name} ({integration.task_count} tasks){credential_icon}"
+            )
 
             # Show modules used (limit to 3 for brevity)
             if len(integration.modules_used) <= 3:
                 modules_str = ", ".join(integration.modules_used)
             else:
-                modules_str = ", ".join(integration.modules_used[:3]) + f" (+{len(integration.modules_used) - 3} more)"
+                modules_str = (
+                    ", ".join(integration.modules_used[:3])
+                    + f" (+{len(integration.modules_used) - 3} more)"
+                )
             print(f"     {DIM}Modules: {modules_str}{RESET}")
         print()
     else:
@@ -100,15 +129,17 @@ def display_complexity_report(report: ComplexityReport, role_name: Optional[str]
         ComplexityCategory.COMPLEX: RED,
     }.get(report.category, RESET)
 
-    print(f"{BOLD}🎯 Complexity:{RESET} {category_color}{BOLD}{report.category.value.upper()}{RESET}")
+    print(
+        f"{BOLD}🎯 Complexity:{RESET} {category_color}{BOLD}{report.category.value.upper()}{RESET}"
+    )
     print()
 
     # Task Files Detail (if any)
     if report.task_files_detail and len(report.task_files_detail) > 0:
         print(f"{BOLD}{CYAN}📁 Task Files Breakdown:{RESET}")
         for tf in report.task_files_detail:
-            file_name = tf.get('file', 'unknown')
-            task_count = tf.get('task_count', 0)
+            file_name = tf.get("file", "unknown")
+            task_count = tf.get("task_count", 0)
             print(f"  • {file_name}: {task_count} tasks")
         print()
 
@@ -123,8 +154,12 @@ def display_complexity_report(report: ComplexityReport, role_name: Optional[str]
     if report.category == ComplexityCategory.SIMPLE:
         print(f"{DIM}→ Recommended: Use sequence diagrams for visualization{RESET}")
     elif report.category == ComplexityCategory.MEDIUM:
-        print(f"{DIM}→ Recommended: Use state transition + component tree diagrams{RESET}")
+        print(
+            f"{DIM}→ Recommended: Use state transition + component tree diagrams{RESET}"
+        )
     else:
-        print(f"{DIM}→ Recommended: Use architecture diagrams + text documentation{RESET}")
+        print(
+            f"{DIM}→ Recommended: Use architecture diagrams + text documentation{RESET}"
+        )
 
     print()

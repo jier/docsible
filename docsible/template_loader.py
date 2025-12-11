@@ -34,22 +34,22 @@ class TemplateLoader:
             >>> template = loader.get_template('role/hybrid.jinja2')
         """
         if template_dir is None:
-            template_dir = Path(__file__).parent / 'templates'
+            template_dir = Path(__file__).parent / "templates"
 
         self.template_dir = template_dir
         # Define search paths in priority order
         # When a template does {% import 'macros/utils.j2' %},
         # Jinja2 will search these paths in order:
         search_paths = [
-            str(self.template_dir / 'role'),        # 1. role/macros/utils.j2
-            str(self.template_dir / 'collection'),  # 2. collection/macros/utils.j2  
-            str(self.template_dir),                 # 3. macros/utils.j2 (fallback)
+            str(self.template_dir / "role"),  # 1. role/macros/utils.j2
+            str(self.template_dir / "collection"),  # 2. collection/macros/utils.j2
+            str(self.template_dir),  # 3. macros/utils.j2 (fallback)
         ]
         self.env = Environment(
             loader=FileSystemLoader(search_paths),
             trim_blocks=False,
             lstrip_blocks=False,
-            keep_trailing_newline=True
+            keep_trailing_newline=True,
         )
 
         # Register custom filters for safe table rendering
@@ -78,7 +78,7 @@ class TemplateLoader:
         logger.debug(f"Loading template: {name}")
         return self.env.get_template(name)
 
-    def get_role_template(self, template_type: str = 'standard') -> Template:
+    def get_role_template(self, template_type: str = "standard") -> Template:
         """Get role documentation template by type.
 
         Args:
@@ -92,16 +92,18 @@ class TemplateLoader:
             >>> template = loader.get_role_template('hybrid')
         """
         template_map = {
-            'standard': 'role/standard.jinja2',
-            'standard_modular': 'role/standard_modular.jinja2',
-            'hybrid': 'role/hybrid.jinja2',
-            'hybrid_modular': 'role/hybrid_modular.jinja2'
+            "standard": "role/standard.jinja2",
+            "standard_modular": "role/standard_modular.jinja2",
+            "hybrid": "role/hybrid_modular.jinja2",
+            "hybrid_modular": "role/hybrid.jinja2",
         }
 
         template_name = template_map.get(template_type)
         if not template_name:
-            logger.warning(f"Unknown template type '{template_type}', falling back to 'standard'")
-            template_name = template_map['standard']
+            logger.warning(
+                f"Unknown template type '{template_type}', falling back to 'standard'"
+            )
+            template_name = template_map["standard"]
 
         return self.get_template(template_name)
 
@@ -115,7 +117,7 @@ class TemplateLoader:
             >>> loader = TemplateLoader()
             >>> template = loader.get_collection_template()
         """
-        return self.get_template('collection/main.jinja2')
+        return self.get_template("collection/main.jinja2")
 
     def list_templates(self) -> list[str]:
         """List all available templates.
@@ -130,7 +132,7 @@ class TemplateLoader:
             ['role/standard.jinja2', 'role/hybrid.jinja2', 'collection/main.jinja2']
         """
         templates = []
-        for template_file in self.template_dir.rglob('*.jinja2'):
+        for template_file in self.template_dir.rglob("*.jinja2"):
             relative_path = template_file.relative_to(self.template_dir)
             templates.append(str(relative_path))
 

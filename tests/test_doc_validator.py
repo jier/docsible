@@ -54,8 +54,8 @@ MIT
         # Should have minimal or no clarity issues
         error_issues = [i for i in issues if i.severity == ValidationSeverity.ERROR]
         assert len(error_issues) == 0
-        assert metrics['headings'] >= 5
-        assert metrics['code_blocks'] >= 1
+        assert metrics["headings"] >= 5
+        assert metrics["code_blocks"] >= 1
 
     def test_missing_headings_fails(self):
         """Test that documentation without headings fails clarity."""
@@ -66,10 +66,11 @@ MIT
 
         # Should have error about missing headings
         assert any(
-            issue.severity == ValidationSeverity.ERROR and "heading" in issue.message.lower()
+            issue.severity == ValidationSeverity.ERROR
+            and "heading" in issue.message.lower()
             for issue in issues
         )
-        assert metrics['headings'] == 0
+        assert metrics["headings"] == 0
 
     def test_unlabeled_code_blocks_warning(self):
         """Test that unlabeled code blocks generate warnings."""
@@ -84,10 +85,7 @@ apt install foo
         issues, metrics = validator._validate_clarity(doc)
 
         # Should warn about unlabeled code block
-        assert any(
-            "unlabeled" in issue.message.lower()
-            for issue in issues
-        )
+        assert any("unlabeled" in issue.message.lower() for issue in issues)
 
     def test_long_lines_info(self):
         """Test that excessive long lines generate info messages."""
@@ -103,7 +101,7 @@ apt install foo
         validator = DocumentationValidator()
         issues, metrics = validator._validate_clarity(doc)
 
-        assert metrics['long_lines'] > 0
+        assert metrics["long_lines"] > 0
         # May generate info about long lines if >20% of lines are long
 
 
@@ -113,13 +111,13 @@ class TestMaintenanceValidation:
     def test_documents_all_variables(self):
         """Test validation of variable documentation."""
         role_info = {
-            'defaults': [
-                {'file': 'main.yml', 'data': {'var1': 'value1', 'var2': 'value2'}}
+            "defaults": [
+                {"file": "main.yml", "data": {"var1": "value1", "var2": "value2"}}
             ],
-            'vars': [],
-            'handlers': [],
-            'tasks': [],
-            'dependencies': []
+            "vars": [],
+            "handlers": [],
+            "tasks": [],
+            "dependencies": [],
         }
 
         doc_with_vars = """# Test Role
@@ -137,21 +135,28 @@ No variables section here.
         validator = DocumentationValidator()
 
         # With variables section
-        issues_good, metrics_good = validator._validate_maintenance(doc_with_vars, role_info)
+        issues_good, metrics_good = validator._validate_maintenance(
+            doc_with_vars, role_info
+        )
         # Should have minimal warnings
 
         # Without variables section
-        issues_bad, metrics_bad = validator._validate_maintenance(doc_without_vars, role_info)
-        # Should warn about missing variables section
-        assert any(
-            "variables" in issue.message.lower()
-            for issue in issues_bad
+        issues_bad, metrics_bad = validator._validate_maintenance(
+            doc_without_vars, role_info
         )
-        assert metrics_bad['total_variables'] == 2
+        # Should warn about missing variables section
+        assert any("variables" in issue.message.lower() for issue in issues_bad)
+        assert metrics_bad["total_variables"] == 2
 
     def test_missing_example_playbook_warning(self):
         """Test that missing examples generate warnings."""
-        role_info = {'defaults': [], 'vars': [], 'handlers': [], 'tasks': [], 'dependencies': []}
+        role_info = {
+            "defaults": [],
+            "vars": [],
+            "handlers": [],
+            "tasks": [],
+            "dependencies": [],
+        }
         doc = """# Test Role
 
 Just description, no examples.
@@ -159,20 +164,17 @@ Just description, no examples.
         validator = DocumentationValidator()
         issues, metrics = validator._validate_maintenance(doc, role_info)
 
-        assert any(
-            "example" in issue.message.lower()
-            for issue in issues
-        )
-        assert not metrics['has_example']
+        assert any("example" in issue.message.lower() for issue in issues)
+        assert not metrics["has_example"]
 
     def test_undocumented_dependencies_warning(self):
         """Test warning for undocumented dependencies."""
         role_info = {
-            'defaults': [],
-            'vars': [],
-            'handlers': [],
-            'tasks': [],
-            'dependencies': ['geerlingguy.apache', 'geerlingguy.mysql']
+            "defaults": [],
+            "vars": [],
+            "handlers": [],
+            "tasks": [],
+            "dependencies": ["geerlingguy.apache", "geerlingguy.mysql"],
         }
 
         doc = """# Test Role
@@ -182,23 +184,20 @@ Just a basic description without any mention of other roles.
         validator = DocumentationValidator()
         issues, metrics = validator._validate_maintenance(doc, role_info)
 
-        assert any(
-            "dependencies" in issue.message.lower()
-            for issue in issues
-        )
-        assert metrics['dependencies'] == 2
+        assert any("dependencies" in issue.message.lower() for issue in issues)
+        assert metrics["dependencies"] == 2
 
     def test_undocumented_handlers_info(self):
         """Test info message for undocumented handlers."""
         role_info = {
-            'defaults': [],
-            'vars': [],
-            'handlers': [
-                {'name': 'restart apache', 'module': 'service'},
-                {'name': 'reload nginx', 'module': 'service'}
+            "defaults": [],
+            "vars": [],
+            "handlers": [
+                {"name": "restart apache", "module": "service"},
+                {"name": "reload nginx", "module": "service"},
             ],
-            'tasks': [],
-            'dependencies': []
+            "tasks": [],
+            "dependencies": [],
         }
 
         doc = """# Test Role
@@ -208,11 +207,8 @@ Basic description without mentioning event triggers.
         validator = DocumentationValidator()
         issues, metrics = validator._validate_maintenance(doc, role_info)
 
-        assert any(
-            "handler" in issue.message.lower()
-            for issue in issues
-        )
-        assert metrics['handlers'] == 2
+        assert any("handler" in issue.message.lower() for issue in issues)
+        assert metrics["handlers"] == 2
 
 
 class TestTruthValidation:
@@ -221,14 +217,14 @@ class TestTruthValidation:
     def test_accurate_task_count(self):
         """Test validation of task count accuracy."""
         role_info = {
-            'tasks': [
+            "tasks": [
                 {
-                    'file': 'main.yml',
-                    'tasks': [
-                        {'name': 'Task 1', 'module': 'apt'},
-                        {'name': 'Task 2', 'module': 'service'},
-                        {'name': 'Task 3', 'module': 'copy'}
-                    ]
+                    "file": "main.yml",
+                    "tasks": [
+                        {"name": "Task 1", "module": "apt"},
+                        {"name": "Task 2", "module": "service"},
+                        {"name": "Task 3", "module": "copy"},
+                    ],
                 }
             ]
         }
@@ -246,17 +242,22 @@ This role contains **10 tasks** across all task files.
         validator = DocumentationValidator()
 
         # Accurate count
-        issues_good, metrics_good = validator._validate_truth(doc_accurate, role_info, None)
-        assert metrics_good['actual_tasks'] == 3
+        issues_good, metrics_good = validator._validate_truth(
+            doc_accurate, role_info, None
+        )
+        assert metrics_good["actual_tasks"] == 3
         # Should not have task count error
         task_count_errors = [
-            i for i in issues_good
+            i
+            for i in issues_good
             if i.type == ValidationType.TRUTH and "task" in i.message.lower()
         ]
         assert len(task_count_errors) == 0
 
         # Inaccurate count
-        issues_bad, metrics_bad = validator._validate_truth(doc_inaccurate, role_info, None)
+        issues_bad, metrics_bad = validator._validate_truth(
+            doc_inaccurate, role_info, None
+        )
         # Should have error about incorrect task count
         assert any(
             i.severity == ValidationSeverity.ERROR and "10 tasks" in i.message
@@ -272,11 +273,11 @@ This role contains **10 tasks** across all task files.
                 handlers=2,
                 conditional_tasks=10,
                 max_tasks_per_file=10,
-                avg_tasks_per_file=6.0
+                avg_tasks_per_file=6.0,
             ),
             category=ComplexityCategory.COMPLEX,
             integration_points=[],
-            recommendations=[]
+            recommendations=[],
         )
 
         doc_accurate = """# Test Role
@@ -292,15 +293,20 @@ This is a **SIMPLE role** with just a few tasks.
         validator = DocumentationValidator()
 
         # Accurate category
-        issues_good, _ = validator._validate_truth(doc_accurate, None, complexity_report)
+        issues_good, _ = validator._validate_truth(
+            doc_accurate, None, complexity_report
+        )
         complexity_errors = [
-            i for i in issues_good
+            i
+            for i in issues_good
             if i.type == ValidationType.TRUTH and "complexity" in i.message.lower()
         ]
         assert len(complexity_errors) == 0
 
         # Inaccurate category
-        issues_bad, _ = validator._validate_truth(doc_inaccurate, None, complexity_report)
+        issues_bad, _ = validator._validate_truth(
+            doc_inaccurate, None, complexity_report
+        )
         assert any(
             i.severity == ValidationSeverity.ERROR and "SIMPLE" in i.message
             for i in issues_bad
@@ -316,7 +322,7 @@ Content here.
         validator = DocumentationValidator()
         issues, metrics = validator._validate_truth(doc, None, None)
 
-        assert metrics['has_generated_markers'] is True
+        assert metrics["has_generated_markers"] is True
 
 
 class TestValueValidation:
@@ -331,11 +337,11 @@ class TestValueValidation:
                 handlers=2,
                 conditional_tasks=10,
                 max_tasks_per_file=10,
-                avg_tasks_per_file=6.0
+                avg_tasks_per_file=6.0,
             ),
             category=ComplexityCategory.COMPLEX,
             integration_points=[],
-            recommendations=[]
+            recommendations=[],
         )
 
         doc_with_diagram = """# Test Role
@@ -355,20 +361,16 @@ No diagrams here.
 
         # With diagram
         issues_good, _ = validator._validate_value(doc_with_diagram, complexity_report)
-        diagram_warnings = [
-            i for i in issues_good
-            if "diagram" in i.message.lower()
-        ]
+        diagram_warnings = [i for i in issues_good if "diagram" in i.message.lower()]
         # Should have no warnings about missing diagrams
         assert len(diagram_warnings) == 0
 
         # Without diagram
-        issues_bad, _ = validator._validate_value(doc_without_diagram, complexity_report)
-        # Should warn about missing diagrams
-        assert any(
-            "diagram" in i.message.lower()
-            for i in issues_bad
+        issues_bad, _ = validator._validate_value(
+            doc_without_diagram, complexity_report
         )
+        # Should warn about missing diagrams
+        assert any("diagram" in i.message.lower() for i in issues_bad)
 
     def test_integrations_need_security_guidance(self):
         """Test that roles with integrations need security guidance."""
@@ -380,7 +382,7 @@ No diagrams here.
                 conditional_tasks=5,
                 external_integrations=2,
                 max_tasks_per_file=10,
-                avg_tasks_per_file=7.5
+                avg_tasks_per_file=7.5,
             ),
             category=ComplexityCategory.MEDIUM,
             integration_points=[
@@ -389,10 +391,10 @@ No diagrams here.
                     system_name="PostgreSQL",
                     modules_used=["postgresql_db"],
                     task_count=3,
-                    uses_credentials=True
+                    uses_credentials=True,
                 )
             ],
-            recommendations=[]
+            recommendations=[],
         )
 
         doc_with_security = """# Test Role
@@ -413,12 +415,11 @@ Just a basic description.
         # Should not warn about security
 
         # Without security guidance
-        issues_bad, metrics_bad = validator._validate_value(doc_without_security, complexity_report)
-        # Should warn about missing security guidance
-        assert any(
-            "security" in i.message.lower()
-            for i in issues_bad
+        issues_bad, metrics_bad = validator._validate_value(
+            doc_without_security, complexity_report
         )
+        # Should warn about missing security guidance
+        assert any("security" in i.message.lower() for i in issues_bad)
 
     def test_brief_documentation_warning(self):
         """Test that very brief documentation gets a warning."""
@@ -429,11 +430,8 @@ Short.
         validator = DocumentationValidator()
         issues, metrics = validator._validate_value(doc_brief, None)
 
-        assert metrics['word_count'] < 200
-        assert any(
-            "brief" in i.message.lower()
-            for i in issues
-        )
+        assert metrics["word_count"] < 200
+        assert any("brief" in i.message.lower() for i in issues)
 
     def test_actionable_examples_valued(self):
         """Test that playbook examples are valued."""
@@ -455,10 +453,10 @@ Description only.
         validator = DocumentationValidator()
 
         issues_good, metrics_good = validator._validate_value(doc_with_example, None)
-        assert metrics_good['playbook_examples'] >= 1
+        assert metrics_good["playbook_examples"] >= 1
 
         issues_bad, metrics_bad = validator._validate_value(doc_without_example, None)
-        assert metrics_bad['playbook_examples'] == 0
+        assert metrics_bad["playbook_examples"] == 0
         # Should have info about missing examples
 
 
@@ -468,19 +466,19 @@ class TestFullValidation:
     def test_high_quality_documentation_passes(self):
         """Test that high-quality documentation passes all checks."""
         role_info = {
-            'defaults': [{'file': 'main.yml', 'data': {'apache_port': 80}}],
-            'vars': [],
-            'handlers': [{'name': 'restart apache', 'module': 'service'}],
-            'tasks': [
+            "defaults": [{"file": "main.yml", "data": {"apache_port": 80}}],
+            "vars": [],
+            "handlers": [{"name": "restart apache", "module": "service"}],
+            "tasks": [
                 {
-                    'file': 'main.yml',
-                    'tasks': [
-                        {'name': 'Install Apache', 'module': 'apt'},
-                        {'name': 'Start Apache', 'module': 'service'}
-                    ]
+                    "file": "main.yml",
+                    "tasks": [
+                        {"name": "Install Apache", "module": "apt"},
+                        {"name": "Start Apache", "module": "service"},
+                    ],
                 }
             ],
-            'dependencies': []
+            "dependencies": [],
         }
 
         complexity_report = ComplexityReport(
@@ -490,11 +488,11 @@ class TestFullValidation:
                 handlers=1,
                 conditional_tasks=0,
                 max_tasks_per_file=2,
-                avg_tasks_per_file=2.0
+                avg_tasks_per_file=2.0,
             ),
             category=ComplexityCategory.SIMPLE,
             integration_points=[],
-            recommendations=[]
+            recommendations=[],
         )
 
         doc = """# Apache Role
@@ -530,7 +528,9 @@ MIT
 Test Author
 """
 
-        result = validate_documentation(doc, role_info, complexity_report, min_score=70.0)
+        result = validate_documentation(
+            doc, role_info, complexity_report, min_score=70.0
+        )
 
         assert result.score >= 70.0
         assert result.passed is True
@@ -539,16 +539,13 @@ Test Author
     def test_poor_documentation_fails(self):
         """Test that poor quality documentation fails validation."""
         role_info = {
-            'defaults': [{'file': 'main.yml', 'data': {'var1': 'val', 'var2': 'val'}}],
-            'vars': [],
-            'handlers': [],
-            'tasks': [
-                {
-                    'file': 'main.yml',
-                    'tasks': [{'name': 'Task 1', 'module': 'apt'}]
-                }
+            "defaults": [{"file": "main.yml", "data": {"var1": "val", "var2": "val"}}],
+            "vars": [],
+            "handlers": [],
+            "tasks": [
+                {"file": "main.yml", "tasks": [{"name": "Task 1", "module": "apt"}]}
             ],
-            'dependencies': ['some.role']
+            "dependencies": ["some.role"],
         }
 
         doc_poor = "Just a title"
@@ -569,19 +566,19 @@ Test Author
                 ValidationIssue(
                     type=ValidationType.CLARITY,
                     severity=ValidationSeverity.ERROR,
-                    message="Test error"
+                    message="Test error",
                 ),
                 ValidationIssue(
                     type=ValidationType.MAINTENANCE,
                     severity=ValidationSeverity.WARNING,
-                    message="Test warning"
+                    message="Test warning",
                 ),
                 ValidationIssue(
                     type=ValidationType.VALUE,
                     severity=ValidationSeverity.INFO,
-                    message="Test info"
-                )
-            ]
+                    message="Test info",
+                ),
+            ],
         )
 
         # Test filtering by type
@@ -605,13 +602,13 @@ Test Author
             ValidationIssue(
                 type=ValidationType.CLARITY,
                 severity=ValidationSeverity.ERROR,
-                message="Error 1"
+                message="Error 1",
             ),
             ValidationIssue(
                 type=ValidationType.CLARITY,
                 severity=ValidationSeverity.ERROR,
-                message="Error 2"
-            )
+                message="Error 2",
+            ),
         ]
 
         score_severe = validator._calculate_score(issues_severe, {})
@@ -622,18 +619,18 @@ Test Author
             ValidationIssue(
                 type=ValidationType.CLARITY,
                 severity=ValidationSeverity.ERROR,
-                message="Error"
+                message="Error",
             ),
             ValidationIssue(
                 type=ValidationType.MAINTENANCE,
                 severity=ValidationSeverity.WARNING,
-                message="Warning"
+                message="Warning",
             ),
             ValidationIssue(
                 type=ValidationType.VALUE,
                 severity=ValidationSeverity.INFO,
-                message="Info"
-            )
+                message="Info",
+            ),
         ]
 
         score_mixed = validator._calculate_score(issues_mixed, {})
@@ -647,7 +644,13 @@ Test Author
 
         # Even a small issue might cause failure with high min_score
         doc = "# Title\n\nSome content but no examples."
-        role_info = {'defaults': [], 'vars': [], 'handlers': [], 'tasks': [], 'dependencies': []}
+        role_info = {
+            "defaults": [],
+            "vars": [],
+            "handlers": [],
+            "tasks": [],
+            "dependencies": [],
+        }
 
         result = validator.validate(doc, role_info, None)
         # May not pass the 90.0 threshold

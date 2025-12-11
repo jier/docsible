@@ -53,7 +53,7 @@ def replace_between_tags(existing_content: str, new_content: str) -> str:
     """
     pattern = re.compile(
         rf"{re.escape(constants.DOCSIBLE_START_TAG)}.*?{re.escape(constants.DOCSIBLE_END_TAG)}",
-        re.DOTALL
+        re.DOTALL,
     )
     return pattern.sub(new_content, existing_content)
 
@@ -88,12 +88,12 @@ def manage_docsible_file_keys(docsible_path: Path) -> dict:
         "subCategory": "",
         "aap_hub": "",
         "automation_kind": "",
-        "critical": ""
+        "critical": "",
     }
 
     if docsible_path.exists():
         try:
-            with open(docsible_path, 'r', encoding='utf-8') as f:
+            with open(docsible_path, "r", encoding="utf-8") as f:
                 existing_data = yaml.safe_load(f) or {}
 
             # Check if any new keys need to be added
@@ -104,8 +104,10 @@ def manage_docsible_file_keys(docsible_path: Path) -> dict:
                     updated = True
 
             if updated:
-                with open(docsible_path, 'w', encoding='utf-8') as f:
-                    yaml.dump(existing_data, f, default_flow_style=False, allow_unicode=True)
+                with open(docsible_path, "w", encoding="utf-8") as f:
+                    yaml.dump(
+                        existing_data, f, default_flow_style=False, allow_unicode=True
+                    )
                 logger.info(f"Updated {docsible_path} with new keys.")
 
             return existing_data
@@ -115,7 +117,7 @@ def manage_docsible_file_keys(docsible_path: Path) -> dict:
             return default_keys
     else:
         # Initialize new file
-        with open(docsible_path, 'w', encoding='utf-8') as f:
+        with open(docsible_path, "w", encoding="utf-8") as f:
             yaml.dump(default_keys, f, default_flow_style=False, allow_unicode=True)
         logger.info(f"Initialized {docsible_path} with default keys.")
         return default_keys

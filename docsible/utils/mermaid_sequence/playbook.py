@@ -2,6 +2,7 @@
 Mermaid sequence diagram generation for Ansible playbooks.
 Generates high-level architecture diagrams showing playbook → roles → tasks interaction.
 """
+
 import logging
 from typing import List, Dict, Optional
 
@@ -10,7 +11,9 @@ from .sanitization import sanitize_participant_name, sanitize_note_text
 logger = logging.getLogger(__name__)
 
 
-def generate_mermaid_sequence_playbook_high_level(playbook: List[Dict], role_meta: Optional[Dict] = None) -> str:
+def generate_mermaid_sequence_playbook_high_level(
+    playbook: List[Dict], role_meta: Optional[Dict] = None
+) -> str:
     """Generate high-level sequence diagram showing playbook → roles → tasks interaction.
 
     Shows:
@@ -46,7 +49,7 @@ def generate_mermaid_sequence_playbook_high_level(playbook: List[Dict], role_met
         roles = play.get("roles", [])
         for role in roles:
             if isinstance(role, dict):
-                role_name = role.get('role', role.get('name', 'unnamed_role'))
+                role_name = role.get("role", role.get("name", "unnamed_role"))
             else:
                 role_name = str(role)
 
@@ -80,10 +83,10 @@ def generate_mermaid_sequence_playbook_high_level(playbook: List[Dict], role_met
     # Add handlers participant if there are any
     has_handlers = False
     for play in playbook:
-        if play.get('handlers') or play.get('tasks', []):
+        if play.get("handlers") or play.get("tasks", []):
             # Check if any tasks notify handlers
-            for task in play.get('tasks', []):
-                if isinstance(task, dict) and 'notify' in task:
+            for task in play.get("tasks", []):
+                if isinstance(task, dict) and "notify" in task:
                     has_handlers = True
                     break
 
@@ -98,21 +101,25 @@ def generate_mermaid_sequence_playbook_high_level(playbook: List[Dict], role_met
 
     for play_idx, play in enumerate(playbook):
         hosts = play.get("hosts", "all")
-        diagram += f"    Note over Playbook: Play {play_idx + 1}: Target hosts={hosts}\n\n"
+        diagram += (
+            f"    Note over Playbook: Play {play_idx + 1}: Target hosts={hosts}\n\n"
+        )
 
         # Pre-tasks - show individual tasks
         pre_tasks = play.get("pre_tasks", [])
         if pre_tasks:
             diagram += f"    Note over Playbook: Pre-tasks ({len(pre_tasks)} tasks)\n"
-            diagram = _add_task_details(diagram, pre_tasks, "Playbook", participants, has_handlers)
+            diagram = _add_task_details(
+                diagram, pre_tasks, "Playbook", participants, has_handlers
+            )
             diagram += "\n"
 
         # Role dependencies (if available from meta)
-        if role_meta and role_meta.get('dependencies'):
+        if role_meta and role_meta.get("dependencies"):
             diagram += "    Note right of Playbook: Role Dependencies\n"
-            for dep in role_meta['dependencies']:
+            for dep in role_meta["dependencies"]:
                 if isinstance(dep, dict):
-                    dep_name = dep.get('role', str(dep))
+                    dep_name = dep.get("role", str(dep))
                 else:
                     dep_name = str(dep)
                 dep_name_clean = sanitize_participant_name(dep_name)
@@ -129,8 +136,8 @@ def generate_mermaid_sequence_playbook_high_level(playbook: List[Dict], role_met
         roles = play.get("roles", [])
         for role in roles:
             if isinstance(role, dict):
-                role_name = role.get('role', role.get('name', 'unnamed_role'))
-                role_vars = role.get('vars', {})
+                role_name = role.get("role", role.get("name", "unnamed_role"))
+                role_vars = role.get("vars", {})
             else:
                 role_name = str(role)
                 role_vars = {}
@@ -152,14 +159,18 @@ def generate_mermaid_sequence_playbook_high_level(playbook: List[Dict], role_met
         tasks = play.get("tasks", [])
         if tasks:
             diagram += f"    Note over Playbook: Tasks ({len(tasks)} tasks)\n"
-            diagram = _add_task_details(diagram, tasks, "Playbook", participants, has_handlers)
+            diagram = _add_task_details(
+                diagram, tasks, "Playbook", participants, has_handlers
+            )
             diagram += "\n"
 
         # Post-tasks - show individual tasks
         post_tasks = play.get("post_tasks", [])
         if post_tasks:
             diagram += f"    Note over Playbook: Post-tasks ({len(post_tasks)} tasks)\n"
-            diagram = _add_task_details(diagram, post_tasks, "Playbook", participants, has_handlers)
+            diagram = _add_task_details(
+                diagram, post_tasks, "Playbook", participants, has_handlers
+            )
             diagram += "\n"
 
         # Handlers
@@ -174,7 +185,13 @@ def generate_mermaid_sequence_playbook_high_level(playbook: List[Dict], role_met
     return diagram
 
 
-def _add_task_details(diagram: str, tasks: List[Dict], executor: str, participants: set, has_handlers: bool) -> str:
+def _add_task_details(
+    diagram: str,
+    tasks: List[Dict],
+    executor: str,
+    participants: set,
+    has_handlers: bool,
+) -> str:
     """
     Helper function to add task details to sequence diagram.
 
@@ -193,7 +210,7 @@ def _add_task_details(diagram: str, tasks: List[Dict], executor: str, participan
             continue
 
         # Get task name
-        task_name = task.get('name', 'Unnamed task')
+        task_name = task.get("name", "Unnamed task")
         task_name_short = sanitize_note_text(task_name, 40)
 
         # Check for include_role or import_role
@@ -209,11 +226,13 @@ def _add_task_details(diagram: str, tasks: List[Dict], executor: str, participan
                     continue
 
                 role_name_clean = sanitize_participant_name(role_name)
-                diagram += f"    {executor}->>+{role_name_clean}: {role_action}: {role_name}\n"
+                diagram += (
+                    f"    {executor}->>+{role_name_clean}: {role_action}: {role_name}\n"
+                )
                 diagram += f"    {role_name_clean}-->>-{executor}: Complete\n"
 
                 # Check for notifications
-                if 'notify' in task and has_handlers:
+                if "notify" in task and has_handlers:
                     diagram += f"    {executor}->>Handlers: Notify\n"
                 role_included = True
                 break
@@ -227,13 +246,17 @@ def _add_task_details(diagram: str, tasks: List[Dict], executor: str, participan
             if task_action in task:
                 task_file = task[task_action]
                 if isinstance(task_file, str):
-                    diagram += f"    {executor}->>{executor}: {task_action}: {task_file}\n"
+                    diagram += (
+                        f"    {executor}->>{executor}: {task_action}: {task_file}\n"
+                    )
                 elif isinstance(task_file, dict):
                     file_name = task_file.get("file", "unknown")
-                    diagram += f"    {executor}->>{executor}: {task_action}: {file_name}\n"
+                    diagram += (
+                        f"    {executor}->>{executor}: {task_action}: {file_name}\n"
+                    )
 
                 # Check for notifications
-                if 'notify' in task and has_handlers:
+                if "notify" in task and has_handlers:
                     diagram += f"    {executor}->>Handlers: Notify\n"
                 task_included = True
                 break
@@ -245,7 +268,7 @@ def _add_task_details(diagram: str, tasks: List[Dict], executor: str, participan
         diagram += f"    {executor}->>{executor}: {task_name_short}\n"
 
         # Check for notifications
-        if 'notify' in task and has_handlers:
+        if "notify" in task and has_handlers:
             diagram += f"    {executor}->>Handlers: Notify\n"
 
     return diagram

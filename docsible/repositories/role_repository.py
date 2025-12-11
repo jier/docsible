@@ -150,6 +150,7 @@ class RoleRepository:
         yaml_extensions = self.structure.get_yaml_extensions()
 
         import os
+
         for dirpath, dirnames, filenames in os.walk(str(tasks_dir)):
             for task_file in filenames:
                 if any(task_file.endswith(ext) for ext in yaml_extensions):
@@ -202,6 +203,7 @@ class RoleRepository:
         yaml_extensions = self.structure.get_yaml_extensions()
 
         import os
+
         for dirpath, dirnames, filenames in os.walk(str(handlers_dir)):
             for handler_file in filenames:
                 if any(handler_file.endswith(ext) for ext in yaml_extensions):
@@ -294,6 +296,7 @@ class RoleRepository:
             return []
 
         import os
+
         role_names = []
         for item in os.listdir(str(roles_dir)):
             role_path = roles_dir / item

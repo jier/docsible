@@ -1,4 +1,5 @@
 """Project type detection for Ansible projects."""
+
 import os
 from pathlib import Path
 from typing import List, Dict, Any
@@ -118,7 +119,9 @@ def is_valid_role(path: Path) -> bool:
     return any(role_indicators)
 
 
-def find_collection_markers(root_path: Path, defaults: Dict[str, Any], search_path: Path = None) -> List[Path]:
+def find_collection_markers(
+    root_path: Path, defaults: Dict[str, Any], search_path: Path = None
+) -> List[Path]:
     """Find all collection marker files (galaxy.yml/yaml) in the directory tree.
 
     Useful for detecting multiple collections in a monorepo.

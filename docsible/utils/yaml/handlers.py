@@ -1,6 +1,7 @@
 """
 Special YAML handlers for Ansible-specific constructs.
 """
+
 import yaml
 
 
@@ -18,4 +19,4 @@ def vault_constructor(loader: yaml.SafeLoader, node: yaml.Node) -> str:
 
 
 # Register the custom constructor with the '!vault' tag.
-yaml.SafeLoader.add_constructor('!vault', vault_constructor)
+yaml.SafeLoader.add_constructor("!vault", vault_constructor)

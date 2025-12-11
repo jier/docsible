@@ -11,6 +11,7 @@ logger = logging.getLogger(__name__)
 
 class GitInfoError(Exception):
     """Base exception for git information retrieval errors."""
+
     pass
 
 
@@ -30,11 +31,13 @@ class GitCommandError(GitInfoError):
 
 class GitTimeoutError(GitInfoError):
     """Raised when a git command times out."""
+
     pass
 
 
 class NotGitRepositoryError(GitInfoError):
     """Raised when path is not inside a git repository."""
+
     pass
 
 
@@ -70,7 +73,7 @@ def clean_and_standardize_url(url: str) -> str:
 
         if "@" in netloc:
             force_https = True
-            netloc_parts = netloc.rsplit('@', 1)
+            netloc_parts = netloc.rsplit("@", 1)
             if len(netloc_parts) == 2:
                 netloc = netloc_parts[1]
             else:
@@ -85,14 +88,7 @@ def clean_and_standardize_url(url: str) -> str:
         if path.endswith(".git"):
             path = path[:-4]
 
-        return urlunparse((
-            final_scheme,
-            netloc,
-            path,
-            "",
-            "",
-            ""
-        ))
+        return urlunparse((final_scheme, netloc, path, "", "", ""))
     except (ValueError, IndexError):
         return ""
 
@@ -129,27 +125,37 @@ def get_repo_info(path: str | Path) -> Dict[str, str]:
     try:
         is_repo_check = subprocess.run(
             ["git", "-C", dir_path, "rev-parse", "--is-inside-work-tree"],
-            capture_output=True, text=True, check=True, timeout=timeout
+            capture_output=True,
+            text=True,
+            check=True,
+            timeout=timeout,
         )
-        if is_repo_check.stdout.strip() != 'true':
-            raise NotGitRepositoryError(f"Path is not inside a Git work tree: {dir_path}")
+        if is_repo_check.stdout.strip() != "true":
+            raise NotGitRepositoryError(
+                f"Path is not inside a Git work tree: {dir_path}"
+            )
 
         raw_url = subprocess.run(
             ["git", "-C", dir_path, "config", "--get", "remote.origin.url"],
-            capture_output=True, text=True, check=True, timeout=timeout
+            capture_output=True,
+            text=True,
+            check=True,
+            timeout=timeout,
         ).stdout.strip()
 
         branch = subprocess.run(
             ["git", "-C", dir_path, "rev-parse", "--abbrev-ref", "HEAD"],
-            capture_output=True, text=True, check=True, timeout=timeout
+            capture_output=True,
+            text=True,
+            check=True,
+            timeout=timeout,
         ).stdout.strip()
 
     except subprocess.TimeoutExpired as e:
         raise GitTimeoutError(f"Git command timed out for path: {dir_path}") from e
     except subprocess.CalledProcessError as e:
         raise GitCommandError(
-            f"A Git command failed for path: {dir_path}",
-            stderr=e.stderr.strip()
+            f"A Git command failed for path: {dir_path}", stderr=e.stderr.strip()
         ) from e
 
     repository_url = clean_and_standardize_url(raw_url)

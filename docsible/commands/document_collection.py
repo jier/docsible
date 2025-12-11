@@ -76,11 +76,13 @@ def document_collection_roles(
 
     collection_path_obj = Path(collection_path)
     if not collection_path_obj.exists():
-        raise CollectionNotFoundError(f"Collection directory does not exist: {collection_path}")
-    
+        raise CollectionNotFoundError(
+            f"Collection directory does not exist: {collection_path}"
+        )
+
     if not collection_path_obj.is_dir():
         raise CollectionNotFoundError(f"Path is not a directory: {collection_path}")
-    
+
     # Initialize project structure
     project_structure = ProjectStructure(collection_path)
 
@@ -144,7 +146,9 @@ def document_collection_roles(
                         with open(role_playbook_path, "r", encoding="utf-8") as f:
                             playbook_content = f.read()
                     except FileNotFoundError:
-                        logger.warning(f"Playbook not found for {role_name}: {role_playbook_path}")
+                        logger.warning(
+                            f"Playbook not found for {role_name}: {role_playbook_path}"
+                        )
                     except Exception as e:
                         logger.error(f"Error loading playbook for {role_name}: {e}")
 
@@ -165,7 +169,7 @@ def document_collection_roles(
                 # Generate role README
                 renderer = ReadmeRenderer(backup=not no_backup)
                 role_readme_path = role_path / output
-                template_type = 'hybrid' if hybrid else 'standard'
+                template_type = "hybrid" if hybrid else "standard"
 
                 renderer.render_role(
                     role_info=role_info,

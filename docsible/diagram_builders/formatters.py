@@ -31,11 +31,11 @@ def sanitize_for_id(text: str) -> str:
     # Replace pipes with underscores
     text = text.replace("|", "_")
     # Replace other special characters with underscores (keep French accents)
-    text = re.sub(r'[^a-zA-Z0-9À-ÿ]', '_', text)
+    text = re.sub(r"[^a-zA-Z0-9À-ÿ]", "_", text)
     # Remove consecutive underscores
-    text = re.sub(r'_+', '_', text)
+    text = re.sub(r"_+", "_", text)
     # Remove leading/trailing underscores
-    text = text.strip('_')
+    text = text.strip("_")
     return text
 
 
@@ -59,7 +59,7 @@ def break_text(text: str, max_length: int = 50) -> str:
     if len(text) <= max_length:
         return text
 
-    words = text.split(' ')
+    words = text.split(" ")
     lines = []
     current_line = []
     current_length = 0
@@ -69,7 +69,7 @@ def break_text(text: str, max_length: int = 50) -> str:
         # Check if adding this word would exceed max_length
         if current_length + word_length + len(current_line) > max_length:
             if current_line:  # Only add if line is not empty
-                lines.append(' '.join(current_line))
+                lines.append(" ".join(current_line))
                 current_line = []
                 current_length = 0
 
@@ -77,9 +77,9 @@ def break_text(text: str, max_length: int = 50) -> str:
         current_length += word_length
 
     if current_line:
-        lines.append(' '.join(current_line))
+        lines.append(" ".join(current_line))
 
-    return '<br>'.join(lines)
+    return "<br>".join(lines)
 
 
 def sanitize_for_title(text: str, max_length: int = 50) -> str:
@@ -101,9 +101,9 @@ def sanitize_for_title(text: str, max_length: int = 50) -> str:
     """
     try:
         # Convert to lowercase and replace special chars with spaces (keep French accents)
-        sanitized_text = re.sub(r'[^a-z0-9À-ÿ]', ' ', text.lower())
+        sanitized_text = re.sub(r"[^a-z0-9À-ÿ]", " ", text.lower())
         # Remove multiple consecutive spaces
-        sanitized_text = re.sub(r'\s+', ' ', sanitized_text).strip()
+        sanitized_text = re.sub(r"\s+", " ", sanitized_text).strip()
         return break_text(sanitized_text, max_length)
     except Exception as e:
         logger.warning(f"Failed to sanitize title '{text}': {e}")
@@ -129,9 +129,9 @@ def sanitize_for_condition(text: str, max_length: int = 50) -> str:
     """
     try:
         # Convert to lowercase and replace special chars with spaces (keep French accents)
-        sanitized_text = re.sub(r'[^a-z0-9À-ÿ]', ' ', text.lower())
+        sanitized_text = re.sub(r"[^a-z0-9À-ÿ]", " ", text.lower())
         # Remove multiple consecutive spaces
-        sanitized_text = re.sub(r'\s+', ' ', sanitized_text).strip()
+        sanitized_text = re.sub(r"\s+", " ", sanitized_text).strip()
         return break_text(sanitized_text, max_length)
     except Exception as e:
         logger.warning(f"Failed to sanitize condition '{text}': {e}")
@@ -174,7 +174,7 @@ def truncate_text(text: str, max_length: int = 40, suffix: str = "...") -> str:
     if len(text) <= max_length:
         return text
 
-    return text[:max_length - len(suffix)] + suffix
+    return text[: max_length - len(suffix)] + suffix
 
 
 def quote_for_label(text: str) -> str:

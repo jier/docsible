@@ -39,18 +39,24 @@ class StructureConfig(BaseModel):
     roles_dir: str = "roles"
     meta_file: str = "main"
     lookup_plugins_dir: str = "lookup_plugins"
-    test_playbook: str = "tests/test.yml"  
+    test_playbook: str = "tests/test.yml"
     # Optional support
     # filter_plugins_dir: str = "filter_plugins"
     # module_utils_dir: str = "module_utils"
- 
 
     argument_specs_file: str = "argument_specs"
-    yaml_extensions: List[str] = Field(default_factory=lambda: ['.yml', '.yaml'])
+    yaml_extensions: List[str] = Field(default_factory=lambda: [".yml", ".yaml"])
 
     @field_validator(
-        'defaults_dir', 'vars_dir', 'tasks_dir', 'meta_dir', 'handlers_dir',
-        'templates_dir', 'files_dir', 'library_dir', 'roles_dir'
+        "defaults_dir",
+        "vars_dir",
+        "tasks_dir",
+        "meta_dir",
+        "handlers_dir",
+        "templates_dir",
+        "files_dir",
+        "library_dir",
+        "roles_dir",
     )
     @classmethod
     def validate_dir_name(cls, v: str) -> str:
@@ -65,14 +71,14 @@ class StructureConfig(BaseModel):
         Raises:
             ValueError: If directory name starts or ends with slash
         """
-        if v.startswith('/') or v.endswith('/'):
+        if v.startswith("/") or v.endswith("/"):
             raise ValueError(
                 f"Directory name '{v}' should not start or end with '/'. "
                 "Use relative paths without leading/trailing slashes."
             )
         return v
 
-    @field_validator('yaml_extensions')
+    @field_validator("yaml_extensions")
     @classmethod
     def validate_extensions(cls, v: List[str]) -> List[str]:
         """Ensure YAML extensions start with a dot.
@@ -87,7 +93,7 @@ class StructureConfig(BaseModel):
             ValueError: If any extension doesn't start with a dot
         """
         for ext in v:
-            if not ext.startswith('.'):
+            if not ext.startswith("."):
                 raise ValueError(
                     f"File extension '{ext}' must start with a dot (e.g., '.yml')"
                 )
@@ -100,7 +106,7 @@ class StructureConfig(BaseModel):
                 "vars_dir": "vars",
                 "tasks_dir": "tasks",
                 "meta_dir": "meta",
-                "handlers_dir": "handlers"
+                "handlers_dir": "handlers",
             }
         }
     }
@@ -141,7 +147,7 @@ class DocsibleConfig(BaseModel):
     critical: Optional[str] = None
     structure: Optional[StructureConfig] = None
 
-    @field_validator('structure', mode='before')
+    @field_validator("structure", mode="before")
     @classmethod
     def parse_structure(cls, v: Any) -> Optional[StructureConfig]:
         """Parse structure config from dict if needed."""
@@ -151,7 +157,7 @@ class DocsibleConfig(BaseModel):
             return v
         if isinstance(v, dict):
             return StructureConfig(**v)
-        raise ValueError('structure must be a dict or StructureConfig')
+        raise ValueError("structure must be a dict or StructureConfig")
 
     @classmethod
     def from_file(cls, file_path: Path) -> "DocsibleConfig":
@@ -179,7 +185,7 @@ class DocsibleConfig(BaseModel):
             return cls()
 
         try:
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, "r", encoding="utf-8") as f:
                 data = yaml.safe_load(f) or {}
             return cls(**data)
         except Exception as e:
@@ -202,7 +208,7 @@ class DocsibleConfig(BaseModel):
             # Convert to dict, excluding None values
             data = self.model_dump(exclude_none=True)
 
-            with open(file_path, 'w', encoding='utf-8') as f:
+            with open(file_path, "w", encoding="utf-8") as f:
                 yaml.dump(data, f, default_flow_style=False, allow_unicode=True)
 
             logger.info(f"Config saved to {file_path}")
@@ -218,7 +224,7 @@ class DocsibleConfig(BaseModel):
                 "users": "Web Developers",
                 "version": "1.0.0",
                 "category": "Web Servers",
-                "subCategory": "Reverse Proxy"
+                "subCategory": "Reverse Proxy",
             }
         }
     }

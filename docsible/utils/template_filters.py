@@ -10,7 +10,9 @@ from typing import Any, Optional
 logger = logging.getLogger(__name__)
 
 
-def escape_table_cell(value: Any, max_length: Optional[int] = None, truncate_indicator: str = "...") -> str:
+def escape_table_cell(
+    value: Any, max_length: Optional[int] = None, truncate_indicator: str = "..."
+) -> str:
     """
     Escape a value for safe rendering in a markdown table cell.
 
@@ -51,17 +53,17 @@ def escape_table_cell(value: Any, max_length: Optional[int] = None, truncate_ind
 
     # Replace pipe with similar unicode character (broken bar)
     # This preserves readability while preventing column breaks
-    s = s.replace('|', '¦')
+    s = s.replace("|", "¦")
 
     # Replace newlines with HTML line breaks
     # This keeps multi-line content in a single table cell
-    s = s.replace('\r\n', '<br>')
-    s = s.replace('\n', '<br>')
-    s = s.replace('\r', '<br>')
+    s = s.replace("\r\n", "<br>")
+    s = s.replace("\n", "<br>")
+    s = s.replace("\r", "<br>")
 
     # Escape backticks to prevent code block issues
     # Must be done carefully to avoid double-escaping
-    s = s.replace('`', '\\`')
+    s = s.replace("`", "\\`")
 
     # Note: We intentionally don't escape backslashes themselves
     # because that would break intentional escape sequences in the content
@@ -74,7 +76,9 @@ def escape_table_cell(value: Any, max_length: Optional[int] = None, truncate_ind
     return s.strip()
 
 
-def escape_table_value(value: Any, as_code: bool = True, max_length: Optional[int] = None) -> str:
+def escape_table_value(
+    value: Any, as_code: bool = True, max_length: Optional[int] = None
+) -> str:
     """
     Escape a value for safe rendering in a markdown table cell, optionally with code formatting.
 
@@ -116,7 +120,9 @@ def escape_table_value(value: Any, as_code: bool = True, max_length: Optional[in
     return escaped
 
 
-def safe_join(items: Any, separator: str = ", ", max_items: Optional[int] = None) -> str:
+def safe_join(
+    items: Any, separator: str = ", ", max_items: Optional[int] = None
+) -> str:
     """
     Safely join items into a string, escaping each item for table cells.
 
@@ -165,7 +171,7 @@ def safe_join(items: Any, separator: str = ", ", max_items: Optional[int] = None
 
 # Export all filters for easy registration
 TEMPLATE_FILTERS = {
-    'escape_table_cell': escape_table_cell,
-    'escape_table_value': escape_table_value,
-    'safe_join': safe_join,
+    "escape_table_cell": escape_table_cell,
+    "escape_table_value": escape_table_value,
+    "safe_join": safe_join,
 }

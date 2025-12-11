@@ -39,11 +39,9 @@ class RoleMetadata(BaseModel):
                 "company": "Example Corp",
                 "license": "MIT",
                 "min_ansible_version": "2.10",
-                "platforms": [
-                    {"name": "Ubuntu", "versions": ["20.04", "22.04"]}
-                ],
+                "platforms": [{"name": "Ubuntu", "versions": ["20.04", "22.04"]}],
                 "galaxy_tags": ["web", "nginx"],
-                "dependencies": []
+                "dependencies": [],
             }
         }
     }
@@ -87,7 +85,7 @@ class RoleTask(BaseModel):
                 "line_number": 15,
                 "description": "Installs nginx web server",
                 "when": "ansible_os_family == 'Debian'",
-                "notify": ["restart nginx"]
+                "notify": ["restart nginx"],
             }
         }
     }
@@ -116,12 +114,12 @@ class RoleVariable(BaseModel):
     title: Optional[str] = None
     line: int = 0
 
-    @field_validator('name')
+    @field_validator("name")
     @classmethod
     def name_not_empty(cls, v: str) -> str:
         """Validate variable name is not empty."""
         if not v or not v.strip():
-            raise ValueError('Variable name cannot be empty')
+            raise ValueError("Variable name cannot be empty")
         return v.strip()
 
     model_config = {
@@ -132,7 +130,7 @@ class RoleVariable(BaseModel):
                 "type": "int",
                 "description": "Port for nginx to listen on",
                 "required": False,
-                "choices": [80, 443, 8080]
+                "choices": [80, 443, 8080],
             }
         }
     }
@@ -173,15 +171,15 @@ class Role(BaseModel):
     docsible: Optional[Dict[str, Any]] = None
     playbook: Dict[str, Any] = Field(default_factory=dict)
 
-    @field_validator('name')
+    @field_validator("name")
     @classmethod
     def name_not_empty(cls, v: str) -> str:
         """Validate role name is not empty."""
         if not v or not v.strip():
-            raise ValueError('Role name cannot be empty')
+            raise ValueError("Role name cannot be empty")
         return v.strip()
 
-    @field_validator('path')
+    @field_validator("path")
     @classmethod
     def path_exists(cls, v: Path) -> Path:
         """Validate role path exists."""
@@ -203,7 +201,7 @@ class Role(BaseModel):
         """
         all_tasks = []
         for task_file in self.tasks:
-            for task_data in task_file.get('tasks', []):
+            for task_data in task_file.get("tasks", []):
                 try:
                     task = RoleTask(**task_data)
                     all_tasks.append(task)
@@ -227,7 +225,7 @@ class Role(BaseModel):
 
         # Get defaults
         for defaults_file in self.defaults:
-            for var_name, var_data in defaults_file.get('data', {}).items():
+            for var_name, var_data in defaults_file.get("data", {}).items():
                 try:
                     var = RoleVariable(name=var_name, **var_data)
                     all_vars.append(var)
@@ -236,7 +234,7 @@ class Role(BaseModel):
 
         # Get vars
         for vars_file in self.vars:
-            for var_name, var_data in vars_file.get('data', {}).items():
+            for var_name, var_data in vars_file.get("data", {}).items():
                 try:
                     var = RoleVariable(name=var_name, **var_data)
                     all_vars.append(var)
@@ -253,7 +251,7 @@ class Role(BaseModel):
                 "path": "/roles/nginx",
                 "repository": "https://github.com/example/ansible-nginx",
                 "repository_type": "github",
-                "repository_branch": "main"
+                "repository_branch": "main",
             }
-        }
+        },
     }

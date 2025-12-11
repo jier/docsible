@@ -18,6 +18,7 @@ from docsible.analyzers.complexity_analyzer import (
 
 # Test Fixtures
 
+
 def create_simple_role_info():
     """Create role info for a simple role (5 tasks)."""
     return {
@@ -47,15 +48,18 @@ def create_medium_role_info():
             {
                 "file": "main.yml",
                 "tasks": [
-                    {"name": f"Task {i}", "module": "debug", "when": "i % 3 == 0" if i % 3 == 0 else None}
+                    {
+                        "name": f"Task {i}",
+                        "module": "debug",
+                        "when": "i % 3 == 0" if i % 3 == 0 else None,
+                    }
                     for i in range(10)
                 ],
             },
             {
                 "file": "setup.yml",
                 "tasks": [
-                    {"name": f"Setup task {i}", "module": "command"}
-                    for i in range(5)
+                    {"name": f"Setup task {i}", "module": "command"} for i in range(5)
                 ],
             },
         ],
@@ -80,15 +84,27 @@ def create_complex_role_info():
             {
                 "file": "main.yml",
                 "tasks": [
-                    {"name": f"Main task {i}", "module": "debug", "when": "i % 2 == 0" if i % 2 == 0 else None}
+                    {
+                        "name": f"Main task {i}",
+                        "module": "debug",
+                        "when": "i % 2 == 0" if i % 2 == 0 else None,
+                    }
                     for i in range(15)
                 ],
             },
             {
                 "file": "database.yml",
                 "tasks": [
-                    {"name": "Create database", "module": "postgresql_db", "username": "admin"},
-                    {"name": "Create user", "module": "postgresql_user", "password": "secret"},
+                    {
+                        "name": "Create database",
+                        "module": "postgresql_db",
+                        "username": "admin",
+                    },
+                    {
+                        "name": "Create user",
+                        "module": "postgresql_user",
+                        "password": "secret",
+                    },
                     {"name": "Grant privileges", "module": "postgresql_privs"},
                 ],
             },
@@ -103,17 +119,36 @@ def create_complex_role_info():
             {
                 "file": "vault.yml",
                 "tasks": [
-                    {"name": "Get secret", "module": "hashi_vault", "vault_token": "token123"},
-                    {"name": "Set secret", "module": "community.hashi_vault.vault_write"},
+                    {
+                        "name": "Get secret",
+                        "module": "hashi_vault",
+                        "vault_token": "token123",
+                    },
+                    {
+                        "name": "Set secret",
+                        "module": "community.hashi_vault.vault_write",
+                    },
                 ],
             },
             {
                 "file": "orchestration.yml",
                 "tasks": [
-                    {"name": "Include common tasks", "module": "include_tasks", "file": "common.yml"},
+                    {
+                        "name": "Include common tasks",
+                        "module": "include_tasks",
+                        "file": "common.yml",
+                    },
                     {"name": "Import role", "module": "import_role", "name": "base"},
-                    {"name": "Include another role", "module": "ansible.builtin.include_role", "name": "utils"},
-                    {"name": "Import more tasks", "module": "ansible.builtin.import_tasks", "file": "cleanup.yml"},
+                    {
+                        "name": "Include another role",
+                        "module": "ansible.builtin.include_role",
+                        "name": "utils",
+                    },
+                    {
+                        "name": "Import more tasks",
+                        "module": "ansible.builtin.import_tasks",
+                        "file": "cleanup.yml",
+                    },
                     {"name": "Regular task", "module": "debug"},
                     {"name": "Another task", "module": "copy"},
                     {"name": "Final task", "module": "template"},
@@ -136,6 +171,7 @@ def create_complex_role_info():
 
 
 # Tests for classify_complexity()
+
 
 def test_classify_simple_role():
     """Test classification of simple role (1-10 tasks)."""
@@ -225,6 +261,7 @@ def test_classify_boundary_conditions():
 
 # Tests for detect_integrations()
 
+
 def test_detect_api_integration():
     """Test detection of API integrations."""
     role_info = {
@@ -258,8 +295,15 @@ def test_detect_database_integration():
                 "file": "database.yml",
                 "tasks": [
                     {"name": "Create DB", "module": "postgresql_db"},
-                    {"name": "Create user", "module": "postgresql_user", "password": "secret"},
-                    {"name": "Grant access", "module": "community.postgresql.postgresql_privs"},
+                    {
+                        "name": "Create user",
+                        "module": "postgresql_user",
+                        "password": "secret",
+                    },
+                    {
+                        "name": "Grant access",
+                        "module": "community.postgresql.postgresql_privs",
+                    },
                 ],
             }
         ],
@@ -280,8 +324,15 @@ def test_detect_vault_integration():
             {
                 "file": "secrets.yml",
                 "tasks": [
-                    {"name": "Read secret", "module": "hashi_vault", "vault_token": "token"},
-                    {"name": "Write secret", "module": "community.hashi_vault.vault_write"},
+                    {
+                        "name": "Read secret",
+                        "module": "hashi_vault",
+                        "vault_token": "token",
+                    },
+                    {
+                        "name": "Write secret",
+                        "module": "community.hashi_vault.vault_write",
+                    },
                 ],
             }
         ],
@@ -303,7 +354,11 @@ def test_detect_multiple_integrations():
                 "file": "main.yml",
                 "tasks": [
                     {"name": "API call", "module": "uri"},
-                    {"name": "DB query", "module": "mysql_db", "login_password": "pass"},
+                    {
+                        "name": "DB query",
+                        "module": "mysql_db",
+                        "login_password": "pass",
+                    },
                     {"name": "Vault read", "module": "hashi_vault"},
                     {"name": "Regular task", "module": "debug"},
                 ],
@@ -327,10 +382,22 @@ def test_exclude_composition_modules():
             {
                 "file": "main.yml",
                 "tasks": [
-                    {"name": "Include role", "module": "include_role", "name": "common"},
+                    {
+                        "name": "Include role",
+                        "module": "include_role",
+                        "name": "common",
+                    },
                     {"name": "Import role", "module": "import_role", "name": "base"},
-                    {"name": "Include tasks", "module": "include_tasks", "file": "setup.yml"},
-                    {"name": "Import tasks", "module": "ansible.builtin.import_tasks", "file": "cleanup.yml"},
+                    {
+                        "name": "Include tasks",
+                        "module": "include_tasks",
+                        "file": "setup.yml",
+                    },
+                    {
+                        "name": "Import tasks",
+                        "module": "ansible.builtin.import_tasks",
+                        "file": "cleanup.yml",
+                    },
                     {"name": "API call", "module": "uri"},  # This should be detected
                 ],
             }
@@ -363,6 +430,7 @@ def test_detect_no_integrations():
 
 
 # Tests for analyze_role_complexity()
+
 
 def test_analyze_simple_role():
     """Test complete analysis of simple role."""
@@ -437,9 +505,18 @@ def test_analyze_max_and_avg_tasks():
     role_info = {
         "name": "test_role",
         "tasks": [
-            {"file": "file1.yml", "tasks": [{"name": f"Task {i}", "module": "debug"} for i in range(10)]},
-            {"file": "file2.yml", "tasks": [{"name": f"Task {i}", "module": "debug"} for i in range(5)]},
-            {"file": "file3.yml", "tasks": [{"name": f"Task {i}", "module": "debug"} for i in range(15)]},
+            {
+                "file": "file1.yml",
+                "tasks": [{"name": f"Task {i}", "module": "debug"} for i in range(10)],
+            },
+            {
+                "file": "file2.yml",
+                "tasks": [{"name": f"Task {i}", "module": "debug"} for i in range(5)],
+            },
+            {
+                "file": "file3.yml",
+                "tasks": [{"name": f"Task {i}", "module": "debug"} for i in range(15)],
+            },
         ],
         "handlers": [],
         "meta": {"dependencies": []},
@@ -453,6 +530,7 @@ def test_analyze_max_and_avg_tasks():
 
 
 # Tests for generate_recommendations()
+
 
 def test_recommendations_for_complex_role():
     """Test recommendations for complex role."""
@@ -506,13 +584,39 @@ def test_recommendations_for_multiple_integrations():
     )
 
     integration_points = [
-        IntegrationPoint(type=IntegrationType.API, system_name="REST API", modules_used=["uri"], task_count=2, uses_credentials=True),
-        IntegrationPoint(type=IntegrationType.DATABASE, system_name="PostgreSQL", modules_used=["postgresql_db"], task_count=3, uses_credentials=True),
-        IntegrationPoint(type=IntegrationType.VAULT, system_name="Vault", modules_used=["hashi_vault"], task_count=1, uses_credentials=True),
-        IntegrationPoint(type=IntegrationType.API, system_name="GraphQL API", modules_used=["uri"], task_count=1, uses_credentials=False),
+        IntegrationPoint(
+            type=IntegrationType.API,
+            system_name="REST API",
+            modules_used=["uri"],
+            task_count=2,
+            uses_credentials=True,
+        ),
+        IntegrationPoint(
+            type=IntegrationType.DATABASE,
+            system_name="PostgreSQL",
+            modules_used=["postgresql_db"],
+            task_count=3,
+            uses_credentials=True,
+        ),
+        IntegrationPoint(
+            type=IntegrationType.VAULT,
+            system_name="Vault",
+            modules_used=["hashi_vault"],
+            task_count=1,
+            uses_credentials=True,
+        ),
+        IntegrationPoint(
+            type=IntegrationType.API,
+            system_name="GraphQL API",
+            modules_used=["uri"],
+            task_count=1,
+            uses_credentials=False,
+        ),
     ]
 
-    recommendations = generate_recommendations(metrics, ComplexityCategory.MEDIUM, integration_points)
+    recommendations = generate_recommendations(
+        metrics, ComplexityCategory.MEDIUM, integration_points
+    )
 
     # Should recommend architecture diagram for multiple integrations
     assert any("integration" in rec.lower() for rec in recommendations)
@@ -543,9 +647,14 @@ def test_recommendations_for_credentials():
         )
     ]
 
-    recommendations = generate_recommendations(metrics, ComplexityCategory.MEDIUM, integration_points)
+    recommendations = generate_recommendations(
+        metrics, ComplexityCategory.MEDIUM, integration_points
+    )
 
-    assert any("credentials" in rec.lower() or "authentication" in rec.lower() for rec in recommendations)
+    assert any(
+        "credentials" in rec.lower() or "authentication" in rec.lower()
+        for rec in recommendations
+    )
 
 
 def test_recommendations_for_simple_role():
@@ -562,10 +671,14 @@ def test_recommendations_for_simple_role():
     recommendations = generate_recommendations(metrics, ComplexityCategory.SIMPLE, [])
 
     # Should indicate role is manageable
-    assert any("manageable" in rec.lower() or "standard" in rec.lower() for rec in recommendations)
+    assert any(
+        "manageable" in rec.lower() or "standard" in rec.lower()
+        for rec in recommendations
+    )
 
 
 # Edge Cases
+
 
 def test_empty_role():
     """Test analysis of role with no tasks."""

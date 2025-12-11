@@ -16,7 +16,7 @@ DEFAULT_CONFIG_FILE = ".docsible.yml"
 DOCSIBLE_METADATA_FILE = ".docsible"
 
 # YAML extensions
-YAML_EXTENSIONS = ['.yml', '.yaml']
+YAML_EXTENSIONS = [".yml", ".yaml"]
 
 # Ansible directory defaults
 DEFAULT_DEFAULTS_DIR = "defaults"

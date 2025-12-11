@@ -4,10 +4,10 @@ from docsible.models.config import DocsibleConfig, StructureConfig
 from docsible.models.role import Role, RoleMetadata, RoleTask, RoleVariable
 
 __all__ = [
-    'DocsibleConfig',
-    'StructureConfig',
-    'Role',
-    'RoleMetadata',
-    'RoleTask',
-    'RoleVariable',
+    "DocsibleConfig",
+    "StructureConfig",
+    "Role",
+    "RoleMetadata",
+    "RoleTask",
+    "RoleVariable",
 ]

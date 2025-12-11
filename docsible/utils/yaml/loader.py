@@ -1,6 +1,7 @@
 """
 YAML file loading functions with metadata extraction.
 """
+
 import os
 import logging
 from pathlib import Path
@@ -28,7 +29,7 @@ def load_yaml_generic(filepath: Union[str, Path]) -> Optional[Dict[str, Any]]:
         ...     print(data.get('my_var'))
     """
     try:
-        with open(filepath, 'r', encoding='utf-8') as f:
+        with open(filepath, "r", encoding="utf-8") as f:
             data = yaml.safe_load(f)
         return data
     except (FileNotFoundError, yaml.constructor.ConstructorError) as e:
@@ -51,10 +52,10 @@ def load_yaml_file_custom(file_path):
         or None if the file is empty or an error occurs.
     """
     try:
-        with open(file_path, 'r', encoding='utf-8') as file:
+        with open(file_path, "r", encoding="utf-8") as file:
             lines = file.readlines()
 
-        with open(file_path, 'r', encoding='utf-8') as file:
+        with open(file_path, "r", encoding="utf-8") as file:
             data = yaml.safe_load(file)
 
         if not data:
@@ -71,7 +72,7 @@ def load_yaml_file_custom(file_path):
             Returns:
                 bool: True if the line ends with '|', indicating a multi-line value.
             """
-            return line.strip().endswith('|')
+            return line.strip().endswith("|")
 
         def extract_metadata(idx):
             """
@@ -82,7 +83,12 @@ def load_yaml_file_custom(file_path):
                 dict: Metadata dictionary with keys 'title', 'required', 'choices', and 'description'.
             """
             if idx is None:
-                return {'title': None, 'required': None, 'choices': None, 'description': None}
+                return {
+                    "title": None,
+                    "required": None,
+                    "choices": None,
+                    "description": None,
+                }
 
             comments = []
             for comment_index in range(idx - 1, -1, -1):
@@ -93,35 +99,48 @@ def load_yaml_file_custom(file_path):
                     break
             comments.reverse()
 
-            meta = {'title': None, 'required': None, 'choices': None, 'description': None, 'type': None}
+            meta = {
+                "title": None,
+                "required": None,
+                "choices": None,
+                "description": None,
+                "type": None,
+            }
 
             for comment in comments:
                 lc = comment.lower()
                 # Normalize tags: convert both '-' and '_' to a standard separator for comparison
                 # This allows tags like 'title:', 'required:', 'description-lines:', 'description_lines:' to all work
-                normalized_lc = lc.replace('_', '-')
+                normalized_lc = lc.replace("_", "-")
 
-                if normalized_lc.startswith('title:'):
-                    meta['title'] = comment.split(':', 1)[1].strip()
-                elif normalized_lc.startswith('required:'):
-                    meta['required'] = comment.split(':', 1)[1].strip()
-                elif normalized_lc.startswith('choices:'):
-                    meta['choices'] = comment.split(':', 1)[1].strip()
-                elif normalized_lc.startswith('description:'):
-                    meta['description'] = comment.split(':', 1)[1].strip()
-                elif normalized_lc.startswith('type:'):
-                    meta['type'] = comment.split(':', 1)[1].strip()
-                elif normalized_lc.startswith('description-lines:') or 'description-lines:' in normalized_lc or 'description_lines:' in lc:
+                if normalized_lc.startswith("title:"):
+                    meta["title"] = comment.split(":", 1)[1].strip()
+                elif normalized_lc.startswith("required:"):
+                    meta["required"] = comment.split(":", 1)[1].strip()
+                elif normalized_lc.startswith("choices:"):
+                    meta["choices"] = comment.split(":", 1)[1].strip()
+                elif normalized_lc.startswith("description:"):
+                    meta["description"] = comment.split(":", 1)[1].strip()
+                elif normalized_lc.startswith("type:"):
+                    meta["type"] = comment.split(":", 1)[1].strip()
+                elif (
+                    normalized_lc.startswith("description-lines:")
+                    or "description-lines:" in normalized_lc
+                    or "description_lines:" in lc
+                ):
                     description_lines = []
                     start_collecting = False  # Flag to start collecting lines
 
                     # Process all subsequent lines to collect description content
                     for subsequent_line in lines[comment_index:]:
                         line_content = subsequent_line.strip()
-                        normalized_line = line_content.lower().replace('_', '-')
+                        normalized_line = line_content.lower().replace("_", "-")
 
                         # Start collecting after `description-lines:` or `description_lines:`
-                        if line_content.startswith("#") and ('description-lines:' in normalized_line or 'description_lines:' in line_content.lower()):
+                        if line_content.startswith("#") and (
+                            "description-lines:" in normalized_line
+                            or "description_lines:" in line_content.lower()
+                        ):
                             start_collecting = True
                             continue
 
@@ -133,14 +152,14 @@ def load_yaml_file_custom(file_path):
                             if line_content.startswith("#"):
                                 # Collect the line content
                                 description_lines.append(
-                                    f'{line_content[1:].strip()}<br>')
+                                    f"{line_content[1:].strip()}<br>"
+                                )
                             else:
                                 break  # Stop if a non-comment line is encountered
 
                     # Join all collected lines into a single description string
                     if description_lines:
-                        meta['description'] = "\n".join(
-                            description_lines)
+                        meta["description"] = "\n".join(description_lines)
             return meta
 
         def process_line(k, v):
@@ -154,7 +173,7 @@ def load_yaml_file_custom(file_path):
             nonlocal parent_line
 
             line_idx = None
-            dictkey = k.split('.')[-1]
+            dictkey = k.split(".")[-1]
             vtype = type(v)
 
             for idx in range(parent_line, len(lines)):
@@ -172,24 +191,34 @@ def load_yaml_file_custom(file_path):
                             dictvalue = str(list(v.values())[0])
                     if dictvalue is None:
                         # dict
-                        if line_stripped.startswith(f"{dictkey}:") or line_stripped.startswith(f"- {dictkey}:"):
+                        if line_stripped.startswith(
+                            f"{dictkey}:"
+                        ) or line_stripped.startswith(f"- {dictkey}:"):
                             line_idx = idx
                             break
                     else:
                         # inline dict
-                        if f"{dictkey}:" in line_stripped and dictvalue in line_stripped:
+                        if (
+                            f"{dictkey}:" in line_stripped
+                            and dictvalue in line_stripped
+                        ):
                             line_idx = idx
                             break
 
                 elif isinstance(v, list):
                     # list
-                    if line_stripped.startswith(f"{dictkey}:") or line_stripped.startswith(f"- {v}"):
+                    if line_stripped.startswith(
+                        f"{dictkey}:"
+                    ) or line_stripped.startswith(f"- {v}"):
                         line_idx = idx
                         break
 
                 else:
                     # key match
-                    if line_stripped.startswith(f"{dictkey}:") or f"{dictkey}:" in line_stripped:
+                    if (
+                        line_stripped.startswith(f"{dictkey}:")
+                        or f"{dictkey}:" in line_stripped
+                    ):
                         line_idx = idx
                         break
                     # bool in list
@@ -197,7 +226,10 @@ def load_yaml_file_custom(file_path):
                         line_idx = idx
                         break
                     # none / null in list
-                    if v is None and any(null_str in line_stripped.lower() for null_str in ['- none', '- null']):
+                    if v is None and any(
+                        null_str in line_stripped.lower()
+                        for null_str in ["- none", "- null"]
+                    ):
                         line_idx = idx
                         break
                     # list item part 1
@@ -218,21 +250,28 @@ def load_yaml_file_custom(file_path):
             meta = extract_metadata(current_line)
             indicator_name = get_multiline_indicator(lines[current_line])
             result[k] = {
-                'value': f"<multiline value: {indicator_name}>" if indicator_name
-                        else [] if isinstance(v, list)
-                        else {} if isinstance(v, dict)
-                        else v.strip() if isinstance(v, str)
-                        else v,
-                'multiline_indicator': indicator_name,
-                'title': meta['title'],
-                'required': meta['required'],
-                'choices': meta['choices'],
-                'description': meta['description'],
-                'line': current_line + 1,
-                'type': meta['type'] if meta['type']
-                    else 'dict' if isinstance(v, dict)
-                    else 'list' if isinstance(v, list)
-                    else type(v).__name__
+                "value": f"<multiline value: {indicator_name}>"
+                if indicator_name
+                else []
+                if isinstance(v, list)
+                else {}
+                if isinstance(v, dict)
+                else v.strip()
+                if isinstance(v, str)
+                else v,
+                "multiline_indicator": indicator_name,
+                "title": meta["title"],
+                "required": meta["required"],
+                "choices": meta["choices"],
+                "description": meta["description"],
+                "line": current_line + 1,
+                "type": meta["type"]
+                if meta["type"]
+                else "dict"
+                if isinstance(v, dict)
+                else "list"
+                if isinstance(v, list)
+                else type(v).__name__,
             }
 
         def process_dict(base_key, value):
@@ -288,7 +327,7 @@ def load_yaml_files_from_dir_custom(dir_path):
             file_data = load_yaml_file_custom(full_path)
             if file_data:
                 relative_path = os.path.relpath(full_path, dir_path)
-                return ({'file': relative_path, 'data': file_data})
+                return {"file": relative_path, "data": file_data}
         return None
 
     if os.path.exists(dir_path) and os.path.isdir(dir_path):

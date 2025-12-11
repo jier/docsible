@@ -1,6 +1,7 @@
 """
 Main state diagram generation for Ansible roles.
 """
+
 import logging
 from typing import Dict, Any, Optional
 
@@ -10,7 +11,9 @@ from .formatter import infer_transitions
 logger = logging.getLogger(__name__)
 
 
-def generate_state_diagram(role_info: Dict[str, Any], role_name: Optional[str] = None) -> Optional[str]:
+def generate_state_diagram(
+    role_info: Dict[str, Any], role_name: Optional[str] = None
+) -> Optional[str]:
     """
     Generate a Mermaid state transition diagram for a role.
 
@@ -93,7 +96,9 @@ def generate_state_diagram(role_info: Dict[str, Any], role_name: Optional[str] =
         if phase_info.has_state_check:
             phase_name = phase_info.phase.value.capitalize()
             task_count = len(phase_info.tasks)
-            lines.append(f"    note right of {phase_name}: {task_count} tasks with state management")
+            lines.append(
+                f"    note right of {phase_name}: {task_count} tasks with state management"
+            )
 
     # Add final transition if not cleanup
     if Phase.CLEANUP in phase_set:
@@ -101,10 +106,12 @@ def generate_state_diagram(role_info: Dict[str, Any], role_name: Optional[str] =
     else:
         lines.append(f"    {exit_phase.value.capitalize()} --> [*]")
 
-    return '\n'.join(lines)
+    return "\n".join(lines)
 
 
-def should_generate_state_diagram(role_info: Dict[str, Any], complexity_category: str) -> bool:
+def should_generate_state_diagram(
+    role_info: Dict[str, Any], complexity_category: str
+) -> bool:
     """
     Determine if a state diagram should be generated for this role.
 
@@ -125,8 +132,8 @@ def should_generate_state_diagram(role_info: Dict[str, Any], complexity_category
         return False
 
     # Check if role has enough tasks to warrant state diagram
-    tasks_data = role_info.get('tasks', [])
-    total_tasks = sum(len(tf.get('tasks', [])) for tf in tasks_data)
+    tasks_data = role_info.get("tasks", [])
+    total_tasks = sum(len(tf.get("tasks", [])) for tf in tasks_data)
 
     # Need at least 5 tasks to make a meaningful state diagram
     return total_tasks >= 5

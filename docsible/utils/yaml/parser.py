@@ -1,6 +1,7 @@
 """
 YAML parsing and analysis utilities.
 """
+
 import re
 from typing import Optional
 
@@ -11,23 +12,23 @@ def get_multiline_indicator(line: str) -> Optional[str]:
     Handles all combinations of |, >, +, -, and 1-9 indent levels.
     Returns: e.g., 'literal', 'folded_keep_indent_2', or 'invalid_...'
     """
-    match = re.match(r'^\s*\w[\w\-\.]*\s*:\s*([>|][^\s#]*)', line)
+    match = re.match(r"^\s*\w[\w\-\.]*\s*:\s*([>|][^\s#]*)", line)
     if not match:
         return None
 
     raw = match.group(1)
 
     # Invalid if multiple digits or unknown characters
-    if re.search(r'\d{2,}', raw) or re.search(r'[^>|0-9+-]', raw):
-        return f'invalid_{raw}'
+    if re.search(r"\d{2,}", raw) or re.search(r"[^>|0-9+-]", raw):
+        return f"invalid_{raw}"
 
-    style = 'literal' if raw.startswith('|') else 'folded'
+    style = "literal" if raw.startswith("|") else "folded"
     chomping = None
     indent = None
 
     # Extract components
-    chomp_match = re.search(r'[+-]', raw)
-    indent_match = re.search(r'[1-9]', raw)
+    chomp_match = re.search(r"[+-]", raw)
+    indent_match = re.search(r"[1-9]", raw)
 
     if chomp_match:
         chomping = chomp_match.group(0)
@@ -36,12 +37,12 @@ def get_multiline_indicator(line: str) -> Optional[str]:
 
     # Build result
     name = style
-    if chomping == '+':
-        name += '_keep'
-    elif chomping == '-':
-        name += '_strip'
+    if chomping == "+":
+        name += "_keep"
+    elif chomping == "-":
+        name += "_strip"
     if indent:
-        name += f'_indent_{indent}'
+        name += f"_indent_{indent}"
 
     return name
 
@@ -58,7 +59,7 @@ def get_task_comments(file_path: str) -> list[dict[str, str]]:
       actual inline comments.
     """
     try:
-        with open(file_path, 'r', encoding='utf-8') as f:
+        with open(file_path, "r", encoding="utf-8") as f:
             lines = f.readlines()
     except FileNotFoundError:
         print(f"Error: File not found {file_path}")
@@ -91,16 +92,23 @@ def get_task_comments(file_path: str) -> list[dict[str, str]]:
 
                 for k, char_code in enumerate(task_name_value_and_inline_comment):
                     # Basic quote state machine (doesn't handle escaped quotes within quotes)
-                    if char_code == "'" and (k == 0 or task_name_value_and_inline_comment[k-1] != '\\'):
+                    if char_code == "'" and (
+                        k == 0 or task_name_value_and_inline_comment[k - 1] != "\\"
+                    ):
                         in_single_quote = not in_single_quote
-                    elif char_code == '"' and (k == 0 or task_name_value_and_inline_comment[k-1] != '\\'):
+                    elif char_code == '"' and (
+                        k == 0 or task_name_value_and_inline_comment[k - 1] != "\\"
+                    ):
                         in_double_quote = not in_double_quote
-                    elif char_code == '#' and not in_single_quote and not in_double_quote:
+                    elif (
+                        char_code == "#" and not in_single_quote and not in_double_quote
+                    ):
                         name_part_end_index = k  # Found start of a true inline comment
                         break
 
-                task_name_raw = task_name_value_and_inline_comment[:name_part_end_index].strip(
-                )
+                task_name_raw = task_name_value_and_inline_comment[
+                    :name_part_end_index
+                ].strip()
 
             except IndexError:
                 # Malformed - name: line, skip
@@ -108,8 +116,9 @@ def get_task_comments(file_path: str) -> list[dict[str, str]]:
                 continue
 
             # Clean task name (remove surrounding quotes if they match)
-            if (task_name_raw.startswith("'") and task_name_raw.endswith("'")) or \
-               (task_name_raw.startswith('"') and task_name_raw.endswith('"')):
+            if (task_name_raw.startswith("'") and task_name_raw.endswith("'")) or (
+                task_name_raw.startswith('"') and task_name_raw.endswith('"')
+            ):
                 task_name = task_name_raw[1:-1]
             else:
                 task_name = task_name_raw
@@ -123,10 +132,9 @@ def get_task_comments(file_path: str) -> list[dict[str, str]]:
                 comment_to_assign = "\n".join(candidate_comments)
 
             if comment_to_assign:  # Only add if there's a comment
-                output_task_comments.append({
-                    "task_name": task_name,
-                    "task_comments": comment_to_assign
-                })
+                output_task_comments.append(
+                    {"task_name": task_name, "task_comments": comment_to_assign}
+                )
 
             candidate_comments = []  # Reset for the next task
 
@@ -151,7 +159,7 @@ def get_task_line_numbers(file_path):
     Returns:
         Dictionary mapping task names to line numbers
     """
-    with open(file_path, 'r', encoding='utf-8') as f:
+    with open(file_path, "r", encoding="utf-8") as f:
         lines = f.readlines()
 
     tasks_lines = {}
@@ -159,8 +167,14 @@ def get_task_line_numbers(file_path):
         stripped_line = line.strip()
 
         if stripped_line.startswith("- name:"):
-            task_name = stripped_line.replace(
-                "- name:", "").split("#")[0].strip().replace("|", "¦").replace("'", "").replace('"', "")
+            task_name = (
+                stripped_line.replace("- name:", "")
+                .split("#")[0]
+                .strip()
+                .replace("|", "¦")
+                .replace("'", "")
+                .replace('"', "")
+            )
             tasks_lines[task_name] = idx + 1
 
     return tasks_lines

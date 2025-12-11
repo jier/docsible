@@ -1,6 +1,7 @@
 """
 Test cases for README generation with various playbook scenarios.
 """
+
 import os
 import tempfile
 import shutil
@@ -27,12 +28,7 @@ class TestSimpleRoleGeneration:
 
         runner = CliRunner()
         result = runner.invoke(
-            doc_the_role,
-            [
-                "--role", str(role_path),
-                "--graph",
-                "--no-backup"
-            ]
+            doc_the_role, ["--role", str(role_path), "--graph", "--no-backup"]
         )
 
         assert result.exit_code == 0
@@ -52,12 +48,7 @@ class TestSimpleRoleGeneration:
         runner = CliRunner()
         result = runner.invoke(
             doc_the_role,
-            [
-                "--role", str(role_path),
-                "--hybrid",
-                "--graph",
-                "--no-backup"
-            ]
+            ["--role", str(role_path), "--hybrid", "--graph", "--no-backup"],
         )
 
         assert result.exit_code == 0
@@ -76,12 +67,7 @@ class TestSimpleRoleGeneration:
         runner = CliRunner()
         result = runner.invoke(
             doc_the_role,
-            [
-                "--role", str(role_path),
-                "--hybrid",
-                "--no-vars",
-                "--no-backup"
-            ]
+            ["--role", str(role_path), "--hybrid", "--no-vars", "--no-backup"],
         )
 
         assert result.exit_code == 0
@@ -110,12 +96,7 @@ class TestComplexRoleGeneration:
         runner = CliRunner()
         result = runner.invoke(
             doc_the_role,
-            [
-                "--role", str(role_path),
-                "--graph",
-                "--comments",
-                "--no-backup"
-            ]
+            ["--role", str(role_path), "--graph", "--comments", "--no-backup"],
         )
 
         assert result.exit_code == 0
@@ -135,12 +116,7 @@ class TestComplexRoleGeneration:
         runner = CliRunner()
         result = runner.invoke(
             doc_the_role,
-            [
-                "--role", str(role_path),
-                "--hybrid",
-                "--graph",
-                "--no-backup"
-            ]
+            ["--role", str(role_path), "--hybrid", "--graph", "--no-backup"],
         )
 
         assert result.exit_code == 0
@@ -157,12 +133,7 @@ class TestComplexRoleGeneration:
 
         runner = CliRunner()
         result = runner.invoke(
-            doc_the_role,
-            [
-                "--role", str(role_path),
-                "--hybrid",
-                "--no-backup"
-            ]
+            doc_the_role, ["--role", str(role_path), "--hybrid", "--no-backup"]
         )
 
         assert result.exit_code == 0
@@ -194,12 +165,14 @@ class TestPlaybookSequenceDiagram:
         result = runner.invoke(
             doc_the_role,
             [
-                "--role", str(role_path),
-                "--playbook", str(role_path / "tests" / "test.yml"),
+                "--role",
+                str(role_path),
+                "--playbook",
+                str(role_path / "tests" / "test.yml"),
                 "--hybrid",
                 "--graph",
-                "--no-backup"
-            ]
+                "--no-backup",
+            ],
         )
 
         assert result.exit_code == 0
@@ -232,13 +205,7 @@ class TestMultiRoleProject:
         role_path = project_path / "roles" / "webserver"
 
         runner = CliRunner()
-        result = runner.invoke(
-            doc_the_role,
-            [
-                "--role", str(role_path),
-                "--no-backup"
-            ]
-        )
+        result = runner.invoke(doc_the_role, ["--role", str(role_path), "--no-backup"])
 
         assert result.exit_code == 0
         readme_path = role_path / "README.md"
@@ -259,12 +226,14 @@ class TestMultiRoleProject:
         result = runner.invoke(
             doc_the_role,
             [
-                "--role", str(role_path),
-                "--playbook", str(project_path / "site.yml"),
+                "--role",
+                str(role_path),
+                "--playbook",
+                str(project_path / "site.yml"),
                 "--hybrid",
                 "--graph",
-                "--no-backup"
-            ]
+                "--no-backup",
+            ],
         )
 
         assert result.exit_code == 0

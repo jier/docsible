@@ -1,6 +1,7 @@
 """
 Mermaid diagram formatting utilities.
 """
+
 import logging
 import re
 
@@ -25,7 +26,7 @@ def sanitize_for_mermaid_id(text: str) -> str:
     """
     text = text.replace("|", "_")
     # Allowing a-zA-Z0-9 as well as French accents
-    return re.sub(r'[^a-zA-Z0-9À-ÿ]', '_', text)
+    return re.sub(r"[^a-zA-Z0-9À-ÿ]", "_", text)
 
 
 def break_text(text: str, max_length: int = 50) -> str:
@@ -44,20 +45,20 @@ def break_text(text: str, max_length: int = 50) -> str:
         >>> break_text("This is a very long text that needs wrapping", 20)
         'This is a very long<br>text that needs<br>wrapping'
     """
-    words = text.split(' ')
+    words = text.split(" ")
     lines = []
     current_line = []
     current_length = 0
     for word in words:
         if current_length + len(word) + len(current_line) > max_length:
-            lines.append(' '.join(current_line))
+            lines.append(" ".join(current_line))
             current_length = 0
             current_line = []
         current_line.append(word)
         current_length += len(word)
     if current_line:
-        lines.append(' '.join(current_line))
-    return '<br>'.join(lines)
+        lines.append(" ".join(current_line))
+    return "<br>".join(lines)
 
 
 def sanitize_for_title(text: str) -> str:
@@ -78,7 +79,7 @@ def sanitize_for_title(text: str) -> str:
     """
     # Allowing a-z0-9 as well as French accents, and converting to lower case
     try:
-        sanitized_text = re.sub(r'[^a-z0-9À-ÿ]', ' ', text.lower())
+        sanitized_text = re.sub(r"[^a-z0-9À-ÿ]", " ", text.lower())
         return break_text(sanitized_text)
     except Exception as e:
         logger.warning(f"Failed to sanitize title '{text}': {e}")
@@ -102,5 +103,5 @@ def sanitize_for_condition(text: str, max_length: int = 50) -> str:
         >>> sanitize_for_condition("ansible_os_family == 'RedHat'")
         'ansible os family redhat'
     """
-    sanitized_text = re.sub(r'[^a-z0-9À-ÿ]', ' ', text.lower())
+    sanitized_text = re.sub(r"[^a-z0-9À-ÿ]", " ", text.lower())
     return break_text(sanitized_text, max_length)

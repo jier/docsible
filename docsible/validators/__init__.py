@@ -12,8 +12,8 @@ from docsible.validators.doc_validator import (
 )
 
 __all__ = [
-    'DocumentationValidator',
-    'ValidationResult',
-    'ValidationSeverity',
-    'validate_documentation',
+    "DocumentationValidator",
+    "ValidationResult",
+    "ValidationSeverity",
+    "validate_documentation",
 ]

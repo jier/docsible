@@ -30,8 +30,8 @@ def setup_logging(verbose: bool = False) -> None:
     level = logging.DEBUG if verbose else logging.INFO
     logging.basicConfig(
         level=level,
-        format='%(levelname)s - %(message)s',
-        handlers=[logging.StreamHandler(sys.stdout)]
+        format="%(levelname)s - %(message)s",
+        handlers=[logging.StreamHandler(sys.stdout)],
     )
 
 
@@ -50,13 +50,11 @@ def get_version() -> str:
 
 @click.group()
 @click.option(
-    "--verbose", "-v",
-    is_flag=True,
-    help="Enable verbose logging (DEBUG level)"
+    "--verbose", "-v", is_flag=True, help="Enable verbose logging (DEBUG level)"
 )
 @click.version_option(
     version=get_version(),
-    help=f"Show the module version. Current version: {get_version()}"
+    help=f"Show the module version. Current version: {get_version()}",
 )
 def cli(verbose: bool):
     """Docsible - Ansible role and collection documentation generator.

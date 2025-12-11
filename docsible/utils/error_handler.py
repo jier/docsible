@@ -13,8 +13,8 @@ from docsible.exceptions import ConfigurationError
 
 logger = logging.getLogger(__name__)
 
-P = ParamSpec('P')
-T = TypeVar('T')
+P = ParamSpec("P")
+T = TypeVar("T")
 
 
 def handle_errors(default_return: Optional[T] = None) -> Callable:
@@ -38,6 +38,7 @@ def handle_errors(default_return: Optional[T] = None) -> Callable:
         # If error occurs, returns {} and logs the error
         config = load_config(path)
     """
+
     def decorator(func: Callable[P, T]) -> Callable[P, Optional[T]]:
         @wraps(func)
         def wrapper(*args: P.args, **kwargs: P.kwargs) -> Optional[T]:
@@ -46,7 +47,9 @@ def handle_errors(default_return: Optional[T] = None) -> Callable:
             except Exception as e:
                 logger.exception(f"Error in {func.__name__}: {e}")
                 return default_return
+
         return wrapper
+
     return decorator
 
 
@@ -55,7 +58,7 @@ def validate_path(
     must_exist: bool = True,
     must_be_dir: bool = False,
     must_be_file: bool = False,
-    description: str = "Path"
+    description: str = "Path",
 ) -> None:
     """Validate a filesystem path.
 
@@ -96,11 +99,21 @@ def validate_role_structure(role_path: Path, strict: bool = False) -> None:
     Example:
         validate_role_structure(Path("/path/to/role"), strict=True)
     """
-    validate_path(role_path, must_exist=True, must_be_dir=True, description="Role directory")
+    validate_path(
+        role_path, must_exist=True, must_be_dir=True, description="Role directory"
+    )
 
     if strict:
         # Check for at least one standard role directory
-        standard_dirs = ['tasks', 'defaults', 'vars', 'meta', 'handlers', 'templates', 'files']
+        standard_dirs = [
+            "tasks",
+            "defaults",
+            "vars",
+            "meta",
+            "handlers",
+            "templates",
+            "files",
+        ]
         found_dirs = [d for d in standard_dirs if (role_path / d).exists()]
 
         if not found_dirs:
@@ -110,7 +123,7 @@ def validate_role_structure(role_path: Path, strict: bool = False) -> None:
             )
 
 
-def safe_read_file(file_path: Path, encoding: str = 'utf-8') -> Optional[str]:
+def safe_read_file(file_path: Path, encoding: str = "utf-8") -> Optional[str]:
     """Safely read a file, returning None on error.
 
     Args:
@@ -133,7 +146,7 @@ def safe_read_file(file_path: Path, encoding: str = 'utf-8') -> Optional[str]:
         return None
 
 
-def safe_write_file(file_path: Path, content: str, encoding: str = 'utf-8') -> bool:
+def safe_write_file(file_path: Path, content: str, encoding: str = "utf-8") -> bool:
     """Safely write content to a file, returning success status.
 
     Args:
@@ -168,5 +181,6 @@ def log_and_exit(message: str, exit_code: int = 1) -> None:
         log_and_exit("Configuration file not found", exit_code=2)
     """
     import sys
+
     logger.error(message)
     sys.exit(exit_code)

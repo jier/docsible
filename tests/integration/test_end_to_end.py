@@ -18,11 +18,9 @@ class TestRoleDocumentation:
     def test_document_simple_role_creates_readme(self, minimal_role):
         """Test full workflow: role -> README generation."""
         runner = CliRunner()
-        result = runner.invoke(cli, [
-            'role',
-            '--role', str(minimal_role),
-            '--no-backup'
-        ])
+        result = runner.invoke(
+            cli, ["role", "--role", str(minimal_role), "--no-backup"]
+        )
 
         # Check command succeeded
         assert result.exit_code == 0, f"Command failed with output: {result.output}"
@@ -43,12 +41,9 @@ class TestRoleDocumentation:
         """Test that regeneration with hybrid template preserves manual edits."""
         # First generation with hybrid template
         runner = CliRunner()
-        result = runner.invoke(cli, [
-            'role',
-            '--role', str(minimal_role),
-            '--hybrid',
-            '--no-backup'
-        ])
+        result = runner.invoke(
+            cli, ["role", "--role", str(minimal_role), "--hybrid", "--no-backup"]
+        )
         assert result.exit_code == 0
 
         readme = minimal_role / "README.md"
@@ -61,13 +56,17 @@ class TestRoleDocumentation:
         readme.write_text(modified_content)
 
         # Regenerate documentation
-        result = runner.invoke(cli, [
-            'role',
-            '--role', str(minimal_role),
-            '--hybrid',
-            '--append',
-            '--no-backup'
-        ])
+        result = runner.invoke(
+            cli,
+            [
+                "role",
+                "--role",
+                str(minimal_role),
+                "--hybrid",
+                "--append",
+                "--no-backup",
+            ],
+        )
         assert result.exit_code == 0
 
         # Check manual section is preserved
@@ -78,12 +77,9 @@ class TestRoleDocumentation:
     def test_role_with_mermaid_graphs(self, minimal_role):
         """Test role documentation with Mermaid diagram generation."""
         runner = CliRunner()
-        result = runner.invoke(cli, [
-            'role',
-            '--role', str(minimal_role),
-            '--graph',
-            '--no-backup'
-        ])
+        result = runner.invoke(
+            cli, ["role", "--role", str(minimal_role), "--graph", "--no-backup"]
+        )
 
         assert result.exit_code == 0
 
@@ -92,17 +88,24 @@ class TestRoleDocumentation:
 
         # Check for Mermaid diagram markers
         assert "```mermaid" in content, "Mermaid code block not found"
-        assert "flowchart" in content or "graph" in content, "Mermaid flowchart not generated"
+        assert "flowchart" in content or "graph" in content, (
+            "Mermaid flowchart not generated"
+        )
 
     def test_role_with_playbook(self, role_with_playbook):
         """Test role documentation with playbook content."""
         runner = CliRunner()
-        result = runner.invoke(cli, [
-            'role',
-            '--role', str(role_with_playbook),
-            '--playbook', str(role_with_playbook / 'tests' / 'test.yml'),
-            '--no-backup'
-        ])
+        result = runner.invoke(
+            cli,
+            [
+                "role",
+                "--role",
+                str(role_with_playbook),
+                "--playbook",
+                str(role_with_playbook / "tests" / "test.yml"),
+                "--no-backup",
+            ],
+        )
 
         assert result.exit_code == 0
 
@@ -115,11 +118,9 @@ class TestRoleDocumentation:
     def test_role_with_handlers(self, role_with_handlers):
         """Test role documentation with handlers."""
         runner = CliRunner()
-        result = runner.invoke(cli, [
-            'role',
-            '--role', str(role_with_handlers),
-            '--no-backup'
-        ])
+        result = runner.invoke(
+            cli, ["role", "--role", str(role_with_handlers), "--no-backup"]
+        )
 
         assert result.exit_code == 0
 
@@ -137,10 +138,7 @@ class TestRoleDocumentation:
         readme.write_text("# Existing README\nThis will be backed up.")
 
         runner = CliRunner()
-        result = runner.invoke(cli, [
-            'role',
-            '--role', str(minimal_role)
-        ])
+        result = runner.invoke(cli, ["role", "--role", str(minimal_role)])
 
         assert result.exit_code == 0
 
@@ -159,11 +157,9 @@ class TestCollectionDocumentation:
     def test_document_simple_collection(self, minimal_collection):
         """Test full workflow: collection -> README generation."""
         runner = CliRunner()
-        result = runner.invoke(cli, [
-            'role',
-            '--collection', str(minimal_collection),
-            '--no-backup'
-        ])
+        result = runner.invoke(
+            cli, ["role", "--collection", str(minimal_collection), "--no-backup"]
+        )
 
         assert result.exit_code == 0, f"Command failed with output: {result.output}"
 
@@ -182,10 +178,7 @@ class TestConfigInitialization:
     def test_init_config_creates_file(self, tmp_path):
         """Test that init command creates .docsible.yml file."""
         runner = CliRunner()
-        result = runner.invoke(cli, [
-            'init',
-            '--path', str(tmp_path)
-        ])
+        result = runner.invoke(cli, ["init", "--path", str(tmp_path)])
 
         assert result.exit_code == 0
         config_file = tmp_path / ".docsible.yml"
@@ -203,18 +196,11 @@ class TestConfigInitialization:
         runner = CliRunner()
 
         # Try without force (should fail)
-        result = runner.invoke(cli, [
-            'init',
-            '--path', str(tmp_path)
-        ])
+        result = runner.invoke(cli, ["init", "--path", str(tmp_path)])
         assert result.exit_code != 0
 
         # Try with force (should succeed)
-        result = runner.invoke(cli, [
-            'init',
-            '--path', str(tmp_path),
-            '--force'
-        ])
+        result = runner.invoke(cli, ["init", "--path", str(tmp_path), "--force"])
         assert result.exit_code == 0
 
         # Check file was overwritten
@@ -228,7 +214,7 @@ class TestCommandLineInterface:
     def test_cli_help_displays(self):
         """Test that CLI help command works."""
         runner = CliRunner()
-        result = runner.invoke(cli, ['--help'])
+        result = runner.invoke(cli, ["--help"])
 
         assert result.exit_code == 0
         assert "Docsible" in result.output
@@ -238,7 +224,7 @@ class TestCommandLineInterface:
     def test_role_command_help_displays(self):
         """Test that role command help works."""
         runner = CliRunner()
-        result = runner.invoke(cli, ['role', '--help'])
+        result = runner.invoke(cli, ["role", "--help"])
 
         assert result.exit_code == 0
         assert "role" in result.output.lower()
@@ -247,7 +233,7 @@ class TestCommandLineInterface:
     def test_version_flag_works(self):
         """Test that --version flag displays version."""
         runner = CliRunner()
-        result = runner.invoke(cli, ['--version'])
+        result = runner.invoke(cli, ["--version"])
 
         assert result.exit_code == 0
         assert constants.VERSION in result.output
@@ -255,12 +241,9 @@ class TestCommandLineInterface:
     def test_verbose_logging_enabled(self, minimal_role):
         """Test that --verbose flag enables debug logging."""
         runner = CliRunner()
-        result = runner.invoke(cli, [
-            '--verbose',
-            'role',
-            '--role', str(minimal_role),
-            '--no-backup'
-        ])
+        result = runner.invoke(
+            cli, ["--verbose", "role", "--role", str(minimal_role), "--no-backup"]
+        )
 
         assert result.exit_code == 0
         # Verbose mode should produce debug output
@@ -273,14 +256,15 @@ class TestErrorHandling:
     def test_invalid_role_path_shows_error(self):
         """Test that invalid role path produces helpful error."""
         runner = CliRunner()
-        result = runner.invoke(cli, [
-            'role',
-            '--role', '/nonexistent/path',
-            '--no-backup'
-        ])
+        result = runner.invoke(
+            cli, ["role", "--role", "/nonexistent/path", "--no-backup"]
+        )
 
         assert result.exit_code != 0
-        assert "does not exist" in result.output.lower() or "not found" in result.output.lower()
+        assert (
+            "does not exist" in result.output.lower()
+            or "not found" in result.output.lower()
+        )
 
     def test_role_without_tasks_still_generates_readme(self, tmp_path):
         """Test that a role without tasks directory still generates README."""
@@ -293,11 +277,7 @@ class TestErrorHandling:
         (defaults_dir / "main.yml").write_text("test_var: value")
 
         runner = CliRunner()
-        result = runner.invoke(cli, [
-            'role',
-            '--role', str(role_path),
-            '--no-backup'
-        ])
+        result = runner.invoke(cli, ["role", "--role", str(role_path), "--no-backup"])
 
         # Should still succeed even without tasks
         assert result.exit_code == 0
@@ -310,21 +290,19 @@ class TestModularArchitecture:
     def test_commands_are_registered(self):
         """Test that all commands are properly registered in CLI group."""
         runner = CliRunner()
-        result = runner.invoke(cli, ['--help'])
+        result = runner.invoke(cli, ["--help"])
 
         # Check all commands are listed
-        assert 'role' in result.output
-        assert 'init' in result.output
+        assert "role" in result.output
+        assert "init" in result.output
 
     def test_role_command_uses_modular_structure(self, minimal_role):
         """Test that role command uses the new modular command structure."""
         # This test verifies the refactored cli.py works correctly
         runner = CliRunner()
-        result = runner.invoke(cli, [
-            'role',
-            '--role', str(minimal_role),
-            '--no-backup'
-        ])
+        result = runner.invoke(
+            cli, ["role", "--role", str(minimal_role), "--no-backup"]
+        )
 
         assert result.exit_code == 0
         assert (minimal_role / "README.md").exists()
@@ -332,10 +310,7 @@ class TestModularArchitecture:
     def test_init_command_uses_modular_structure(self, tmp_path):
         """Test that init command uses the new modular command structure."""
         runner = CliRunner()
-        result = runner.invoke(cli, [
-            'init',
-            '--path', str(tmp_path)
-        ])
+        result = runner.invoke(cli, ["init", "--path", str(tmp_path)])
 
         assert result.exit_code == 0
         assert (tmp_path / ".docsible.yml").exists()

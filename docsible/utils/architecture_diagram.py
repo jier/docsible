@@ -10,7 +10,9 @@ from typing import Dict, Any, Optional, List
 logger = logging.getLogger(__name__)
 
 
-def generate_component_architecture(role_info: Dict[str, Any], complexity_report: Any) -> Optional[str]:
+def generate_component_architecture(
+    role_info: Dict[str, Any], complexity_report: Any
+) -> Optional[str]:
     """
     Generate component architecture diagram for complex roles.
 
@@ -49,46 +51,58 @@ def generate_component_architecture(role_info: Dict[str, Any], complexity_report
     lines = ["graph TB"]
 
     # Component counters
-    defaults_count = sum(len(df.get('data', {})) for df in role_info.get('defaults', []))
-    vars_count = sum(len(vf.get('data', {})) for vf in role_info.get('vars', []))
-    handlers_count = len(role_info.get('handlers', []))
+    defaults_count = sum(
+        len(df.get("data", {})) for df in role_info.get("defaults", [])
+    )
+    vars_count = sum(len(vf.get("data", {})) for vf in role_info.get("vars", []))
+    handlers_count = len(role_info.get("handlers", []))
 
     # Variables subgraph
     has_variables = defaults_count > 0 or vars_count > 0
     if has_variables:
         lines.append("    subgraph Variables")
         if defaults_count > 0:
-            lines.append(f"        defaults[\"📋 Defaults<br/>{defaults_count} variable{'s' if defaults_count != 1 else ''}\"]")
+            lines.append(
+                f'        defaults["📋 Defaults<br/>{defaults_count} variable{"s" if defaults_count != 1 else ""}"]'
+            )
         if vars_count > 0:
-            lines.append(f"        vars[\"📌 Vars<br/>{vars_count} variable{'s' if vars_count != 1 else ''}\"]")
+            lines.append(
+                f'        vars["📌 Vars<br/>{vars_count} variable{"s" if vars_count != 1 else ""}"]'
+            )
         lines.append("    end")
         lines.append("")
 
     # Tasks subgraph with file breakdown
-    task_files = role_info.get('tasks', [])
+    task_files = role_info.get("tasks", [])
     if task_files:
         lines.append("    subgraph Tasks")
         for idx, task_file in enumerate(task_files):
-            file_name = task_file.get('file', f'file{idx}')
-            task_count = len(task_file.get('tasks', []))
+            file_name = task_file.get("file", f"file{idx}")
+            task_count = len(task_file.get("tasks", []))
             safe_id = f"tasks_{file_name.replace('.', '_').replace('/', '_')}"
-            lines.append(f"        {safe_id}[\"⚙️ {file_name}<br/>{task_count} task{'s' if task_count != 1 else ''}\"]")
+            lines.append(
+                f'        {safe_id}["⚙️ {file_name}<br/>{task_count} task{"s" if task_count != 1 else ""}"]'
+            )
         lines.append("    end")
         lines.append("")
 
     # Handlers node
     if handlers_count > 0:
-        lines.append(f"    handlers[\"🔔 Handlers<br/>{handlers_count} handler{'s' if handlers_count != 1 else ''}\"]")
+        lines.append(
+            f'    handlers["🔔 Handlers<br/>{handlers_count} handler{"s" if handlers_count != 1 else ""}"]'
+        )
         lines.append("")
 
     # External integrations node
     if complexity_report and complexity_report.integration_points:
         integration_count = len(complexity_report.integration_points)
-        integration_names = [ip.system_name for ip in complexity_report.integration_points[:2]]
+        integration_names = [
+            ip.system_name for ip in complexity_report.integration_points[:2]
+        ]
         if len(complexity_report.integration_points) > 2:
             integration_names.append("...")
         integration_label = "<br/>".join(integration_names)
-        lines.append(f"    external[\"🌐 External Systems<br/>{integration_label}\"]")
+        lines.append(f'    external["🌐 External Systems<br/>{integration_label}"]')
         lines.append("")
 
     # Data flow connections
@@ -111,7 +125,7 @@ def generate_component_architecture(role_info: Dict[str, Any], complexity_report
     # Tasks to handlers (notification)
     if task_files and handlers_count > 0:
         last_task_id = f"tasks_{task_files[-1].get('file', 'fileN').replace('.', '_').replace('/', '_')}"
-        lines.append(f"    {last_task_id} -.\"notify\".-> handlers")
+        lines.append(f'    {last_task_id} -."notify".-> handlers')
 
     # Tasks to external systems
     if task_files and complexity_report and complexity_report.integration_points:
@@ -120,8 +134,10 @@ def generate_component_architecture(role_info: Dict[str, Any], complexity_report
             task_id = f"tasks_{task_file.get('file', 'file').replace('.', '_').replace('/', '_')}"
             # Check if this file has integration modules
             has_integration = any(
-                task.get('module', '').startswith(('uri', 'get_url', 'mysql', 'postgresql', 'mongodb', 'hashi_vault'))
-                for task in task_file.get('tasks', [])
+                task.get("module", "").startswith(
+                    ("uri", "get_url", "mysql", "postgresql", "mongodb", "hashi_vault")
+                )
+                for task in task_file.get("tasks", [])
             )
             if has_integration:
                 lines.append(f"    {task_id} --> external")
@@ -132,8 +148,12 @@ def generate_component_architecture(role_info: Dict[str, Any], complexity_report
     lines.append("    %% Styling")
     lines.append("    classDef varStyle fill:#e3f2fd,stroke:#1976d2,stroke-width:2px")
     lines.append("    classDef taskStyle fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px")
-    lines.append("    classDef handlerStyle fill:#fff3e0,stroke:#f57c00,stroke-width:2px")
-    lines.append("    classDef externalStyle fill:#ffebee,stroke:#c62828,stroke-width:2px")
+    lines.append(
+        "    classDef handlerStyle fill:#fff3e0,stroke:#f57c00,stroke-width:2px"
+    )
+    lines.append(
+        "    classDef externalStyle fill:#ffebee,stroke:#c62828,stroke-width:2px"
+    )
     lines.append("")
 
     if defaults_count > 0:
@@ -147,7 +167,9 @@ def generate_component_architecture(role_info: Dict[str, Any], complexity_report
 
     # Apply task styling to all task nodes
     for task_file in task_files:
-        safe_id = f"tasks_{task_file.get('file', 'file').replace('.', '_').replace('/', '_')}"
+        safe_id = (
+            f"tasks_{task_file.get('file', 'file').replace('.', '_').replace('/', '_')}"
+        )
         lines.append(f"    class {safe_id} taskStyle")
 
     return "\n".join(lines)
@@ -173,11 +195,14 @@ def should_generate_architecture_diagram(complexity_report: Any) -> bool:
         return False
 
     # Generate for COMPLEX roles
-    if complexity_report.category.value == 'complex':
+    if complexity_report.category.value == "complex":
         return True
 
     # Generate for MEDIUM roles with high composition
-    if complexity_report.category.value == 'medium' and complexity_report.metrics.composition_score >= 5:
+    if (
+        complexity_report.category.value == "medium"
+        and complexity_report.metrics.composition_score >= 5
+    ):
         return True
 
     return False

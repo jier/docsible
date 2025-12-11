@@ -28,8 +28,7 @@ def generate_network_topology(integration_points: List) -> Optional[str]:
     """
     # Filter for network integrations only
     network_integrations = [
-        ip for ip in integration_points
-        if ip.type.value == 'network'
+        ip for ip in integration_points if ip.type.value == "network"
     ]
 
     if not network_integrations:
@@ -49,7 +48,9 @@ def generate_network_topology(integration_points: List) -> Optional[str]:
                 ports_str += "..."
             port_info = f"<br/>Ports: {ports_str}"
 
-        lines.append(f"        {node_id}[\"{integration.system_name}{port_info}\"]:::netNode")
+        lines.append(
+            f'        {node_id}["{integration.system_name}{port_info}"]:::netNode'
+        )
 
         # Add module information
         for module in integration.modules_used[:3]:
@@ -62,7 +63,9 @@ def generate_network_topology(integration_points: List) -> Optional[str]:
     # Add styling
     lines.append("")
     lines.append("    classDef netNode fill:#fce4ec,stroke:#c2185b,stroke-width:2px")
-    lines.append("    classDef moduleNode fill:#fff,stroke:#666,stroke-width:1px,stroke-dasharray: 5 5")
+    lines.append(
+        "    classDef moduleNode fill:#fff,stroke:#666,stroke-width:1px,stroke-dasharray: 5 5"
+    )
 
     return "\n".join(lines)
 
@@ -82,8 +85,7 @@ def should_generate_network_topology(integration_points: List) -> bool:
 
     # Check for network integrations
     network_integrations = [
-        ip for ip in integration_points
-        if ip.type.value == 'network'
+        ip for ip in integration_points if ip.type.value == "network"
     ]
 
     # Generate if we have network integrations
@@ -105,15 +107,15 @@ def format_integration_details(integration_point: Any) -> Dict[str, str]:
     details = {}
 
     # API details
-    if integration_point.type.value == 'api' and integration_point.endpoints:
-        details['endpoints'] = integration_point.endpoints
+    if integration_point.type.value == "api" and integration_point.endpoints:
+        details["endpoints"] = integration_point.endpoints
 
     # Network details
-    if integration_point.type.value == 'network' and integration_point.ports:
-        details['ports'] = [str(p) for p in integration_point.ports]
+    if integration_point.type.value == "network" and integration_point.ports:
+        details["ports"] = [str(p) for p in integration_point.ports]
 
     # Cloud/Container/Monitoring details
     if integration_point.services:
-        details['services'] = integration_point.services
+        details["services"] = integration_point.services
 
     return details

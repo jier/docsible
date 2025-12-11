@@ -1,6 +1,7 @@
 """
 Text sanitization utilities for Mermaid sequence diagrams.
 """
+
 import re
 
 
@@ -20,7 +21,7 @@ def sanitize_participant_name(text: str) -> str:
         'my_role_name'
     """
     # Remove special characters, keep alphanumeric and underscores
-    return re.sub(r'[^a-zA-Z0-9_]', '_', text)
+    return re.sub(r"[^a-zA-Z0-9_]", "_", text)
 
 
 def sanitize_note_text(text: str, max_length: int = 50) -> str:
@@ -42,4 +43,4 @@ def sanitize_note_text(text: str, max_length: int = 50) -> str:
     # Truncate and escape special characters
     if len(text) > max_length:
         text = text[:max_length] + "..."
-    return text.replace('"', "'").replace('\n', ' ')
+    return text.replace('"', "'").replace("\n", " ")

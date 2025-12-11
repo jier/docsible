@@ -33,8 +33,7 @@ logger = logging.getLogger(__name__)
 
 
 def extract_playbook_role_dependencies(
-    playbook_content: Optional[str],
-    current_role_name: str
+    playbook_content: Optional[str], current_role_name: str
 ) -> List[str]:
     """Extract role names from playbook that differ from the current role name.
 
@@ -265,13 +264,23 @@ def build_role_info(
                                     "name": handler.get("name", "Unnamed handler"),
                                     "module": next(
                                         (
-                                            k for k in handler.keys()
-                                            if k not in ["name", "notify", "when", "tags", "listen"]
+                                            k
+                                            for k in handler.keys()
+                                            if k
+                                            not in [
+                                                "name",
+                                                "notify",
+                                                "when",
+                                                "tags",
+                                                "listen",
+                                            ]
                                         ),
                                         "unknown",
                                     ),
                                     "listen": handler.get("listen", []),
-                                    "file": str(Path(file_path).relative_to(handlers_dir)),
+                                    "file": str(
+                                        Path(file_path).relative_to(handlers_dir)
+                                    ),
                                 }
                                 role_info["handlers"].append(handler_info)
 
@@ -372,17 +381,17 @@ def doc_the_role(
     if playbook:
         playbook_path = Path(playbook)
         if playbook_path.exists():
-            with open(playbook_path, 'r', encoding='utf-8') as f:
+            with open(playbook_path, "r", encoding="utf-8") as f:
                 playbook_content = f.read()
         else:
             logger.warning(f"Playbook file not found: {playbook}")
 
     if not role_path.exists():
         raise click.ClickException(f"Role directory does not exist: {role_path}")
-        
+
     if not role_path.is_dir():
         raise click.ClickException(f"Path is not a directory: {role_path}")
-    
+
     # Build role information
     role_info = build_role_info(
         role_path=role_path,
@@ -399,11 +408,13 @@ def doc_the_role(
 
     # Analyze complexity for adaptive visualization
     from docsible.analyzers import analyze_role_complexity
+
     analysis_report = analyze_role_complexity(role_info)
 
     # Display complexity analysis if requested
     if complexity_report:
         from docsible.utils.console import display_complexity_report
+
         display_complexity_report(analysis_report, role_name=role_info.get("name"))
 
     # Generate Mermaid diagrams if requested
@@ -419,8 +430,10 @@ def doc_the_role(
         if playbook_content:
             try:
                 playbook_parsed = yaml.safe_load(playbook_content)
-                sequence_diagram_high_level = generate_mermaid_sequence_playbook_high_level(
-                    playbook_parsed, role_meta=role_info.get("meta")
+                sequence_diagram_high_level = (
+                    generate_mermaid_sequence_playbook_high_level(
+                        playbook_parsed, role_meta=role_info.get("meta")
+                    )
                 )
             except Exception as e:
                 logger.warning(f"Could not generate high-level sequence diagram: {e}")
@@ -434,7 +447,7 @@ def doc_the_role(
                 role_info,
                 include_handlers=len(role_info.get("handlers", [])) > 0,
                 simplify_large=should_simplify,
-                max_lines=20
+                max_lines=20,
             )
         except Exception as e:
             logger.warning(f"Could not generate detailed sequence diagram: {e}")
@@ -442,11 +455,18 @@ def doc_the_role(
         # Generate state transition diagram for MEDIUM complexity roles
         # State diagrams show workflow phases (install -> configure -> validate -> start)
         try:
-            from docsible.utils.state_diagram import generate_state_diagram, should_generate_state_diagram
+            from docsible.utils.state_diagram import (
+                generate_state_diagram,
+                should_generate_state_diagram,
+            )
 
             if should_generate_state_diagram(role_info, analysis_report.category.value):
-                state_diagram = generate_state_diagram(role_info, role_name=role_info.get("name"))
-                logger.info(f"Generated state transition diagram for MEDIUM complexity role")
+                state_diagram = generate_state_diagram(
+                    role_info, role_name=role_info.get("name")
+                )
+                logger.info(
+                    f"Generated state transition diagram for MEDIUM complexity role"
+                )
         except Exception as e:
             logger.warning(f"Could not generate state diagram: {e}")
 
@@ -456,14 +476,16 @@ def doc_the_role(
         try:
             from docsible.utils.integration_diagram import (
                 generate_integration_boundary,
-                should_generate_integration_diagram
+                should_generate_integration_diagram,
             )
 
             if should_generate_integration_diagram(analysis_report.integration_points):
                 integration_boundary_diagram = generate_integration_boundary(
                     analysis_report.integration_points
                 )
-                logger.info(f"Generated integration boundary diagram ({len(analysis_report.integration_points)} integrations)")
+                logger.info(
+                    f"Generated integration boundary diagram ({len(analysis_report.integration_points)} integrations)"
+                )
         except Exception as e:
             logger.warning(f"Could not generate integration boundary diagram: {e}")
 
@@ -473,17 +495,21 @@ def doc_the_role(
         try:
             from docsible.utils.architecture_diagram import (
                 generate_component_architecture,
-                should_generate_architecture_diagram
+                should_generate_architecture_diagram,
             )
 
             if should_generate_architecture_diagram(analysis_report):
-                architecture_diagram = generate_component_architecture(role_info, analysis_report)
-                logger.info(f"Generated component architecture diagram for {analysis_report.category.value.upper()} role")
+                architecture_diagram = generate_component_architecture(
+                    role_info, analysis_report
+                )
+                logger.info(
+                    f"Generated component architecture diagram for {analysis_report.category.value.upper()} role"
+                )
         except Exception as e:
             logger.warning(f"Could not generate architecture diagram: {e}")
 
     # Determine template type
-    template_type = 'hybrid' if hybrid else 'standard_modular'
+    template_type = "hybrid" if hybrid else "standard_modular"
 
     # Render README
     renderer = ReadmeRenderer(backup=not no_backup)

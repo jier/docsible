@@ -15,7 +15,7 @@ from docsible.commands.document_role import doc_the_role
 from docsible.commands.init_config import init_config
 
 __all__ = [
-    'doc_the_role',
-    'document_collection_roles',
-    'init_config',
+    "doc_the_role",
+    "document_collection_roles",
+    "init_config",
 ]

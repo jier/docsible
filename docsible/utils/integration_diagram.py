@@ -57,19 +57,19 @@ def generate_integration_boundary(integration_points: List) -> Optional[str]:
         system_label = integration.system_name
 
         # Add system node with styling based on type
-        if integration.type.value == 'api':
+        if integration.type.value == "api":
             lines.append(f"    {system_id}[{system_label}]:::apiStyle")
-        elif integration.type.value == 'database':
+        elif integration.type.value == "database":
             lines.append(f"    {system_id}[({system_label})]:::dbStyle")
-        elif integration.type.value == 'vault':
+        elif integration.type.value == "vault":
             lines.append(f"    {system_id}{{{{{system_label}}}}}:::vaultStyle")
-        elif integration.type.value == 'cloud':
+        elif integration.type.value == "cloud":
             lines.append(f"    {system_id}[/{system_label}/]:::cloudStyle")
-        elif integration.type.value == 'network':
+        elif integration.type.value == "network":
             lines.append(f"    {system_id}>{system_label}]:::networkStyle")
-        elif integration.type.value == 'container':
+        elif integration.type.value == "container":
             lines.append(f"    {system_id}[{system_label}]:::containerStyle")
-        elif integration.type.value == 'monitoring':
+        elif integration.type.value == "monitoring":
             lines.append(f"    {system_id}[{system_label}]:::monitoringStyle")
         else:
             lines.append(f"    {system_id}[{system_label}]")
@@ -92,9 +92,15 @@ def generate_integration_boundary(integration_points: List) -> Optional[str]:
     lines.append("    classDef dbStyle fill:#f3e5f5,stroke:#4a148c,stroke-width:2px")
     lines.append("    classDef vaultStyle fill:#fff3e0,stroke:#e65100,stroke-width:2px")
     lines.append("    classDef cloudStyle fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px")
-    lines.append("    classDef networkStyle fill:#fce4ec,stroke:#c2185b,stroke-width:2px")
-    lines.append("    classDef containerStyle fill:#e0f2f1,stroke:#00695c,stroke-width:2px")
-    lines.append("    classDef monitoringStyle fill:#fff9c4,stroke:#f57f17,stroke-width:2px")
+    lines.append(
+        "    classDef networkStyle fill:#fce4ec,stroke:#c2185b,stroke-width:2px"
+    )
+    lines.append(
+        "    classDef containerStyle fill:#e0f2f1,stroke:#00695c,stroke-width:2px"
+    )
+    lines.append(
+        "    classDef monitoringStyle fill:#fff9c4,stroke:#f57f17,stroke-width:2px"
+    )
 
     return "\n".join(lines)
 
