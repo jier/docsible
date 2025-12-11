@@ -1,5 +1,5 @@
 {# Task Dependency Matrix Section #}
-{% if show_dependency_matrix and dependency_matrix %}
+{%- if show_dependency_matrix and dependency_matrix %}
 ## Task Dependency Matrix
 
 *This role has {{ complexity_report.metrics.total_tasks }} tasks. The table below shows task relationships for understanding execution dependencies and troubleshooting.*
@@ -17,16 +17,15 @@
 - **Sets Facts**: Variables or facts this task defines for later use
 
 ### Dependency Patterns
+{%- if dependency_summary %}
 
-{% if dependency_summary %}
 **Summary Statistics:**
 - Total Tasks: {{ dependency_summary.total_tasks }}
 - Tasks with Variable Dependencies: {{ dependency_summary.tasks_with_requirements }}
 - Tasks Triggering Handlers: {{ dependency_summary.tasks_with_triggers }}
 - Tasks with Error Handling: {{ dependency_summary.error_handling_count }}
 - Tasks Setting Facts: {{ dependency_summary.tasks_setting_facts }}
-
-{% endif %}
+{%- endif %}
 
 <details>
 <summary><b>💡 Understanding Task Dependencies</b></summary>
@@ -55,4 +54,4 @@
 </details>
 
 ---
-{% endif %}
+{%- endif %}

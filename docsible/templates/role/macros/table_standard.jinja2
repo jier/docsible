@@ -6,7 +6,7 @@
 %}
 {% macro render_header(columns) %}
 | Var | Type | Value |{% if columns.has_choices %} Choices |{% endif %}{%- if columns.has_required %} Required |{% endif %}{%- if columns.has_title %} Title |{% endif %}
-|-----|------|-------|
+|-----|------|-------|{% if columns.has_choices %}---------|{% endif %}{%- if columns.has_required %}----------|{% endif %}{%- if columns.has_title %}-------|{% endif %}
 {%- endmacro %}
 {% macro render_row(key, details, file_path, role, columns) -%}
 | [{{ format_key_name(key) }}]({{ render_repo_link_for_key(key, file_path, details.line, role) }}) | {{ details.value.__class__.__name__ | escape_table_cell }} | {{ format_variable_value(details) }} |
@@ -47,5 +47,5 @@
 {%- for key, details in file_data.items() -%}
 {{ render_row(key, details, file_path, role, columns) }}
 {%- endfor -%}
-{{ render_descriptions_section(file_data, file_path) }}
+{{- render_descriptions_section(file_data, file_path) }}
 {%- endmacro %}

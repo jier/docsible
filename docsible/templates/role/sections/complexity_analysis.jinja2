@@ -1,5 +1,5 @@
 {# Role Complexity Analysis Section #}
-{% if include_complexity and complexity_report %}
+{%- if include_complexity and complexity_report %}
 ## Role Complexity Analysis
 
 **Complexity Level:** <span style="color: {% if complexity_report.category.value == 'simple' %}green{% elif complexity_report.category.value == 'medium' %}orange{% else %}red{% endif %}">{{ complexity_report.category.value.upper() }}</span>
@@ -16,20 +16,21 @@
 | Max Tasks per File | {{ complexity_report.metrics.max_tasks_per_file | escape_table_cell }} |
 | Role Dependencies | {{ complexity_report.metrics.role_dependencies | escape_table_cell }} |
 | Task Includes | {{ complexity_report.metrics.task_includes | escape_table_cell }} |
+{%- if complexity_report.integration_points %}
 
-{% if complexity_report.integration_points %}
 ### External Integrations ({{ complexity_report.integration_points|length }})
 
 This role integrates with external systems:
+{%- for integration in complexity_report.integration_points %}
 
-{% for integration in complexity_report.integration_points %}
 **{{ loop.index }}. {{ integration.system_name }}** ({{ integration.type.value }})
 - **Modules Used:** `{{ integration.modules_used|join('`, `') }}`
 - **Tasks Count:** {{ integration.task_count }}
-{% if integration.uses_credentials %}- **⚠️ Requires Credentials**{% endif %}
-
-{% endfor %}
-{% endif %}
+{%- if integration.uses_credentials %}
+- **⚠️ Requires Credentials**
+{%- endif %}
+{%- endfor %}
+{%- endif %}
 
 ### Composition Score
 
@@ -38,28 +39,29 @@ This role integrates with external systems:
 - Task Includes: {{ complexity_report.metrics.task_includes }}
 
 ### Recommendations
-
-{% for recommendation in complexity_report.recommendations %}
+{%- for recommendation in complexity_report.recommendations %}
 - {{ recommendation }}
-{% endfor %}
+{%- endfor %}
 
 ### Visualization Strategy
+{%- if complexity_report.category.value == 'simple' %}
 
-{% if complexity_report.category.value == 'simple' %}
 **For SIMPLE roles** ({{ complexity_report.metrics.total_tasks }} tasks):
 - ✅ Sequence diagrams show linear execution flow
 - ✅ Task flowcharts show individual task details
-{% elif complexity_report.category.value == 'medium' %}
+{%- elif complexity_report.category.value == 'medium' %}
+
 **For MEDIUM roles** ({{ complexity_report.metrics.total_tasks }} tasks):
 - ✅ State diagrams show workflow phases
 - ✅ Sequence diagrams show detailed execution
 - ✅ Component hierarchy shows task organization
-{% else %}
+{%- else %}
+
 **For COMPLEX roles** ({{ complexity_report.metrics.total_tasks }} tasks):
 - ✅ Component architecture shows internal structure
 - ✅ Phase-based documentation (manual + auto-generated)
 - ⚠️ Consider splitting into smaller, focused roles
-{% endif %}
+{%- endif %}
 
 ---
-{% endif %}
+{%- endif %}

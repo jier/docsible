@@ -30,7 +30,7 @@
 {% macro render_table(file_data, file_path, role) -%}
 | Variable | Default Value | Type | Description |
 |----------|---------------|------|-------------|
-{%- for key, details in file_data.items() %}
+{%- for key, details in file_data.items() -%}
 {{ render_row(key, details, file_path, role) }}
-{%- endfor %}
+{%- endfor -%}
 {%- endmacro %}
