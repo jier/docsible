@@ -130,7 +130,7 @@ my-roles-repo/
 
 **Usage**:
 ```bash
-docsible --collection ./my-roles-repo
+docsible role --collection ./my-roles-repo
 ```
 
 ### 4. AWX Project
@@ -471,7 +471,17 @@ database_port: 5432
 
 ## CLI Commands
 
-### Main Command: `docsible`
+Docsible uses a Click-based CLI with subcommands. The main structure is:
+
+```bash
+docsible [GLOBAL_OPTIONS] COMMAND [COMMAND_OPTIONS]
+```
+
+Available commands:
+- `role` - Generate documentation for Ansible roles or collections
+- `init` - Create a `.docsible.yml` configuration file
+
+### Main Command: `docsible role`
 
 Generate documentation for roles or collections:
 
@@ -489,7 +499,7 @@ docsible  role --role ./my-role --graph --comments --task-line
 docsible --verbose role --role ./my-role
 ```
 ```yaml
-Available Options:
+Available Role Options:
 
 --role, -r: Path to Ansible role directory
 --collection, -c: Path to Ansible collection directory
@@ -497,19 +507,30 @@ Available Options:
 --graph, -g: Generate Mermaid diagrams
 --hybrid: Use hybrid template (manual + auto-generated sections)
 --no-vars: Skip variable documentation
+--no-tasks: Skip task documentation
+--no-diagrams: Skip all Mermaid diagrams
+--no-examples: Skip example playbook sections
+--no-metadata: Skip role metadata
+--no-handlers: Skip handlers section
+--minimal: Generate minimal documentation (enables all --no-* flags)
 --comments, -com: Read comments from task files
 --task-line, -tl: Read line numbers from tasks
+--complexity-report: Show role complexity analysis
 --append, -a: Append to existing README instead of replacing
 --no-backup, -nob: Don't create backup before overwriting
 --output, -o: Output filename (default: README.md)
+--repository-url, -ru: Repository base URL
+--repo-type, -rt: Repository type (github, gitlab, gitea)
+--repo-branch, -rb: Repository branch name
 
 Global Options:
 
 --verbose, -v: Enable debug logging
 --version: Show version
+--help: Show help message
 ```
 
-### New Command: `docsible init`
+### Configuration Command: `docsible init`
 
 Generate an example `.docsible.yml` configuration file:
 
@@ -525,10 +546,11 @@ docsible init --force
 ```
 
 ```yaml
-Options:
+Init Command Options:
 
 --path, -p: Directory where to create .docsible.yml (default: current directory)
---force, -f: Overwrite existing configuration **file**
+--force, -f: Overwrite existing configuration file
+--help: Show help message
 ```
 
 ### Enable Verbose Logging
