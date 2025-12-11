@@ -37,6 +37,7 @@ def generate_mermaid_sequence_playbook_high_level(
         True
     """
     diagram = "sequenceDiagram\n"
+    diagram += "    autonumber\n"
     diagram += "    participant User\n"
     diagram += "    participant Playbook\n"
 
