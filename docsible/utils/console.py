@@ -42,15 +42,9 @@ def display_complexity_report(
 
     # Header
     print()
-    print(
-        f"{BOLD}{BLUE}╔══════════════════════════════════════════════════════════╗{RESET}"
-    )
-    print(
-        f"{BOLD}{BLUE}║         ROLE COMPLEXITY ANALYSIS                        ║{RESET}"
-    )
-    print(
-        f"{BOLD}{BLUE}╚══════════════════════════════════════════════════════════╝{RESET}"
-    )
+    print(f"{BOLD}{BLUE}╔══════════════════════════════════════════════════════════╗{RESET}")
+    print(f"{BOLD}{BLUE}║         ROLE COMPLEXITY ANALYSIS                         ║{RESET}")
+    print(f"{BOLD}{BLUE}╚══════════════════════════════════════════════════════════╝{RESET}")
     print()
 
     if role_name:
