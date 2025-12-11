@@ -136,6 +136,7 @@ def _generate_simplified_sequence_diagram(
     Shows only high-level structure: role → task files → handlers.
     """
     diagram = "sequenceDiagram\n"
+    diagram += "    autonumber\n"
 
     role_name = role_info.get("name", "Role")
     role_participant = sanitize_participant_name(role_name)
@@ -260,6 +261,7 @@ def _generate_full_sequence_diagram(
         in detail. If more than 10 tasks exist, a note indicates the remaining count.
     """
     diagram = "sequenceDiagram\n"
+    diagram += "    autonumber\n"
 
     role_name = role_info.get("name", "Role")
     role_participant = sanitize_participant_name(role_name)
