@@ -48,8 +48,7 @@ Documentation = "https://github.com/docsible/docsible"
 
 # Entry points (scripts) - works with uv, pip
 [project.scripts]
-docsible = "docsible.cli:doc_the_role"
-docsible-init-config = "docsible.cli:init_config"
+docsible = "docsible.cli:cli"
 
 # Build system configuration - supports multiple backends
 [build-system]
@@ -86,8 +85,7 @@ Jinja2 = "^3.1.2"
 pydantic = "^2.0.0"
 
 [tool.poetry.scripts]
-docsible = 'docsible.cli:doc_the_role'
-docsible-init-config = 'docsible.cli:init_config'
+docsible = 'docsible.cli:cli'
 
 # uv specific configuration
 [tool.uv]

@@ -509,7 +509,7 @@ Global Options:
 --version: Show version
 ```
 
-### New Command: `docsible int`
+### New Command: `docsible init`
 
 Generate an example `.docsible.yml` configuration file:
 

@@ -50,17 +50,17 @@ To use Docsible, you can run the following command in your terminal:
 
 ### Specific path
 ```bash
-docsible --role /path/to/ansible/role --playbook /path/to/playbook.yml --graph
+docsible role --role /path/to/ansible/role --playbook /path/to/playbook.yml --graph
 ```
 
 ### Document collection
 ```bash
-docsible --collection ./collections_tests/lucian/ --no-backup --graph
+docsible role --collection ./collections_tests/lucian/ --no-backup --graph
 ```
 
 ### Only role without playbook
 ```bash
-docsible --role /path/to/ansible/role # without include a playbook into readme
+docsible role --role /path/to/ansible/role # without include a playbook into readme
 ```
 
 ### Flexible Project Structures (NEW in 0.8.0)
@@ -70,16 +70,16 @@ Docsible now supports flexible project structures including AWX projects, monore
 #### Generate Configuration Template
 ```bash
 # Create a .docsible.yml configuration file in your project
-docsible-init-config
+docsible init
 
 # Or specify a custom path
-docsible-init-config --path /path/to/your/project
+docsible init --path /path/to/your/project
 ```
 
 #### Example: Documenting a Monorepo
 ```bash
 # For a monorepo with roles in ansible/roles/
-docsible --collection /path/to/monorepo
+docsible role --collection /path/to/monorepo
 ```
 
 #### Example: Custom Directory Names
@@ -93,7 +93,7 @@ structure:
 
 Then run docsible normally:
 ```bash
-docsible --role /path/to/custom/role
+docsible role --role /path/to/custom/role
 ```
 
 **For detailed configuration options, see [CONFIGURATION.md](CONFIGURATION.md)**
@@ -104,7 +104,7 @@ Use the `--hybrid` flag to generate a README with a mix of **manual sections** (
 
 ```bash
 # Generate README with hybrid template
-docsible --role ./my-role --hybrid --graph --comments
+docsible role --role ./my-role --hybrid --graph --comments
 
 # Auto-generates technical sections while preserving manual content areas
 # Perfect for maintaining both overview docs and accurate technical details
