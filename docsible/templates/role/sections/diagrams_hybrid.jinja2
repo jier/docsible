@@ -28,20 +28,26 @@ This diagram shows the workflow phases and state transitions of the role.
 ```
 {% endif %}
 {% if architecture_diagram %}
-Component Architecture (COMPLEX Complexity)
-Generated for COMPLEX roles to show internal structure and data flow.
+### Component Architecture (COMPLEX Complexity)
+
+*Generated for COMPLEX roles to show internal structure and data flow.*
+
 ```mermaid
 {{ architecture_diagram }}
 ```
-Legend:
-📋 Variables: Default values and configuration
-⚙️ Tasks: Execution units organized by file
-🔔 Handlers: Triggered by task notifications
-🌐 External Systems: Third-party integrations
+
+**Legend:**
+- 📋 Variables: Default values and configuration
+- ⚙️ Tasks: Execution units organized by file
+- 🔔 Handlers: Triggered by task notifications
+- 🌐 External Systems: Third-party integrations
 {% endif %}
+
 {% if integration_boundary_diagram %}
-Integration Architecture
-Shows how the role integrates with external systems.
+### Integration Architecture
+
+*Shows how the role integrates with external systems.*
+
 ```mermaid
 {{ integration_boundary_diagram }}
 ```

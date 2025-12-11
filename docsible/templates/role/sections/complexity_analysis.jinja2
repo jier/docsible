@@ -32,7 +32,7 @@ This role integrates with external systems:
 
 ### Composition Score
 
-**Internal Orchestration:** {{ complexity_report.composition_score }} ({{ 'Low' if complexity_report.composition_score < 5 else 'Medium' if complexity_report.composition_score < 15 else 'High' }})
+**Internal Orchestration:** {{ complexity_report.metrics.composition_score }} ({{ 'Low' if complexity_report.metrics.composition_score < 5 else 'Medium' if complexity_report.metrics.composition_score < 15 else 'High' }})
 - Role Dependencies: {{ complexity_report.metrics.role_dependencies }}
 - Task Includes: {{ complexity_report.metrics.task_includes }}
 
