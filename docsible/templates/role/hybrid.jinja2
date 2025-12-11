@@ -115,7 +115,7 @@ roles:
     | Handler Name | Module | Listens To | File |
     |--------------|--------|------------|------|
     {% for handler in role.handlers %}
-      | {{ handler.name | escape_table_cell }} | `{{ handler.module | escape_table_cell }}` | {{ handler.listen | escape_table_cell if handler.listen else 'N/A' }} | `{{ handler.file | escape_table_cell }}` |
+      | {{ handler.name | escape_table_cell }} | {{ handler.module | escape_table_cell }} | {{ handler.listen | escape_table_cell if handler.listen else 'N/A' }} | {{ handler.file | escape_table_cell }} |
     {% endfor %}
   {% endif %}
 {% endif %}
@@ -278,7 +278,7 @@ roles:
       | Task Name | Module | Description |
       |-----------|--------|-------------|
       {% for task in task_info.tasks %}
-        | {{ task.name | escape_table_cell if task.name else '*unnamed*' }} | `{{ task.module | escape_table_cell }}` |
+        | {{ task.name | escape_table_cell if task.name else '*unnamed*' }} | {{ task.module | escape_table_cell }} |
         {% if task_info.comments %}
           {% for comment in task_info.comments %}
             {% if comment.task_name == task.name %}{{ comment.task_comments | escape_table_cell }}{% endif %}

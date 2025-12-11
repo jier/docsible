@@ -4,7 +4,7 @@
 | Task Name | Module | Description |
 |-----------|--------|-------------|
 {%- for task in task_info.tasks %}
-| {{ task.name | escape_table_cell if task.name else '*unnamed*' }} | `{{ task.module | escape_table_cell }}` |
+| {{ task.name | escape_table_cell if task.name else '*unnamed*' }} | {{ task.module | escape_table_cell }} |
 {%- if task_info.comments %}
 {%- for comment in task_info.comments %}
 {%- if comment.task_name == task.name %} {{ comment.task_comments | escape_table_cell }}{% endif %}

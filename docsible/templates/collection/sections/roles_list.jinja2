@@ -47,7 +47,7 @@ Description: Not available.
 |--------------|--------------|-------------|{% if ns.details_choices %}-------------|{% endif %}{% if ns.details_required %}-------------|{% endif %}{% if ns.details_title %}-------------|{% endif %}
 {%- for key, details in defaultfile.data.items() %}
 {%- set var_type = details.value.__class__.__name__ %}
-| [{{ key }}]({{ render_repo_link(role.repository, role.name, 'defaults/' ~ defaultfile.file, details.line, role.repository_type, role.repository_branch) }})   | {{ var_type }}   | {% if details.value is string and details.value | length == 0 %}{% else %}`{{ details.value | replace('|', '&#124;') }}`{% endif %} | {% if ns.details_choices %} {{ details.choices | replace('|', '&#124;') }}  |{% endif %}  {% if ns.details_required %} {{ details.required }}  |{% endif %} {% if ns.details_title %} {{ details.title | replace('|', '&#124;') }} |{% endif %}
+| [{{ key }}]({{ render_repo_link(role.repository, role.name, 'defaults/' ~ defaultfile.file, details.line, role.repository_type, role.repository_branch) }})   | {{ var_type | escape_table_cell }}   | {% if details.value is string and details.value | length == 0 %}{% else %}{{ details.value | escape_table_value }}{% endif %} | {% if ns.details_choices %} {{ details.choices | escape_table_cell }}  |{% endif %}  {% if ns.details_required %} {{ details.required | escape_table_cell }}  |{% endif %} {% if ns.details_title %} {{ details.title | escape_table_cell }} |{% endif %}
 {%- endfor %}
 {%- endfor %}
 
@@ -91,7 +91,7 @@ Description: Not available.
 |--------------|--------------|-------------|{% if ns.details_choices %}-------------|{% endif %}{% if ns.details_required %}-------------|{% endif %}{% if ns.details_title %}-------------|{% endif %}
 {%- for key, details in varsfile.data.items() %}
 {%- set var_type = details.value.__class__.__name__ %}
-| [{{ key }}]({{ render_repo_link(role.repository, role.name, 'vars/' ~ varsfile.file, details.line, role.repository_type, role.repository_branch) }})   | {{ var_type }}   | {% if details.value is string and details.value | length == 0 %}{% else %}`{{ details.value | replace('|', '&#124;') }}`{% endif %} | {% if ns.details_choices %} {{ details.choices | replace('|', '&#124;') }}  |{% endif %}  {% if ns.details_required %} {{ details.required }}  |{% endif %} {% if ns.details_title %} {{ details.title | replace('|', '&#124;') }} |{% endif %}
+| [{{ key }}]({{ render_repo_link(role.repository, role.name, 'vars/' ~ varsfile.file, details.line, role.repository_type, role.repository_branch) }})   | {{ var_type | escape_table_cell }}   | {% if details.value is string and details.value | length == 0 %}{% else %}{{ details.value | escape_table_value }}{% endif %} | {% if ns.details_choices %} {{ details.choices | escape_table_cell }}  |{% endif %}  {% if ns.details_required %} {{ details.required | escape_table_cell }}  |{% endif %} {% if ns.details_title %} {{ details.title | escape_table_cell }} |{% endif %}
 {%- endfor %}
 {%- endfor %}
 
