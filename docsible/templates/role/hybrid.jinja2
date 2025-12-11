@@ -35,7 +35,7 @@ roles:
   *Customize the mermaid diagram above to match your role's architecture.*
 {% endif %}
 ---
-
+{% include 'sections/complexity_analysis.jinja2' %}
 ## Task Execution Flow
 
 <!-- DOCSIBLE GENERATED -->
@@ -60,10 +60,36 @@ roles:
     ```
   {% endif %}
   {% if state_diagram %}
-    ### State Transition Diagram
-    This diagram shows the workflow phases and state transitions of the role.
+    ### State Transition Diagram (MEDIUM Complexity)
+    
+    *Generated for MEDIUM complexity roles to show workflow phases.*
+    
     ```mermaid
     {{ state_diagram }}
+    ```
+  {% endif %}
+  {% if architecture_diagram %}
+    ### Component Architecture (COMPLEX Complexity)
+    
+    *Generated for COMPLEX roles to show internal structure and data flow.*
+    
+    ```mermaid
+    {{ architecture_diagram }}
+    ```
+    
+    **Legend:**
+    - 📋 Variables: Default values and configuration
+    - ⚙️ Tasks: Execution units organized by file
+    - 🔔 Handlers: Triggered by task notifications
+    - 🌐 External Systems: Third-party integrations
+  {% endif %}
+  {% if integration_boundary_diagram %}
+    ### Integration Architecture
+    
+    *Shows how the role integrates with external systems.*
+    
+    ```mermaid
+    {{ integration_boundary_diagram }}
     ```
   {% endif %}
   {% if not simplify_diagrams %}

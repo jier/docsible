@@ -308,6 +308,7 @@ def doc_the_role(
     no_handlers,
     minimal,
     complexity_report,
+    include_complexity,
     append,
     output,
     repository_url,
@@ -511,6 +512,9 @@ def doc_the_role(
     # Determine template type
     template_type = "hybrid" if hybrid else "standard_modular"
 
+    if hybrid and not include_complexity:
+        include_complexity = True
+
     # Render README
     renderer = ReadmeRenderer(backup=not no_backup)
     readme_path = role_path / output
@@ -527,6 +531,7 @@ def doc_the_role(
         integration_boundary_diagram=integration_boundary_diagram,
         architecture_diagram=architecture_diagram,
         complexity_report=analysis_report,
+        include_complexity=include_complexity,
         no_vars=no_vars,
         no_tasks=no_tasks,
         no_diagrams=no_diagrams,

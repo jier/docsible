@@ -23,6 +23,11 @@ def add_content_options(f):
         help="Generate minimal documentation (enables all --no-* flags).",
     )(f)
     f = click.option(
+        "--include-complexity", "include_complexity", 
+        is_flag=True,
+        help="Include complexity analysis section in README")(f)
+
+    f = click.option(
         "--no-handlers", "no_handlers", is_flag=True, help="Hide handlers section."
     )(f)
     f = click.option(
