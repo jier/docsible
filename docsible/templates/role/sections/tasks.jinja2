@@ -10,9 +10,9 @@
 {% if task_file.comments | length > 0 %}
   {% set ns.has_comments = true %}
 {% endif %}
-| Name | Module | Has Conditions |{% if ns.has_tags %} Tags |{% endif %}{% if ns.has_comments %} Comments |{% endif %}
-|------|--------|----------------|{% if ns.has_tags %}------|{% endif %}{% if ns.has_comments %}----------|{% endif %}
-{% for task in task_file.tasks %}
+| Name | Module | Has Conditions |{% if ns.has_tags %} Tags |{% endif %}{% if ns.has_comments %} Comments |{% endif -%}
+|------|--------|----------------|{% if ns.has_tags %}------|{% endif %}{% if ns.has_comments %}----------|{% endif -%}
+{% for task in task_file.tasks -%}
 {% if task_file.lines and task_file.lines[task.name] -%}
 | [{{ task.name | escape_table_cell }}]({{ links.render_repo_link(role.repository, role.name, 'tasks/' ~ task_file.file, task_file.lines[task.name], role.repository_type, role.repository_branch, role.belongs_to_collection) }}) | `{{ task.module | escape_table_cell }}` | {{ 'True' if task.when else 'False' }} |
 {%- if ns.has_tags %} {{ task_file.mermaid | selectattr('name', 'equalto', task.name) | map(attribute='tags') | safe_join(',') }} |{% endif -%}
