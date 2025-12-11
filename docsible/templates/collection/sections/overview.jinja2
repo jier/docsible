@@ -1,0 +1,21 @@
+{# Collection overview section #}
+{% from 'collection/macros/repo_links.jinja2' import render_repo_role_readme_link %}
+
+# =Ã Collection overview
+
+**Namespace**: {{ collection.namespace }}
+
+**Name**: {{ collection.name }}
+
+**Version**: {{ collection.version }}
+
+**Authors**:
+{% for author in collection.authors %}
+- {{ author }}\n
+{%- endfor %}
+
+{% if collection.description -%}
+## Description
+
+{{ collection.description }}
+{%- endif %}
