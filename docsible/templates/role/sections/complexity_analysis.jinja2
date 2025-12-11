@@ -12,6 +12,7 @@
 | Task Files | {{ complexity_report.metrics.task_files | escape_table_cell }} |
 | Handlers | {{ complexity_report.metrics.handlers | escape_table_cell }} |
 | Conditional Tasks | {{ complexity_report.metrics.conditional_tasks | escape_table_cell }} ({{ "%.0f"|format(complexity_report.metrics.conditional_percentage) }}%) |
+| Error Handlers | {{ complexity_report.metrics.error_handlers | escape_table_cell }} |
 | Max Tasks per File | {{ complexity_report.metrics.max_tasks_per_file | escape_table_cell }} |
 | Role Dependencies | {{ complexity_report.metrics.role_dependencies | escape_table_cell }} |
 | Task Includes | {{ complexity_report.metrics.task_includes | escape_table_cell }} |

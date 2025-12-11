@@ -1,0 +1,58 @@
+{# Task Dependency Matrix Section #}
+{% if show_dependency_matrix and dependency_matrix %}
+## Task Dependency Matrix
+
+*This role has {{ complexity_report.metrics.total_tasks }} tasks. The table below shows task relationships for understanding execution dependencies and troubleshooting.*
+
+{{ dependency_matrix }}
+
+### How to Use This Table
+
+- **Task**: Task name from the playbook
+- **File**: Task file location
+- **Module**: Ansible module used
+- **Requires**: Variables or facts this task depends on
+- **Triggers**: Handlers notified when this task reports changes
+- **Error Handling**: Error recovery strategy (rescue/always blocks)
+- **Sets Facts**: Variables or facts this task defines for later use
+
+### Dependency Patterns
+
+{% if dependency_summary %}
+**Summary Statistics:**
+- Total Tasks: {{ dependency_summary.total_tasks }}
+- Tasks with Variable Dependencies: {{ dependency_summary.tasks_with_requirements }}
+- Tasks Triggering Handlers: {{ dependency_summary.tasks_with_triggers }}
+- Tasks with Error Handling: {{ dependency_summary.error_handling_count }}
+- Tasks Setting Facts: {{ dependency_summary.tasks_setting_facts }}
+
+{% endif %}
+
+<details>
+<summary><b>💡 Understanding Task Dependencies</b></summary>
+
+**Variable Dependencies (Requires):**
+- Shows which variables/facts must be defined before task execution
+- Helpful for understanding task prerequisites
+- Critical for troubleshooting "undefined variable" errors
+
+**Handler Triggers:**
+- Shows which handlers are notified when task state changes
+- Essential for understanding service restart cascades
+- Helps identify which tasks trigger notifications
+
+**Error Handling:**
+- `rescue`: Task has error recovery logic
+- `always`: Task has cleanup logic that always runs
+- `rescue + always`: Task has both error recovery and cleanup
+- `None`: Task has no explicit error handling
+
+**Facts Set:**
+- Variables registered or set by this task
+- Available for use by subsequent tasks
+- Critical for understanding data flow through the role
+
+</details>
+
+---
+{% endif %}

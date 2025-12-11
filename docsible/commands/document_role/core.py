@@ -309,6 +309,8 @@ def doc_the_role(
     minimal,
     complexity_report,
     include_complexity,
+    show_dependencies,
+    analyze_only,
     append,
     output,
     repository_url,
@@ -413,10 +415,40 @@ def doc_the_role(
     analysis_report = analyze_role_complexity(role_info)
 
     # Display complexity analysis if requested
-    if complexity_report:
+    if complexity_report or analyze_only:
         from docsible.utils.console import display_complexity_report
 
         display_complexity_report(analysis_report, role_name=role_info.get("name"))
+
+    # If analyze-only mode, display dependency summary and exit without generating docs
+    if analyze_only:
+        click.echo("\n" + "=" * 60)
+        click.echo("📊 ANALYSIS COMPLETE")
+        click.echo("=" * 60)
+
+        # Show dependency statistics if available
+        if role_info.get("tasks"):
+            from docsible.utils.dependency_matrix import (
+                analyze_task_dependencies,
+                generate_dependency_summary,
+            )
+
+            all_deps = []
+            for task_file_info in role_info.get("tasks", []):
+                file_name = task_file_info.get("file", "unknown")
+                tasks = task_file_info.get("tasks", [])
+                all_deps.extend(analyze_task_dependencies(tasks, file_name))
+
+            if all_deps:
+                summary = generate_dependency_summary(all_deps)
+                click.echo(f"\n📋 Task Dependencies:")
+                click.echo(f"   - Tasks with variable dependencies: {summary['tasks_with_requirements']}/{summary['total_tasks']}")
+                click.echo(f"   - Tasks triggering handlers: {summary['tasks_with_triggers']}")
+                click.echo(f"   - Tasks with error handling: {summary['error_handling_count']}")
+                click.echo(f"   - Tasks setting facts: {summary['tasks_setting_facts']}")
+
+        click.echo(f"\n✓ Analysis complete. Use without --analyze-only to generate documentation.\n")
+        return  # Exit without generating documentation
 
     # Generate Mermaid diagrams if requested
     mermaid_code_per_file = {}
@@ -509,6 +541,36 @@ def doc_the_role(
         except Exception as e:
             logger.warning(f"Could not generate architecture diagram: {e}")
 
+    # Generate dependency matrix for complex roles
+    dependency_matrix = None
+    dependency_summary = None
+    show_dependency_matrix = False
+    try:
+        from docsible.utils.dependency_matrix import (
+            generate_dependency_matrix_markdown,
+            should_generate_dependency_matrix,
+            analyze_task_dependencies,
+            generate_dependency_summary,
+        )
+
+        # Force show dependencies if user requested it, otherwise use heuristic
+        if show_dependencies or should_generate_dependency_matrix(role_info, analysis_report):
+            dependency_matrix = generate_dependency_matrix_markdown(role_info)
+            if dependency_matrix:
+                show_dependency_matrix = True
+                # Generate summary statistics
+                all_deps = []
+                for task_file_info in role_info.get("tasks", []):
+                    file_name = task_file_info.get("file", "unknown")
+                    tasks = task_file_info.get("tasks", [])
+                    all_deps.extend(analyze_task_dependencies(tasks, file_name))
+                dependency_summary = generate_dependency_summary(all_deps)
+                logger.info(
+                    f"Generated dependency matrix for {analysis_report.category.value.upper()} role"
+                )
+    except Exception as e:
+        logger.warning(f"Could not generate dependency matrix: {e}")
+
     # Determine template type
     template_type = "hybrid" if hybrid else "standard_modular"
 
@@ -532,6 +594,9 @@ def doc_the_role(
         architecture_diagram=architecture_diagram,
         complexity_report=analysis_report,
         include_complexity=include_complexity,
+        dependency_matrix=dependency_matrix,
+        dependency_summary=dependency_summary,
+        show_dependency_matrix=show_dependency_matrix,
         no_vars=no_vars,
         no_tasks=no_tasks,
         no_diagrams=no_diagrams,

@@ -62,6 +62,9 @@ class ComplexityMetrics(BaseModel):
     task_files: int = Field(description="Number of task files")
     handlers: int = Field(description="Number of handlers")
     conditional_tasks: int = Field(description="Tasks with 'when' conditions")
+    error_handlers: int = Field(
+        default=0, description="Tasks with error handling (rescue/always blocks)"
+    )
 
     # Internal composition (role orchestration)
     role_dependencies: int = Field(
@@ -140,6 +143,14 @@ def analyze_role_complexity(role_info: Dict[str, Any]) -> ComplexityReport:
         1 for tf in tasks_data for task in tf.get("tasks", []) if task.get("when")
     )
 
+    # Count tasks with error handling (rescue or always blocks)
+    error_handlers = sum(
+        1
+        for tf in tasks_data
+        for task in tf.get("tasks", [])
+        if task.get("rescue") or task.get("always")
+    )
+
     # Count role dependencies (from meta/main.yml)
     role_dependencies = len(role_info.get("meta", {}).get("dependencies", []))
 
@@ -187,6 +198,7 @@ def analyze_role_complexity(role_info: Dict[str, Any]) -> ComplexityReport:
         task_files=task_files,
         handlers=handlers,
         conditional_tasks=conditional_tasks,
+        error_handlers=error_handlers,
         role_dependencies=role_dependencies,
         role_includes=role_includes,
         task_includes=task_includes,
