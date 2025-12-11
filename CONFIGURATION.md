@@ -469,6 +469,127 @@ database_port: 5432
   - `description_lines:` ✓
 - **Multi-line descriptions**: Use `description-lines:` ... `# end`
 
+## Complexity Analysis & Dependency Tracking
+
+Docsible provides advanced analysis features for understanding role complexity and task dependencies.
+
+### Role Complexity Analysis
+
+Use `--complexity-report` to include complexity analysis in documentation, or `--analyze-only` to view analysis without generating documentation:
+
+```bash
+# Include complexity report in documentation
+docsible role --role ./my-role --complexity-report
+
+# Analyze without generating documentation
+docsible role --role ./my-role --analyze-only
+```
+
+**Complexity Metrics**:
+- **Total Tasks**: Count of all tasks across task files
+- **Task Files**: Number of task files
+- **Handlers**: Number of handler tasks
+- **Conditional Tasks**: Tasks with `when` conditions
+- **Error Handlers**: Tasks with rescue/always blocks (for error recovery)
+- **Role Dependencies**: Dependencies from meta/main.yml
+- **Task Includes**: include_tasks/import_tasks count
+- **External Integrations**: Detected connections to external systems (APIs, databases, cloud providers)
+
+**Complexity Categories**:
+- **SIMPLE** (1-10 tasks): Linear execution flow
+- **MEDIUM** (11-25 tasks): Workflow phases with some conditionals
+- **COMPLEX** (25+ tasks): Multiple phases, high integration complexity
+
+**Example Output** (`--analyze-only`):
+```
+============================================================
+📊 ANALYSIS COMPLETE
+============================================================
+
+📋 Role Complexity: MEDIUM (18 tasks)
+
+📊 Metrics:
+   - Task Files: 3
+   - Handlers: 2
+   - Conditional Tasks: 7 (39%)
+   - Error Handlers: 3
+   - Role Dependencies: 1
+   - External Integrations: 2 (AWS, PostgreSQL)
+
+📋 Task Dependencies:
+   - Tasks with variable dependencies: 12/18
+   - Tasks triggering handlers: 5
+   - Tasks with error handling: 3
+   - Tasks setting facts: 4
+
+✓ Analysis complete. Use without --analyze-only to generate documentation.
+```
+
+### Task Dependency Matrix
+
+Use `--show-dependencies` to generate a dependency matrix table showing task relationships:
+
+```bash
+# Include dependency matrix in documentation
+docsible role --role ./my-role --show-dependencies
+
+# Combine with complexity report
+docsible role --role ./my-role --complexity-report --show-dependencies
+```
+
+**Dependency Matrix Features**:
+- **Variable Dependencies**: Shows which variables/facts each task requires
+- **Handler Triggers**: Lists handlers notified by each task
+- **Error Handling**: Displays error recovery strategies (rescue/always blocks)
+- **Facts Set**: Shows variables/facts defined by each task
+
+**When Generated**:
+The dependency matrix is automatically included for:
+- **Complex roles** (25+ tasks): Always shown
+- **Medium roles** (11-25 tasks): Shown if >40% of tasks are conditional
+
+You can force generation for any role using `--show-dependencies`.
+
+**Example Matrix**:
+
+| Task | File | Module | Requires | Triggers | Error Handling | Sets Facts |
+|------|------|--------|----------|----------|----------------|------------|
+| Install packages | `main.yml` | `apt` | pkg_list, os_family | - | None | - |
+| Configure service | `main.yml` | `template` | service_port, config_path | restart_service | rescue | - |
+| Check status | `main.yml` | `command` | service_name | - | None | service_status |
+
+**Use Cases**:
+- **Troubleshooting**: Understand why tasks fail due to missing variables
+- **Dependencies**: See which tasks depend on each other
+- **Error Handling**: Identify tasks with recovery mechanisms
+- **Data Flow**: Track how facts/variables flow between tasks
+
+### Error Handler Visibility
+
+Error handlers (rescue/always blocks) are now tracked in complexity metrics:
+
+```yaml
+# Example task with error handling
+- name: Deploy application
+  block:
+    - name: Copy files
+      copy:
+        src: app/
+        dest: /opt/app
+  rescue:
+    - name: Rollback on failure
+      command: /opt/scripts/rollback.sh
+  always:
+    - name: Clean temporary files
+      file:
+        path: /tmp/deploy
+        state: absent
+```
+
+This task would show:
+- **Error Handling**: `rescue + always`
+- Increases the `error_handlers` metric in complexity analysis
+
 ## CLI Commands
 
 Docsible uses a Click-based CLI with subcommands. The main structure is:
@@ -516,6 +637,8 @@ Available Role Options:
 --comments, -com: Read comments from task files
 --task-line, -tl: Read line numbers from tasks
 --complexity-report: Show role complexity analysis
+--show-dependencies: Generate task dependency matrix showing relationships, triggers, and error handling
+--analyze-only: Analyze role complexity and show report without generating documentation
 --append, -a: Append to existing README instead of replacing
 --no-backup, -nob: Don't create backup before overwriting
 --output, -o: Output filename (default: README.md)

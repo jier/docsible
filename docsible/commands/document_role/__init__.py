@@ -65,6 +65,12 @@ def doc_the_role(
         # Document with diagrams
         docsible role --role /path/to/role --graph
 
+        # Analyze role complexity without generating docs
+        docsible role --role /path/to/role --analyze-only
+
+        # Include complexity analysis and dependency matrix
+        docsible role --role /path/to/role --complexity-report --show-dependencies
+
         # Minimal documentation
         docsible role --role /path/to/role --minimal
 
