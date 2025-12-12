@@ -292,18 +292,16 @@ def generate_mermaid_role_tasks_per_file(
     for task_info in tasks_per_file:
         task_file = task_info["file"]
         tasks = task_info["mermaid"]
-        mermaid_data = """
-                        flowchart TD
-                        Start
-                        classDef block stroke:#3498db,stroke-width:2px;
-                        classDef task stroke:#4b76bb,stroke-width:2px;
-                        classDef includeTasks stroke:#16a085,stroke-width:2px;
-                        classDef importTasks stroke:#34495e,stroke-width:2px;
-                        classDef includeRole stroke:#2980b9,stroke-width:2px;
-                        classDef importRole stroke:#699ba7,stroke-width:2px;
-                        classDef includeVars stroke:#8e44ad,stroke-width:2px;
-                        classDef rescue stroke:#665352,stroke-width:2px;
-                    """
+        mermaid_data = """flowchart TD
+Start
+classDef block stroke:#3498db,stroke-width:2px;
+classDef task stroke:#4b76bb,stroke-width:2px;
+classDef includeTasks stroke:#16a085,stroke-width:2px;
+classDef importTasks stroke:#34495e,stroke-width:2px;
+classDef includeRole stroke:#2980b9,stroke-width:2px;
+classDef importRole stroke:#699ba7,stroke-width:2px;
+classDef includeVars stroke:#8e44ad,stroke-width:2px;
+classDef rescue stroke:#665352,stroke-width:2px;"""
         last_node = "Start"
         last_node, mermaid_data = process_tasks(tasks, last_node, mermaid_data)
         mermaid_data += f"\n  {last_node}-->End"
