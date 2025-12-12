@@ -44,8 +44,8 @@
 {% macro render_table(file_data, file_path, role) -%}
 {%- set columns = detect_dynamic_columns(file_data) -%}
 {{ render_header(columns) }}
-{%- for key, details in file_data.items() -%}
+{% for key, details in file_data.items() -%}
 {{ render_row(key, details, file_path, role, columns) }}
-{%- endfor -%}
+{% endfor -%}
 {{- render_descriptions_section(file_data, file_path) }}
 {%- endmacro %}
