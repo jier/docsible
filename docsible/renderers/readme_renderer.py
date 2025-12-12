@@ -4,13 +4,16 @@ import logging
 import os
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, List
 
 from jinja2 import Environment, FileSystemLoader
 
 from docsible import constants
 from docsible.renderers.tag_manager import manage_docsible_tags, replace_between_tags
 from docsible.template_loader import TemplateLoader
+from docsible.validators.markdown_validator import MarkdownValidator
+from docsible.validators.markdown_fixer import MarkdownFixer
+from docsible.validators.doc_validator import ValidationSeverity
 
 logger = logging.getLogger(__name__)
 
@@ -26,18 +29,32 @@ class ReadmeRenderer:
         backup: Whether to create backups before overwriting
     """
 
-    def __init__(self, backup: bool = True):
+    def __init__(
+        self,
+        backup: bool = True,
+        validate: bool = True,
+        auto_fix: bool = False,
+        strict_validation: bool = False,
+    ):
         """Initialize ReadmeRenderer.
 
         Args:
             backup: Create backup files before overwriting (default: True)
+            validate: Run markdown formatting validation (default: True)
+            auto_fix: Automatically fix formatting issues (default: False)
+            strict_validation: Fail on validation errors (default: False, warn only)
 
         Example:
-            >>> renderer = ReadmeRenderer(backup=True)
+            >>> renderer = ReadmeRenderer(backup=True, validate=True, auto_fix=True)
             >>> renderer.render_role(role_data, output_path)
         """
         self.template_loader = TemplateLoader()
         self.backup = backup
+        self.validate = validate
+        self.auto_fix = auto_fix
+        self.strict_validation = strict_validation
+        self.markdown_validator = MarkdownValidator()
+        self.markdown_fixer = MarkdownFixer()
 
     def render_role(
         self,
@@ -121,6 +138,10 @@ class ReadmeRenderer:
         )
         new_content = manage_docsible_tags(new_content)
 
+        # Validate and auto-fix markdown formatting
+        if self.validate or self.auto_fix:
+            new_content = self._validate_and_fix_markdown(new_content)
+
         # Handle existing file
         final_content = self._merge_content(output_path, new_content, append)
 
@@ -128,7 +149,7 @@ class ReadmeRenderer:
         with open(output_path, "w", encoding="utf-8") as f:
             f.write(final_content)
 
-        logger.info(f"README written at: {output_path}")
+        logger.info(f"✓ README written at: {output_path}")
 
     def render_collection(
         self,
@@ -264,3 +285,81 @@ class ReadmeRenderer:
             return replace_between_tags(existing_content, new_content)
         else:
             return f"{existing_content}\n{new_content}"
+
+    def _validate_and_fix_markdown(self, markdown: str) -> str:
+        """
+        Validate and optionally auto-fix markdown formatting.
+
+        Args:
+            markdown: Raw markdown content
+
+        Returns:
+            Fixed markdown (if auto_fix=True) or original markdown
+
+        Raises:
+            ValueError: If strict_validation=True and errors found
+        """
+        # Auto-fix if enabled (do this first)
+        if self.auto_fix:
+            original_markdown = markdown
+            markdown = self.markdown_fixer.fix_all(markdown)
+            logger.info("🔧 Auto-fixed markdown formatting issues")
+
+        # Validate if enabled
+        if self.validate:
+            issues = self.markdown_validator.validate(markdown)
+
+            if issues:
+                # Categorize issues by severity
+                errors = [i for i in issues if i.severity == ValidationSeverity.ERROR]
+                warnings = [
+                    i for i in issues if i.severity == ValidationSeverity.WARNING
+                ]
+                infos = [i for i in issues if i.severity == ValidationSeverity.INFO]
+
+                # Log errors
+                if errors:
+                    logger.error(f"❌ Markdown validation found {len(errors)} error(s):")
+                    for error in errors[:5]:  # Show first 5
+                        line_info = (
+                            f" (line {error.line_number})" if error.line_number else ""
+                        )
+                        logger.error(f"  {error.message}{line_info}")
+                    if len(errors) > 5:
+                        logger.error(f"  ... and {len(errors) - 5} more errors")
+
+                # Log warnings
+                if warnings:
+                    logger.warning(
+                        f"⚠️  Markdown validation found {len(warnings)} warning(s):"
+                    )
+                    for warning in warnings[:3]:  # Show first 3
+                        line_info = (
+                            f" (line {warning.line_number})" if warning.line_number else ""
+                        )
+                        logger.warning(f"  {warning.message}{line_info}")
+                    if len(warnings) > 3:
+                        logger.warning(f"  ... and {len(warnings) - 3} more warnings")
+
+                # Strict mode - fail on errors
+                if self.strict_validation and errors:
+                    error_summary = "\n".join(
+                        [
+                            f"Line {e.line_number}: {e.message}"
+                            for e in errors[:10]
+                        ]
+                    )
+                    raise ValueError(
+                        f"Markdown validation failed with {len(errors)} error(s):\n{error_summary}\n\n"
+                        f"Fix template issues or use --no-validate to skip validation."
+                    )
+
+                # Provide helpful suggestions
+                if errors and not self.auto_fix:
+                    logger.info(
+                        "ℹ️  Run with --auto-fix to automatically correct formatting issues"
+                    )
+            else:
+                logger.info("✓ Markdown validation passed with no issues")
+
+        return markdown

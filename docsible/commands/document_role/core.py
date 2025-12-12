@@ -316,6 +316,9 @@ def doc_the_role(
     repository_url,
     repo_type,
     repo_branch,
+    validate_markdown,
+    auto_fix,
+    strict_validation,
 ):
     """Generate documentation for an Ansible role.
 
@@ -578,7 +581,12 @@ def doc_the_role(
         include_complexity = True
 
     # Render README
-    renderer = ReadmeRenderer(backup=not no_backup)
+    renderer = ReadmeRenderer(
+        backup=not no_backup,
+        validate=validate_markdown,
+        auto_fix=auto_fix,
+        strict_validation=strict_validation,
+    )
     readme_path = role_path / output
 
     renderer.render_role(

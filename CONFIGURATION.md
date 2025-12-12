@@ -590,6 +590,228 @@ This task would show:
 - **Error Handling**: `rescue + always`
 - Increases the `error_handlers` metric in complexity analysis
 
+## Markdown Quality Validation
+
+Docsible includes automated markdown formatting validation to ensure generated documentation is clean and well-formatted. This validation runs as a pre-delivery quality gate before writing README files.
+
+### Overview
+
+The validation system checks for common markdown formatting issues:
+
+- **Whitespace**: Excessive blank lines, trailing spaces, tab characters
+- **Tables**: Column count mismatches, malformed separators, inconsistent rows
+- **Syntax**: Unclosed code blocks, unclosed HTML tags, improper heading hierarchy
+
+### Validation Modes
+
+#### Default Validation (Enabled)
+
+By default, validation runs on all generated documentation:
+
+```bash
+docsible role --role ./my-role
+```
+
+**Output with issues**:
+```
+⚠️  Markdown validation found 2 warning(s):
+  Found tab characters on 3 lines
+  Excessive blank lines: 4 consecutive empty lines (max: 2)
+ℹ️  Run with --auto-fix to automatically correct formatting issues
+✓ README.md updated
+```
+
+#### Disable Validation
+
+Skip validation if you want to inspect raw output:
+
+```bash
+docsible role --role ./my-role --no-validate
+```
+
+#### Auto-Fix Mode
+
+Automatically fix common formatting issues:
+
+```bash
+docsible role --role ./my-role --auto-fix
+```
+
+**Fixes Applied**:
+- Replace tabs with spaces (4 spaces per tab)
+- Remove trailing whitespace from lines
+- Reduce excessive blank lines to maximum 2 consecutive
+- Add blank lines around tables for readability
+
+**Output**:
+```
+🔧 Auto-fixed markdown formatting issues
+✓ Markdown validation passed with no issues
+✓ README.md updated
+```
+
+#### Strict Validation Mode
+
+Fail generation if validation errors are found:
+
+```bash
+docsible role --role ./my-role --strict-validation
+```
+
+**Behavior**:
+- **Warnings**: Logged but don't block generation
+- **Errors**: Stop generation and display error details
+
+**Example failure**:
+```
+❌ Markdown validation found 2 error(s):
+  Unclosed code block: found 3 code fence markers (should be even) (line 45)
+  Table column mismatch: header has 3 columns, separator has 2 (line 78)
+
+ERROR: Markdown validation failed with 2 error(s):
+Line 45: Unclosed code block: found 3 code fence markers (should be even)
+Line 78: Table column mismatch: header has 3 columns, separator has 2
+
+Fix template issues or use --no-validate to skip validation.
+```
+
+### Validation Categories
+
+#### Whitespace Issues
+
+**Excessive Blank Lines** (Warning):
+```markdown
+# Header
+
+
+
+Too many blank lines above
+```
+
+**Tab Characters** (Warning):
+```markdown
+	This line has a tab (should be spaces)
+```
+
+**Trailing Whitespace** (Info):
+```markdown
+Line with trailing spaces
+```
+
+#### Table Issues
+
+**Column Mismatch** (Error):
+```markdown
+| Col 1 | Col 2 | Col 3 |
+|-------|-------|        # Missing separator!
+| A     | B     | C     |
+```
+
+**Malformed Table** (Error):
+```markdown
+| Col 1 | Col 2 |
+| A     | B     |        # Missing separator row!
+```
+
+#### Syntax Issues
+
+**Unclosed Code Block** (Error):
+```markdown
+```python
+def example():
+    pass
+# Missing closing ```
+```
+
+**Unclosed HTML Tags** (Error):
+```markdown
+<details>
+<summary>Content</summary>
+# Missing </details>
+```
+
+**Heading Hierarchy Skip** (Info):
+```markdown
+# Main Title
+
+#### Jumped to H4    # Should be H2
+```
+
+### Common Workflows
+
+#### Development Workflow
+
+During development, use auto-fix to clean up output:
+
+```bash
+docsible role --role ./my-role --auto-fix
+```
+
+#### CI/CD Pipeline
+
+In CI/CD, use strict validation to catch template issues:
+
+```bash
+docsible role --role ./my-role --strict-validation
+```
+
+**Benefits**:
+- Catch template bugs before they reach users
+- Ensure consistent formatting across all roles
+- Prevent broken tables or unclosed tags in documentation
+
+#### Testing Templates
+
+When developing custom templates, test without validation first:
+
+```bash
+# Test template output
+docsible role --role ./test-role --no-validate
+
+# Once working, enable validation
+docsible role --role ./test-role --auto-fix
+```
+
+### Best Practices
+
+1. **Enable Auto-Fix by Default**: Use `--auto-fix` in your workflow to automatically clean output
+2. **Strict Mode in CI**: Use `--strict-validation` in CI/CD to catch template issues early
+3. **Fix Template Issues**: If validation fails, fix the underlying template rather than disabling validation
+4. **Idempotent Fixes**: Running auto-fix multiple times produces the same result
+
+### Integration with Templates
+
+Validation runs **after** template rendering but **before** writing to disk:
+
+```
+Template Rendering → Markdown Validation → Auto-Fix (if enabled) → Write README
+                           ↓
+                    Error/Warning Logs
+                           ↓
+                    Strict Mode Check
+```
+
+This ensures:
+- Templates generate valid markdown
+- Common formatting issues are caught early
+- Users receive clean, well-formatted documentation
+
+### Troubleshooting
+
+**Issue**: Validation reports errors in generated output
+
+**Solution**:
+1. Check your Jinja2 templates for unclosed blocks or table issues
+2. Use auto-fix to see corrected output: `--auto-fix`
+3. Review MARKDOWN_QA_STRATEGY.md for template best practices
+
+**Issue**: Auto-fix doesn't resolve all issues
+
+**Solution**:
+- Auto-fix handles whitespace and table spacing only
+- Structural issues (unclosed blocks, column mismatches) require template fixes
+- Use validation output to identify exact problems
+
 ## CLI Commands
 
 Docsible uses a Click-based CLI with subcommands. The main structure is:
@@ -642,6 +864,9 @@ Available Role Options:
 --append, -a: Append to existing README instead of replacing
 --no-backup, -nob: Don't create backup before overwriting
 --output, -o: Output filename (default: README.md)
+--validate/--no-validate: Enable/disable markdown formatting validation (default: enabled)
+--auto-fix: Automatically fix common markdown formatting issues (whitespace, tables)
+--strict-validation: Fail generation if markdown validation errors are found (default: warn only)
 --repository-url, -ru: Repository base URL
 --repo-type, -rt: Repository type (github, gitlab, gitea)
 --repo-branch, -rb: Repository branch name

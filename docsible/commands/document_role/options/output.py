@@ -11,7 +11,28 @@ def add_output_options(f):
     - --no-backup: Don't backup existing README
     - --append/-a: Append to existing README instead of replacing
     - --no-docsible: Don't generate .docsible file
+    - --validate/--no-validate: Enable/disable markdown formatting validation
+    - --auto-fix: Automatically fix formatting issues
+    - --strict-validation: Fail generation if validation errors found
     """
+    f = click.option(
+        "--strict-validation",
+        "strict_validation",
+        is_flag=True,
+        help="Fail generation if markdown validation errors are found (default: warn only).",
+    )(f)
+    f = click.option(
+        "--auto-fix",
+        "auto_fix",
+        is_flag=True,
+        help="Automatically fix common markdown formatting issues (whitespace, tables).",
+    )(f)
+    f = click.option(
+        "--validate/--no-validate",
+        "validate_markdown",
+        default=True,
+        help="Validate markdown formatting before writing (default: enabled).",
+    )(f)
     f = click.option(
         "--no-docsible",
         "-nod",
