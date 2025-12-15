@@ -169,7 +169,7 @@ def compute_role_hash(role_path: Path) -> str:
             # Include file contents
             hash_obj.update(file_path.read_bytes())
 
-    return hash_obj.hexdigest()[:64]
+    return hash_obj.hexdigest()
 
 
 def generate_metadata(role_path: Path) -> GenerationMetadata:
