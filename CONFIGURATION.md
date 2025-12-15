@@ -590,6 +590,333 @@ This task would show:
 - **Error Handling**: `rescue + always`
 - Increases the `error_handlers` metric in complexity analysis
 
+## Pattern Analysis & Simplification Suggestions
+
+Docsible includes an advanced pattern analyzer that detects anti-patterns and provides actionable refactoring suggestions. This optional feature integrates with the complexity report to identify code quality issues across multiple categories.
+
+### Overview
+
+The pattern analyzer examines your role for common anti-patterns and provides:
+- **Health score** (0-100) based on detected issues
+- **Categorized findings** by severity (Critical, Warning, Info)
+- **Actionable suggestions** with code examples and fixes
+- **Impact assessments** explaining why each issue matters
+
+### Enable Pattern Analysis
+
+Use `--simplification-report` to include pattern analysis in your documentation:
+
+```bash
+# Include pattern analysis with complexity report
+docsible role --role ./my-role --complexity-report --simplification-report
+
+# Pattern analysis works independently too
+docsible role --role ./my-role --simplification-report
+```
+
+**Note**: Pattern analysis is opt-in. Use the flag to enable it.
+
+### Pattern Categories
+
+The analyzer detects anti-patterns across four categories:
+
+#### 1. Duplication Patterns
+- **Repeated Task Blocks**: Similar tasks that could be unified with loops
+- **Copy-Paste Variables**: Identical variable definitions across files
+- **Redundant Handlers**: Multiple handlers performing the same action
+
+**Example Detection**:
+```yaml
+# Anti-pattern: Repeated tasks
+- name: Install package A
+  apt:
+    name: package-a
+
+- name: Install package B
+  apt:
+    name: package-b
+
+# Suggested fix: Use loop
+- name: Install packages
+  apt:
+    name: "{{ item }}"
+  loop:
+    - package-a
+    - package-b
+```
+
+#### 2. Complexity Patterns
+- **God Tasks**: Single task files with too many responsibilities
+- **Deep Nesting**: Excessive block nesting (>3 levels)
+- **Long Conditionals**: Complex `when` conditions that should be refactored
+- **Missing Modularity**: Large roles that should be split
+
+**Example Detection**:
+```yaml
+# Anti-pattern: Deep nesting
+- name: Deploy
+  block:
+    - name: Check
+      block:
+        - name: Validate
+          block:  # 3 levels deep!
+            - name: Do work
+              command: ...
+
+# Suggested fix: Extract to separate task files
+# tasks/check.yml, tasks/validate.yml, tasks/deploy.yml
+```
+
+#### 3. Security Patterns
+- **Hardcoded Secrets**: Credentials or tokens in plaintext
+- **Weak Permissions**: Files/directories with overly permissive modes
+- **Sudo Without Validation**: Tasks using become without proper guards
+- **Exposed Variables**: Sensitive data in defaults instead of vars
+
+**Example Detection**:
+```yaml
+# Anti-pattern: Hardcoded secret
+database_password: "admin123"  # In defaults/main.yml
+
+# Suggested fix: Use Ansible Vault
+# In defaults/main.yml:
+database_password: "{{ vault_database_password }}"
+
+# In vars/vault.yml (encrypted):
+vault_database_password: !vault |
+  $ANSIBLE_VAULT;1.1;AES256...
+```
+
+#### 4. Maintainability Patterns
+- **Missing Error Handling**: Tasks without rescue/always blocks
+- **Inconsistent Naming**: Variables/tasks with unclear or inconsistent names
+- **Variable Shadowing**: defaults/ and vars/ defining same variables
+- **Undocumented Variables**: Variables without description comments
+
+**Example Detection**:
+```yaml
+# Anti-pattern: Variable shadowing
+# In defaults/main.yml:
+app_port: 8080
+
+# In vars/main.yml:
+app_port: 9090  # Which one wins? Confusing!
+
+# Suggested fix: Use vars/ for overrides, defaults/ for fallbacks
+# Keep app_port only in defaults/main.yml or only in vars/main.yml
+```
+
+### Health Score Calculation
+
+The overall health score (0-100) reflects code quality:
+
+- **90-100 (Excellent)**: Minimal or no anti-patterns detected
+  - Green status
+  - Follow best practices
+  - Minor improvements suggested
+
+- **70-89 (Good)**: Some warnings, no critical issues
+  - Orange status
+  - Maintainability concerns
+  - Recommended refactoring for quality
+
+- **Below 70 (Needs Improvement)**: Critical or multiple warnings
+  - Red status
+  - Security risks or complexity issues
+  - Immediate attention required
+
+**Score Formula**:
+```
+Base Score = 100
+Deduction = (Critical × 15) + (Warning × 5) + (Info × 1)
+Health Score = max(0, Base Score - Deduction)
+```
+
+### Documentation Output
+
+Pattern analysis adds a "Simplification Opportunities" section to generated documentation:
+
+**Example Output** (role with issues):
+```markdown
+## Simplification Opportunities
+
+**Overall Health Score:** 72/100
+
+This role has **8** potential improvements:
+- 🚨 Critical: 1
+- ⚠️  Warnings: 4
+- 💡 Suggestions: 3
+
+### 🚨 Critical Issues
+
+#### Hardcoded Secrets
+
+**Issue:** Found potential hardcoded secrets in variable definitions
+
+**Why it matters:** Hardcoded credentials pose security risks and make
+credential rotation difficult. Secrets should be encrypted with Ansible Vault.
+
+**Current code:**
+```yaml
+api_key: "sk_live_abcd1234"
+database_password: "admin123"
+```
+
+**Recommended fix:**
+Move secrets to Ansible Vault and reference them:
+```yaml
+# In defaults/main.yml
+api_key: "{{ vault_api_key }}"
+database_password: "{{ vault_database_password }}"
+
+# Encrypt with: ansible-vault encrypt vars/vault.yml
+```
+
+**Files:** `defaults/main.yml`
+
+---
+
+### ⚠️  Warnings
+
+#### Repeated Task Blocks
+...
+
+### 💡 Optional Improvements
+
+<details>
+<summary><strong>Inconsistent Naming</strong> - Variable names use different conventions</summary>
+
+**Example:**
+```yaml
+appPort: 8080        # camelCase
+app_name: "myapp"    # snake_case
+APP-VERSION: "1.0"   # kebab-case + uppercase
+```
+
+**Suggestion:**
+Standardize on snake_case per Ansible best practices
+
+**Expected benefit:** Improved readability and consistency
+</details>
+
+### Next Steps
+
+1. **Address critical issues first** - These pose security or reliability risks
+2. **Fix warnings** - These impact maintainability and code quality
+3. **Consider info suggestions** - Optional improvements for best practices
+```
+
+**Example Output** (healthy role):
+```markdown
+## Simplification Opportunities
+
+**Overall Health Score:** 100/100
+
+✅ **Excellent!** No anti-patterns detected. This role follows best practices.
+```
+
+### Integration with Complexity Report
+
+Pattern analysis integrates seamlessly with complexity analysis:
+
+```bash
+# Combined analysis for comprehensive insights
+docsible role --role ./my-role \
+  --complexity-report \
+  --simplification-report \
+  --show-dependencies
+```
+
+**Combined Benefits**:
+- **Complexity Report**: Quantitative metrics (task count, conditionals, dependencies)
+- **Pattern Analysis**: Qualitative insights (code smells, refactoring opportunities)
+- **Dependency Matrix**: Task relationships and data flow
+
+Together, these features provide a complete picture of role quality and maintainability.
+
+### Common Use Cases
+
+#### Code Review Workflow
+
+```bash
+# Before merging, check for anti-patterns
+docsible role --role ./new-role --simplification-report --analyze-only
+
+# Output shows issues without generating docs
+📊 Pattern Analysis: 3 issues found (Health: 85/100)
+- ⚠️  Repeated task blocks in tasks/main.yml
+- 💡 Missing error handling for critical tasks
+- 💡 Inconsistent variable naming
+```
+
+#### Documentation Generation
+
+```bash
+# Generate docs with all analysis features
+docsible role --role ./my-role \
+  --complexity-report \
+  --simplification-report \
+  --show-dependencies
+```
+
+#### Continuous Improvement
+
+```bash
+# Track health score over time
+docsible role --role ./my-role --simplification-report > /tmp/health_$(date +%Y%m%d).txt
+
+# Monitor improvements between releases
+```
+
+### Confidence Thresholds
+
+Pattern detection uses confidence scoring (0.0-1.0) to reduce false positives:
+
+- **Default threshold**: 0.7 (70% confidence)
+- **High confidence** (>0.8): Clear anti-patterns with strong evidence
+- **Medium confidence** (0.6-0.8): Likely issues worth reviewing
+- **Low confidence** (<0.6): Not reported (avoid noise)
+
+The default threshold balances precision and recall for practical use.
+
+### Best Practices
+
+1. **Use in Development**: Run with `--simplification-report` during development to catch issues early
+2. **Combine with Complexity**: Use both flags for comprehensive analysis
+3. **Address Critical First**: Focus on security and reliability issues before style improvements
+4. **Iterate Incrementally**: Fix issues gradually, don't try to achieve 100 score immediately
+5. **Context Matters**: Some "anti-patterns" may be intentional for your use case
+
+### Limitations
+
+- **Static Analysis**: Cannot detect runtime issues or logic errors
+- **Context-Unaware**: May flag intentional patterns as issues
+- **Language Patterns**: Focused on YAML/Ansible conventions, not custom modules
+- **False Positives**: Manual review recommended for all suggestions
+
+### Troubleshooting
+
+**Issue**: No patterns detected but role has obvious issues
+
+**Solution**:
+- Check confidence threshold (default 0.7 may be too high)
+- Pattern detector may not cover that specific anti-pattern yet
+- File a GitHub issue to add new detection patterns
+
+**Issue**: Too many false positives
+
+**Solution**:
+- Review "info" level suggestions critically
+- Focus on "critical" and "warning" severity
+- Provide feedback on GitHub for detector improvements
+
+**Issue**: Pattern analysis fails or crashes
+
+**Solution**:
+- Check logs with `--verbose` flag
+- Report errors to GitHub issues
+- Pattern analysis failures don't crash main complexity analysis
+
 ## Markdown Quality Validation
 
 Docsible includes automated markdown formatting validation to ensure generated documentation is clean and well-formatted. This validation runs as a pre-delivery quality gate before writing README files.
@@ -885,6 +1212,7 @@ Available Role Options:
 --comments, -com: Read comments from task files
 --task-line, -tl: Read line numbers from tasks
 --complexity-report: Show role complexity analysis
+--simplification-report: Include detailed pattern analysis with simplification suggestions
 --show-dependencies: Generate task dependency matrix showing relationships, triggers, and error handling
 --analyze-only: Analyze role complexity and show report without generating documentation
 --append, -a: Append to existing README instead of replacing
