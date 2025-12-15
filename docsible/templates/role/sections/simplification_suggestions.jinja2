@@ -1,0 +1,142 @@
+{# Simplification Suggestions Section #}
+{%- if complexity_report and complexity_report.pattern_analysis %}
+{%- set pattern_analysis = complexity_report.pattern_analysis %}
+## Simplification Opportunities
+
+**Overall Health Score:** <span style="color: {% if pattern_analysis.overall_health_score >= 80 %}green{% elif pattern_analysis.overall_health_score >= 60 %}orange{% else %}red{% endif %}">{{ "%.0f"|format(pattern_analysis.overall_health_score) }}/100</span>
+
+{%- if pattern_analysis.total_patterns == 0 %}
+
+✅ **Excellent!** No anti-patterns detected. This role follows best practices.
+
+{%- else %}
+
+This role has **{{ pattern_analysis.total_patterns }}** potential improvement{{ 's' if pattern_analysis.total_patterns != 1 else '' }}:
+- 🚨 Critical: {{ pattern_analysis.by_severity.get('critical', 0) }}
+- ⚠️  Warnings: {{ pattern_analysis.by_severity.get('warning', 0) }}
+- 💡 Suggestions: {{ pattern_analysis.by_severity.get('info', 0) }}
+
+{%- if pattern_analysis.by_severity.get('critical', 0) > 0 %}
+
+### 🚨 Critical Issues
+
+{%- for suggestion in pattern_analysis.suggestions %}
+{%- if suggestion.severity == 'critical' %}
+
+#### {{ suggestion.pattern | replace('_', ' ') | title }}
+
+**Issue:** {{ suggestion.description }}
+
+**Why it matters:** {{ suggestion.impact }}
+
+{%- if suggestion.example %}
+
+**Current code:**
+```yaml
+{{ suggestion.example }}
+```
+{%- endif %}
+
+**Recommended fix:**
+{{ suggestion.suggestion }}
+
+{%- if suggestion.affected_files %}
+**Files:** `{{ suggestion.affected_files | join('`, `') }}`
+{%- endif %}
+
+---
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+
+{%- if pattern_analysis.by_severity.get('warning', 0) > 0 %}
+
+### ⚠️  Warnings
+
+{%- for suggestion in pattern_analysis.suggestions %}
+{%- if suggestion.severity == 'warning' %}
+
+#### {{ suggestion.pattern | replace('_', ' ') | title }}
+
+**Issue:** {{ suggestion.description }}
+
+{%- if suggestion.example %}
+
+**Example:**
+```yaml
+{{ suggestion.example }}
+```
+{%- endif %}
+
+**Suggested improvement:**
+{{ suggestion.suggestion }}
+
+**Impact:** {{ suggestion.impact }}
+
+{%- if suggestion.affected_files %}
+**Affected files:** `{{ suggestion.affected_files | join('`, `') }}`
+{%- endif %}
+
+---
+{%- endfor %}
+{%- endif %}
+
+{%- if pattern_analysis.by_severity.get('info', 0) > 0 %}
+
+### 💡 Optional Improvements
+
+{%- for suggestion in pattern_analysis.suggestions %}
+{%- if suggestion.severity == 'info' %}
+
+<details>
+<summary><strong>{{ suggestion.pattern | replace('_', ' ') | title }}</strong> - {{ suggestion.description }}</summary>
+
+{%- if suggestion.example %}
+
+**Example:**
+```yaml
+{{ suggestion.example }}
+```
+{%- endif %}
+
+**Suggestion:**
+{{ suggestion.suggestion }}
+
+**Expected benefit:** {{ suggestion.impact }}
+
+{%- if suggestion.affected_files %}
+**Files:** `{{ suggestion.affected_files | join('`, `') }}`
+{%- endif %}
+
+</details>
+
+{%- endfor %}
+{%- endif %}
+
+{%- endif %}
+
+### Pattern Categories Summary
+
+{%- if pattern_analysis.by_category %}
+| Category | Count |
+|----------|-------|
+{%- for category, count in pattern_analysis.by_category.items() %}
+| {{ category | replace('_', ' ') | title }} | {{ count }} |
+{%- endfor %}
+{%- endif %}
+
+### Next Steps
+
+{%- if pattern_analysis.overall_health_score < 70 %}
+1. **Address critical issues first** - These pose security or reliability risks
+2. **Fix warnings** - These impact maintainability and code quality
+3. **Consider info suggestions** - Optional improvements for best practices
+{%- elif pattern_analysis.overall_health_score < 90 %}
+1. **Review warnings** - Improve code quality and maintainability
+2. **Consider optional improvements** - Further enhance role quality
+{%- else %}
+1. **Review optional suggestions** - Fine-tune role to perfection
+{%- endif %}
+
+---
+{%- endif %}

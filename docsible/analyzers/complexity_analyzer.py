@@ -13,6 +13,19 @@ from pydantic import BaseModel, Field
 logger = logging.getLogger(__name__)
 
 
+# Import pattern analysis (optional dependency)
+try:
+    from docsible.analyzers.patterns import (
+        analyze_role_patterns,
+        PatternAnalysisReport,
+    )
+    PATTERN_ANALYSIS_AVAILABLE = True
+except ImportError:
+    logger.debug("Pattern analysis not available")
+    PATTERN_ANALYSIS_AVAILABLE = False
+    PatternAnalysisReport = None  # type: ignore
+
+
 class ComplexityCategory(str, Enum):
     """Role complexity categories based on task count."""
 
@@ -114,21 +127,38 @@ class ComplexityReport(BaseModel):
     recommendations: List[str] = Field(default_factory=list)
     task_files_detail: List[Dict[str, Any]] = Field(default_factory=list)
 
+    # Pattern analysis (optional, only included when --simplification-report flag is used)
+    pattern_analysis: Optional[Any] = Field(
+        default=None,
+        description="Detailed pattern analysis report with simplification suggestions"
+    )
 
-def analyze_role_complexity(role_info: Dict[str, Any]) -> ComplexityReport:
+
+def analyze_role_complexity(
+    role_info: Dict[str, Any],
+    include_patterns: bool = False,
+    min_confidence: float = 0.7
+) -> ComplexityReport:
     """
     Analyze role complexity and generate comprehensive report.
 
     Args:
         role_info: Role information dictionary from build_role_info()
+        include_patterns: Whether to include pattern analysis (requires --simplification-report flag)
+        min_confidence: Minimum confidence threshold for pattern detection (0.0-1.0)
 
     Returns:
-        ComplexityReport with metrics, category, and recommendations
+        ComplexityReport with metrics, category, recommendations, and optional pattern analysis
 
     Example:
         >>> report = analyze_role_complexity(role_info)
         >>> print(f"Category: {report.category}")
         >>> print(f"Total tasks: {report.metrics.total_tasks}")
+
+        >>> # With pattern analysis
+        >>> report = analyze_role_complexity(role_info, include_patterns=True)
+        >>> if report.pattern_analysis:
+        ...     print(f"Health Score: {report.pattern_analysis.overall_health_score}")
     """
     # Count tasks
     tasks_data = role_info.get("tasks", [])
@@ -223,12 +253,32 @@ def analyze_role_complexity(role_info: Dict[str, Any]) -> ComplexityReport:
         for tf in tasks_data
     ]
 
+    # Run pattern analysis if requested
+    pattern_report = None
+    if include_patterns and PATTERN_ANALYSIS_AVAILABLE:
+        try:
+            logger.info("Running pattern analysis...")
+            pattern_report = analyze_role_patterns(role_info, min_confidence=min_confidence)
+            logger.info(
+                f"Pattern analysis complete: {pattern_report.total_patterns} patterns found "
+                f"(health score: {pattern_report.overall_health_score:.1f}/100)"
+            )
+        except Exception as e:
+            logger.error(f"Error in pattern analysis: {e}", exc_info=True)
+            pattern_report = None
+    elif include_patterns and not PATTERN_ANALYSIS_AVAILABLE:
+        logger.warning(
+            "Pattern analysis requested but not available. "
+            "Install pattern analyzer dependencies to enable this feature."
+        )
+
     return ComplexityReport(
         metrics=metrics,
         category=category,
         integration_points=integration_points,
         recommendations=recommendations,
         task_files_detail=task_files_detail,
+        pattern_analysis=pattern_report,
     )
 
 

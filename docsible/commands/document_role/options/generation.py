@@ -11,6 +11,7 @@ def add_generation_options(f):
     - --comments: Read comments from tasks files
     - --task-line: Read line numbers from tasks
     - --complexity-report: Show role complexity analysis
+    - --simplification-report: Show anti-pattern detection and simplification suggestions
     - --show-dependencies: Generate task dependency matrix (for complex roles)
     - --analyze-only: Show complexity analysis without generating documentation
     """
@@ -28,6 +29,15 @@ def add_generation_options(f):
         help="Generate task dependency matrix table in documentation. Shows variable dependencies, "
         "handler triggers, error handling strategies, and facts set by each task. "
         "Automatically included for complex roles (25+ tasks).",
+    )(f)
+    f = click.option(
+        "--simplification-report",
+        "simplification_report",
+        is_flag=True,
+        help="Include detailed pattern analysis with simplification suggestions in documentation. "
+        "Detects anti-patterns across duplication, complexity, security, and maintainability "
+        "categories. Provides actionable refactoring advice with code examples and impact assessment. "
+        "Generates overall health score (0-100) and categorizes issues by severity (info/warning/critical).",
     )(f)
     f = click.option(
         "--complexity-report",

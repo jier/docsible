@@ -430,8 +430,28 @@ class MaintainabilityDetector(BasePatternDetector):
         """
         suggestions = []
 
-        defaults = set(role_info.get('defaults', {}).keys())
-        vars_dict = set(role_info.get('vars', {}).keys())
+        # Handle both dict and list formats
+        defaults_raw = role_info.get('defaults', {})
+        vars_raw = role_info.get('vars', {})
+
+        # Convert to dict if list
+        if isinstance(defaults_raw, list):
+            defaults_dict = {}
+            for item in defaults_raw:
+                if isinstance(item, dict):
+                    defaults_dict.update(item)
+            defaults = set(defaults_dict.keys())
+        else:
+            defaults = set(defaults_raw.keys())
+
+        if isinstance(vars_raw, list):
+            vars_dict_temp = {}
+            for item in vars_raw:
+                if isinstance(item, dict):
+                    vars_dict_temp.update(item)
+            vars_dict = set(vars_dict_temp.keys())
+        else:
+            vars_dict = set(vars_raw.keys())
 
         # Find variables defined in both places
         shadowed = defaults.intersection(vars_dict)

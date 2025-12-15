@@ -63,6 +63,16 @@ class SecurityDetector(BasePatternDetector):
         # Check defaults and vars
         for var_type in ['defaults', 'vars']:
             variables = role_info.get(var_type, {})
+
+            # Handle both dict and list formats
+            if isinstance(variables, list):
+                # Convert list of dicts to single dict
+                temp_vars = {}
+                for item in variables:
+                    if isinstance(item, dict):
+                        temp_vars.update(item)
+                variables = temp_vars
+
             exposed_secrets = []
 
             for var_name, var_value in variables.items():

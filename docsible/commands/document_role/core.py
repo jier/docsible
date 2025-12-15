@@ -309,6 +309,7 @@ def doc_the_role(
     minimal,
     complexity_report,
     include_complexity,
+    simplification_report,
     show_dependencies,
     analyze_only,
     append,
@@ -415,7 +416,11 @@ def doc_the_role(
     # Analyze complexity for adaptive visualization
     from docsible.analyzers import analyze_role_complexity
 
-    analysis_report = analyze_role_complexity(role_info)
+    analysis_report = analyze_role_complexity(
+        role_info,
+        include_patterns=simplification_report,
+        min_confidence=0.7
+    )
 
     # Display complexity analysis if requested
     if complexity_report or analyze_only:
