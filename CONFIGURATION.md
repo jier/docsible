@@ -796,6 +796,32 @@ This ensures:
 - Common formatting issues are caught early
 - Users receive clean, well-formatted documentation
 
+## Documentation Drift Detection
+
+Docsible automatically tracks when documentation was generated and can detect if role files have changed.
+
+### Check Documentation Freshness
+
+```bash
+# Check if docs are up to date
+docsible check --role ./my-role
+
+# Output if fresh:
+✅ Documentation is up to date
+   Last generated: 2025-12-15 10:30:00 UTC
+
+# Output if outdated:
+⚠️  Documentation is OUTDATED
+   
+   Reason: Role files have changed since documentation was generated
+   Changed files: 3
+     - defaults/main.yml
+     - tasks/main.yml
+     - handlers/main.yml
+   
+   💡 Run: docsible role --role . --no-backup
+
+
 ### Troubleshooting
 
 **Issue**: Validation reports errors in generated output

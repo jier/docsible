@@ -10,6 +10,7 @@ from jinja2 import Environment, FileSystemLoader
 
 from docsible import constants
 from docsible.renderers.tag_manager import manage_docsible_tags, replace_between_tags
+from docsible.utils.metadata import generate_metadata
 from docsible.template_loader import TemplateLoader
 from docsible.validators.markdown_validator import MarkdownValidator
 from docsible.validators.markdown_fixer import MarkdownFixer
@@ -136,12 +137,19 @@ class ReadmeRenderer:
             no_metadata=no_metadata,
             no_handlers=no_handlers,
         )
+
         new_content = manage_docsible_tags(new_content)
 
         # Validate and auto-fix markdown formatting
         if self.validate or self.auto_fix:
             new_content = self._validate_and_fix_markdown(new_content)
-
+        try:
+            metadata = generate_metadata(Path(output_path).parent.resolve())
+            new_content = metadata.to_comment() + "\n" + new_content
+        except Exception as e:
+            # Don't fail if metadata generation fails
+            logger.warning(f"Could not generate metadata: {e}")
+        
         # Handle existing file
         final_content = self._merge_content(output_path, new_content, append)
 
@@ -214,7 +222,7 @@ class ReadmeRenderer:
         }
         new_content = template.render(data)
         new_content = manage_docsible_tags(new_content)
-
+       
         # Handle existing file
         final_content = self._merge_content(output_path, new_content, append)
 

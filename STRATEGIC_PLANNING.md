@@ -224,7 +224,26 @@ def compute_role_hash(role_path: Path) -> str:
             hash_obj.update(file.read_bytes())
     return hash_obj.hexdigest()[:16]
 ```
+**Future solution: Age based warning**
+```python
+from datetime import datetime, timedelta
 
+def check_documentation_drift(role_path: Path, readme_path: Path) -> Tuple[bool, Dict]:
+    # ... existing code ...
+    
+    if metadata:
+        # Calculate age of documentation
+        age = datetime.utcnow() - metadata.generated_at
+        
+        # Add warning if docs are very old (even if hash matches)
+        if age > timedelta(days=90):
+            return False, {
+                'reason': f'Documentation is {age.days} days old (>90 days)',
+                'generated_at': metadata.generated_at.strftime('%Y-%m-%d %H:%M:%S UTC'),
+                'recommendation': 'Consider regenerating to ensure up-to-date formatting'
+            }
+
+```
 ---
 
 ### Recommendation: **Hybrid Approach**

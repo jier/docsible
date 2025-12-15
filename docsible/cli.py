@@ -12,6 +12,7 @@ import click
 from docsible import constants
 from docsible.commands.document_role import doc_the_role
 from docsible.commands.init_config import init_config
+from docsible.commands.check import check
 
 # Setup logging
 logger = logging.getLogger(__name__)
@@ -67,6 +68,7 @@ def cli(verbose: bool):
     Examples:
         docsible role --role ./my-role --graph
         docsible init --path ./my-role
+        docsible role --role ./my-role  --check
     """
     setup_logging(verbose)
     logger.debug("Docsible CLI started")
@@ -75,6 +77,7 @@ def cli(verbose: bool):
 # Register commands
 cli.add_command(doc_the_role, name="role")
 cli.add_command(init_config, name="init")
+cli.add_command(check)
 
 
 def main():
