@@ -7,6 +7,7 @@ from typing import Optional
 from jinja2 import Environment, FileSystemLoader, Template
 
 from docsible.utils.template_filters import TEMPLATE_FILTERS
+from docsible.utils.mermaid.pagination import get_diagram_complexity_warning
 
 logger = logging.getLogger(__name__)
 
@@ -54,6 +55,9 @@ class TemplateLoader:
 
         # Register custom filters for safe table rendering
         self.env.filters.update(TEMPLATE_FILTERS)
+
+        # Register global helper functions
+        self.env.globals['get_diagram_complexity_warning'] = get_diagram_complexity_warning
 
         logger.debug(f"Initialized TemplateLoader with search paths: {search_paths}")
 

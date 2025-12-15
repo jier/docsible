@@ -12,5 +12,42 @@
 {%- endif %} |
 {%- endfor %}
 {% endif %}
+
+{# Mermaid diagram section with pagination support #}
+{% if task_info.mermaid_diagram %}
+{% if task_info.mermaid_diagram.paginated %}
+{# Large diagram - show paginated version #}
+**Task Flow Diagram** ({{ task_info.mermaid_diagram.pages | length }} pages - diagram is large)
+
+{{ get_diagram_complexity_warning(task_info.mermaid_diagram.full_diagram) }}
+
+<details>
+<summary>📊 View Full Diagram (may not render on all platforms)</summary>
+
+```mermaid
+{{ task_info.mermaid_diagram.full_diagram }}
+```
+
+</details>
+
+{% for page in task_info.mermaid_diagram.pages %}
+##### {{ page.title }}
+
+```mermaid
+{{ page.diagram }}
+```
+
+{% endfor %}
+{% else %}
+{# Normal single diagram #}
+**Task Flow Diagram**
+
+```mermaid
+{{ task_info.mermaid_diagram.diagram }}
+```
+
+{% endif %}
+{% endif %}
+
 {% endfor %}
 {% if not role.tasks %}*No tasks found in this role.*{% endif %}
