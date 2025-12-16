@@ -15,8 +15,11 @@ from .options import (
 from .core import doc_the_role as core_doc_the_role
 from .core import build_role_info, extract_playbook_role_dependencies
 
+# Import grouped help formatter
+from docsible.utils.cli_helpers import GroupedHelpCommand
 
-@click.command(name="role")
+
+@click.command(name="role", cls=GroupedHelpCommand)
 @add_path_options
 @add_output_options
 @add_content_options
