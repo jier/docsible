@@ -178,3 +178,42 @@ def get_task_line_numbers(file_path):
             tasks_lines[task_name] = idx + 1
 
     return tasks_lines
+
+
+def get_task_line_ranges(file_path):
+    """
+    Get line number ranges (start, end) for each task in an Ansible YAML file.
+
+    Args:
+        file_path: Path to the YAML file
+
+    Returns:
+        List of tuples (start_line, end_line) in task order
+
+    Example:
+        >>> ranges = get_task_line_ranges('tasks/main.yml')
+        >>> ranges
+        [(1, 5), (6, 12), (13, 15)]
+    """
+    with open(file_path, "r", encoding="utf-8") as f:
+        lines = f.readlines()
+
+    task_ranges = []
+    current_task_start = None
+
+    for idx, line in enumerate(lines):
+        stripped_line = line.strip()
+
+        if stripped_line.startswith("- name:"):
+            # If we were tracking a previous task, end it
+            if current_task_start is not None:
+                task_ranges.append((current_task_start, idx))  # End at line before this one
+
+            # Start tracking new task (1-indexed)
+            current_task_start = idx + 1
+
+    # Close the last task if one is open
+    if current_task_start is not None:
+        task_ranges.append((current_task_start, len(lines)))
+
+    return task_ranges

@@ -7,7 +7,7 @@ from .loader import (
     load_yaml_file_custom,
     load_yaml_files_from_dir_custom,
 )
-from .parser import get_multiline_indicator, get_task_comments, get_task_line_numbers
+from .parser import get_multiline_indicator, get_task_comments, get_task_line_numbers, get_task_line_ranges
 
 __all__ = [
     "vault_constructor",
@@ -17,4 +17,5 @@ __all__ = [
     "get_multiline_indicator",
     "get_task_comments",
     "get_task_line_numbers",
+    "get_task_line_ranges",
 ]

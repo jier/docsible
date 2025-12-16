@@ -15,6 +15,9 @@ logger = logging.getLogger(__name__)
 # Import concern detection system
 from docsible.analyzers.concerns.registry import ConcernRegistry
 
+# Import phase detection system
+from docsible.analyzers.phase_detector import PhaseDetector
+
 
 # Import pattern analysis (optional dependency)
 try:
@@ -122,7 +125,7 @@ class ComplexityMetrics(BaseModel):
 
 class FileComplexityDetail(BaseModel):
     """Detailed complexity metrics for a single task file."""
-    
+
     file_path: str = Field(description="Relative path to task file")
     task_count: int = Field(description="Number of tasks in this file")
     conditional_count: int = Field(description="Number of conditional tasks")
@@ -131,12 +134,14 @@ class FileComplexityDetail(BaseModel):
     integration_types: List[str] = Field(default_factory=list, description="Types of integrations used")
     module_diversity: int = Field(description="Number of unique modules used")
     primary_concern: Optional[str] = Field(default=None, description="Detected primary concern")
-    
+    phase_detection: Optional[Dict[str, Any]] = Field(default=None, description="Phase detection results")
+    line_ranges: Optional[List[tuple]] = Field(default=None, description="Line ranges for each task")
+
     @property
     def is_god_file(self) -> bool:
         """Check if this is a 'god file' (too many responsibilities)."""
         return self.task_count > 15 or self.module_diversity > 10
-    
+
     @property
     def is_conditional_heavy(self) -> bool:
         """Check if this file has high conditional complexity."""
@@ -163,33 +168,34 @@ def analyze_file_complexity(
 ) -> List[FileComplexityDetail]:
     """
     Analyze complexity metrics for each task file.
-    
+
     Args:
         role_info: Role information dictionary
         integration_points: Detected integration points
-    
+
     Returns:
         List of FileComplexityDetail objects, sorted by task count (descending)
-    
+
     Example:
         >>> files = analyze_file_complexity(role_info, integrations)
         >>> largest = files[0]
         >>> print(f"{largest.file_path}: {largest.task_count} tasks")
     """
     file_details = []
-    
+    phase_detector = PhaseDetector(min_confidence=0.8)  # Conservative threshold
+
     for task_file_info in role_info.get("tasks", []):
         file_path = task_file_info.get("file", "unknown")
         tasks = task_file_info.get("tasks", [])
-        
+
         if not tasks:
             continue
-        
+
         # Count conditionals
         conditional_tasks = [t for t in tasks if t.get("when")]
         conditional_count = len(conditional_tasks)
         conditional_percentage = (conditional_count / len(tasks)) * 100 if tasks else 0.0
-        
+
         # Detect integrations in this file
         has_integrations = False
         integration_types = []
@@ -199,13 +205,41 @@ def analyze_file_complexity(
             if any(mod in file_modules for mod in integration.modules_used):
                 has_integrations = True
                 integration_types.append(integration.type.value)
-        
+
         # Count unique modules (diversity indicator)
         unique_modules = len(set(t.get("module", "") for t in tasks if t.get("module")))
-        
+
         # Detect primary concern (simple heuristic based on modules)
         primary_concern = _detect_file_concern(tasks)
-        
+
+        # Get line ranges if available
+        line_ranges = task_file_info.get("line_ranges")
+
+        # Perform phase detection
+        phase_detection_result = None
+        try:
+            result = phase_detector.detect_phases(tasks, line_ranges)
+            if result.detected_phases or result.is_coherent_pipeline:
+                # Serialize phase detection result for storage
+                phase_detection_result = {
+                    "is_coherent_pipeline": result.is_coherent_pipeline,
+                    "confidence": result.confidence,
+                    "recommendation": result.recommendation,
+                    "reasoning": result.reasoning,
+                    "phases": [
+                        {
+                            "phase": phase.phase.value,
+                            "start_line": phase.start_line,
+                            "end_line": phase.end_line,
+                            "task_count": phase.task_count,
+                            "confidence": phase.confidence,
+                        }
+                        for phase in result.detected_phases
+                    ]
+                }
+        except Exception as e:
+            logger.debug(f"Phase detection failed for {file_path}: {e}")
+
         file_details.append(
             FileComplexityDetail(
                 file_path=file_path,
@@ -216,9 +250,11 @@ def analyze_file_complexity(
                 integration_types=list(set(integration_types)),
                 module_diversity=unique_modules,
                 primary_concern=primary_concern,
+                phase_detection=phase_detection_result,
+                line_ranges=line_ranges,
             )
         )
-    
+
     # Sort by task count (largest first)
     return sorted(file_details, key=lambda f: f.task_count, reverse=True)
 
@@ -1175,24 +1211,85 @@ def generate_recommendations(
                 tasks = task_file_info.get("tasks", [])
                 primary_concern, all_concerns = _detect_file_concerns(tasks)
 
-                # Check if mixing multiple concerns
-                if len(all_concerns) >= 2:
-                    # Mixed concerns - provide detailed WHY + HOW
+                # Check phase detection results first (determines if we should split at all)
+                phase_result = largest_file.phase_detection
+                if phase_result and phase_result.get("is_coherent_pipeline"):
+                    # Coherent pipeline detected - recommend keeping together
+                    confidence = int(phase_result.get("confidence", 0) * 100)
+                    phases_info = phase_result.get("phases", [])
+                    phase_names = " → ".join([p["phase"].title() for p in phases_info])
+
+                    rec = [
+                        f"✅ {file_link} forms a coherent pipeline ({phase_names})",
+                        f"   WHY: Sequential workflow is naturally coupled ({confidence}% confidence)",
+                        f"   RECOMMENDATION: Keep together - splitting would break narrative flow"
+                    ]
+
+                    # Show phase breakdown with line numbers
+                    if phases_info:
+                        rec.append("   PHASE BREAKDOWN:")
+                        for phase in phases_info:
+                            rec.append(
+                                f"      • Lines {phase['start_line']}-{phase['end_line']}: "
+                                f"{phase['phase'].title()} ({phase['task_count']} tasks)"
+                            )
+
+                    recommendations.append("\n".join(rec))
+
+                # Check if mixing multiple concerns (and no pipeline detected)
+                elif len(all_concerns) >= 2:
+                    # Mixed concerns - provide detailed WHY + HOW with line numbers
                     concern_names = ", ".join(c[1] for c in all_concerns[:3])
 
                     rec = [
-                        f"📁 {file_link} mixes {len(all_concerns)} concerns ({concern_names})",
+                        f"🔀 {file_link} mixes {len(all_concerns)} concerns ({concern_names})",
                         f"   WHY: Mixed responsibilities reduce maintainability, testability, and reusability",
                         f"   HOW: Split by concern:"
                     ]
 
-                    # Suggest splits with task counts
+                    # Get detailed concern matches with line information
                     from docsible.analyzers.concerns.registry import ConcernRegistry
-                    for concern_name, display_name, count in all_concerns:
-                        detector = ConcernRegistry.get_detector(concern_name)
-                        if detector:
-                            suggested_file = detector.suggested_filename
-                            rec.append(f"      • tasks/{suggested_file}: {display_name} ({count} tasks)")
+                    all_matches = ConcernRegistry.detect_all(tasks)
+                    line_ranges = largest_file.line_ranges or []
+
+                    for match in all_matches:
+                        if match.task_count > 0:
+                            detector = ConcernRegistry.get_detector(match.concern_name)
+                            if detector and line_ranges:
+                                # Extract line numbers for this concern's tasks
+                                concern_lines = []
+                                for task_idx in match.task_indices:
+                                    if task_idx < len(line_ranges):
+                                        start, end = line_ranges[task_idx]
+                                        concern_lines.append((start, end))
+
+                                if concern_lines:
+                                    # Format line ranges compactly
+                                    if len(concern_lines) == 1:
+                                        line_info = f"lines {concern_lines[0][0]}-{concern_lines[0][1]}"
+                                    elif len(concern_lines) <= 3:
+                                        ranges = ", ".join(f"{s}-{e}" for s, e in concern_lines)
+                                        line_info = f"lines {ranges}"
+                                    else:
+                                        first_line = concern_lines[0][0]
+                                        last_line = concern_lines[-1][1]
+                                        line_info = f"lines {first_line}-{last_line} ({len(concern_lines)} blocks)"
+
+                                    rec.append(
+                                        f"      • tasks/{detector.suggested_filename}: "
+                                        f"{match.display_name} ({match.task_count} tasks, {line_info})"
+                                    )
+                                else:
+                                    rec.append(
+                                        f"      • tasks/{detector.suggested_filename}: "
+                                        f"{match.display_name} ({match.task_count} tasks)"
+                                    )
+                            elif detector:
+                                # Fallback without line numbers
+                                rec.append(
+                                    f"      • tasks/{detector.suggested_filename}: "
+                                    f"{match.display_name} ({match.task_count} tasks)"
+                                )
 
                     recommendations.append("\n".join(rec))
 

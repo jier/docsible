@@ -24,6 +24,7 @@ from docsible.utils.special_tasks_keys import process_special_task_keys
 from docsible.utils.yaml import (
     get_task_comments,
     get_task_line_numbers,
+    get_task_line_ranges,
     load_yaml_files_from_dir_custom,
     load_yaml_generic,
 )
@@ -230,12 +231,19 @@ def build_role_info(
                             "mermaid": [],
                             "comments": [],
                             "lines": [],
+                            "line_ranges": [],
                         }
 
                         if comments:
                             task_info["comments"] = get_task_comments(str(file_path))
                         if task_line:
                             task_info["lines"] = get_task_line_numbers(str(file_path))
+
+                        # Always extract line ranges for phase detection (lightweight operation)
+                        try:
+                            task_info["line_ranges"] = get_task_line_ranges(str(file_path))
+                        except Exception as e:
+                            logger.debug(f"Could not extract line ranges for {file_path}: {e}")
 
                         if isinstance(tasks_data, list):
                             for task in tasks_data:
