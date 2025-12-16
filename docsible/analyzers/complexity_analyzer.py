@@ -222,6 +222,42 @@ def analyze_file_complexity(
     # Sort by task count (largest first)
     return sorted(file_details, key=lambda f: f.task_count, reverse=True)
 
+def _detect_file_concerns(
+    tasks: List[Dict[str, Any]]
+) -> tuple[Optional[str], List[tuple[str, str, int]]]:
+    """
+    Detect all concerns in a task file and return primary + detailed breakdown.
+
+    Args:
+        tasks: List of tasks in the file
+
+    Returns:
+        Tuple of (primary_concern, [(concern_name, display_name, count)])
+
+    Example:
+        >>> primary, concerns = _detect_file_concerns(tasks)
+        >>> print(primary)  # 'package_installation'
+        >>> print(concerns)  # [('package_installation', 'Package Installation', 5), ...]
+    """
+    from docsible.analyzers.concerns.registry import ConcernRegistry
+
+    # Get all concerns
+    all_matches = ConcernRegistry.detect_all(tasks)
+
+    # Primary concern
+    primary = ConcernRegistry.detect_primary_concern(tasks, min_confidence=0.6)
+    primary_name = primary.concern_name if primary else None
+
+    # Detailed breakdown (only concerns with >0 tasks)
+    concerns_breakdown = [
+        (match.concern_name, match.display_name, match.task_count)
+        for match in all_matches
+        if match.task_count > 0
+    ]
+
+    return primary_name, concerns_breakdown
+
+
 def _detect_file_concern(tasks: List[Dict[str, Any]]) -> Optional[str]:
     """
     Detect the primary concern/responsibility of a task file.
@@ -658,6 +694,7 @@ def analyze_role_complexity(
         inflection_points=inflection_points,
         file_details=file_details,
         hotspots=hotspots,
+        role_info=role_info,
         repository_url=repository_url,
         repo_type=repo_type,
         repo_branch=repo_branch
@@ -1074,6 +1111,7 @@ def generate_recommendations(
     file_details: List[FileComplexityDetail],
     hotspots: List[ConditionalHotspot],
     inflection_points: List[InflectionPoint],
+    role_info: Dict[str, Any],
     repository_url: Optional[str] = None,
     repo_type: Optional[str] = None,
     repo_branch: Optional[str] = None,
@@ -1099,14 +1137,14 @@ def generate_recommendations(
     """
     recommendations = []
     
-    # 1. FILE-SPECIFIC RECOMMENDATIONS
+    # 1. FILE-SPECIFIC RECOMMENDATIONS (WHY + HOW format)
     if file_details:
         largest_file = file_details[0]
 
         # Generate linkable file path
         file_link = _generate_file_link(
             largest_file.file_path,
-            None,  # No specific line number for file-level recommendation
+            None,
             repository_url,
             repo_type,
             repo_branch
@@ -1114,24 +1152,58 @@ def generate_recommendations(
 
         # God file detection
         if largest_file.is_god_file:
-            if largest_file.primary_concern:
-                concern_hint = f" (primarily {largest_file.primary_concern.replace('_', ' ')})"
-            else:
-                concern_hint = ""
-
-            recommendations.append(
-                f"📁 {file_link} has {largest_file.task_count} tasks{concern_hint} - "
-                f"consider splitting into smaller, focused files"
+            # Get task file info to analyze concerns
+            task_file_info = next(
+                (tf for tf in role_info.get("tasks", []) if tf.get("file") == largest_file.file_path),
+                None
             )
 
-            # Suggest specific splits based on concerns
-            if largest_file.module_diversity > 10:
-                recommendations.append(
-                    f"   → High module diversity ({largest_file.module_diversity} different modules) - "
-                    f"split by concern (install, configure, verify)"
-                )
+            if task_file_info:
+                tasks = task_file_info.get("tasks", [])
+                primary_concern, all_concerns = _detect_file_concerns(tasks)
+
+                # Check if mixing multiple concerns
+                if len(all_concerns) >= 2:
+                    # Mixed concerns - provide detailed WHY + HOW
+                    concern_names = ", ".join(c[1] for c in all_concerns[:3])
+
+                    rec = [
+                        f"📁 {file_link} mixes {len(all_concerns)} concerns ({concern_names})",
+                        f"   WHY: Mixed responsibilities reduce maintainability, testability, and reusability",
+                        f"   HOW: Split by concern:"
+                    ]
+
+                    # Suggest splits with task counts
+                    from docsible.analyzers.concerns.registry import ConcernRegistry
+                    for concern_name, display_name, count in all_concerns:
+                        detector = ConcernRegistry.get_detector(concern_name)
+                        if detector:
+                            suggested_file = detector.suggested_filename
+                            rec.append(f"      • tasks/{suggested_file}: {display_name} ({count} tasks)")
+
+                    recommendations.append("\n".join(rec))
+
+                elif primary_concern:
+                    # Single concern but large file
+                    rec = [
+                        f"📁 {file_link} has {largest_file.task_count} tasks focused on {primary_concern.replace('_', ' ')}",
+                        f"   WHY: Large single-purpose files are hard to navigate and review",
+                        f"   HOW: Split into execution phases:",
+                        f"      • tasks/setup_{primary_concern}.yml: Preparation tasks",
+                        f"      • tasks/{primary_concern}.yml: Core implementation",
+                        f"      • tasks/verify_{primary_concern}.yml: Validation tasks"
+                    ]
+                    recommendations.append("\n".join(rec))
+                else:
+                    # No clear concern detected
+                    rec = [
+                        f"📁 {file_link} has {largest_file.task_count} tasks with no clear single concern",
+                        f"   WHY: Unclear organization makes the role hard to understand and maintain",
+                        f"   HOW: Reorganize by execution phase or functional area"
+                    ]
+                    recommendations.append("\n".join(rec))
     
-    # 2. CONDITIONAL HOTSPOT RECOMMENDATIONS
+    # 2. CONDITIONAL HOTSPOT RECOMMENDATIONS (WHY + HOW format)
     for hotspot in hotspots[:2]:  # Top 2 hotspots
         hotspot_link = _generate_file_link(
             hotspot.file_path,
@@ -1140,12 +1212,14 @@ def generate_recommendations(
             repo_type,
             repo_branch
         )
-        recommendations.append(
-            f"🔀 {hotspot_link}: {hotspot.affected_tasks} tasks depend on '{hotspot.conditional_variable}' - "
-            f"{hotspot.suggestion}"
-        )
+        rec = [
+            f"🔀 {hotspot_link}: {hotspot.affected_tasks} tasks depend on '{hotspot.conditional_variable}'",
+            f"   WHY: OS/environment-specific branching scattered in one file makes platform support hard to test",
+            f"   HOW: {hotspot.suggestion}"
+        ]
+        recommendations.append("\n".join(rec))
 
-    # 3. INFLECTION POINT HINTS
+    # 3. INFLECTION POINT HINTS (WHY + HOW format)
     if inflection_points:
         main_inflection = inflection_points[0]  # Most significant
         inflection_link = _generate_file_link(
@@ -1155,10 +1229,14 @@ def generate_recommendations(
             repo_type,
             repo_branch
         )
-        recommendations.append(
-            f"⚡ Major branch point at {inflection_link} (task: '{main_inflection.task_name}') - "
-            f"{main_inflection.downstream_tasks} tasks affected by '{main_inflection.variable}'"
-        )
+        rec = [
+            f"⚡ Major branch point at {inflection_link}",
+            f"   WHAT: Task '{main_inflection.task_name}' branches on '{main_inflection.variable}'",
+            f"   IMPACT: {main_inflection.downstream_tasks} downstream tasks affected",
+            f"   WHY: Multiple execution paths in one file reduce clarity and increase cognitive load",
+            f"   HOW: Extract branches into separate files for each path (e.g., tasks/{{value}}.yml)"
+        ]
+        recommendations.append("\n".join(rec))
     
     # 4. INTEGRATION ISOLATION RECOMMENDATIONS
     # Group integrations by type

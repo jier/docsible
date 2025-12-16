@@ -543,7 +543,10 @@ def test_recommendations_for_complex_role():
         avg_tasks_per_file=11.7,
     )
 
-    recommendations = generate_recommendations(metrics, ComplexityCategory.COMPLEX, [])
+    recommendations = generate_recommendations(
+        metrics, ComplexityCategory.COMPLEX, [],
+        file_details=[], hotspots=[], inflection_points=[], role_info={"tasks": []}
+    )
 
     assert len(recommendations) >= 2
     assert any("complex" in rec.lower() for rec in recommendations)
@@ -564,7 +567,10 @@ def test_recommendations_for_high_composition():
         avg_tasks_per_file=7.5,
     )
 
-    recommendations = generate_recommendations(metrics, ComplexityCategory.MEDIUM, [])
+    recommendations = generate_recommendations(
+        metrics, ComplexityCategory.MEDIUM, [],
+        file_details=[], hotspots=[], inflection_points=[], role_info={"tasks": []}
+    )
 
     # Composition score = (5*2) + 2 + 1 = 13 (>= 8, so should recommend documenting dependencies)
     assert any("composition" in rec.lower() for rec in recommendations)
@@ -615,7 +621,8 @@ def test_recommendations_for_multiple_integrations():
     ]
 
     recommendations = generate_recommendations(
-        metrics, ComplexityCategory.MEDIUM, integration_points
+        metrics, ComplexityCategory.MEDIUM, integration_points,
+        file_details=[], hotspots=[], inflection_points=[], role_info={"tasks": []}
     )
 
     # Should recommend architecture diagram for multiple integrations
@@ -648,7 +655,8 @@ def test_recommendations_for_credentials():
     ]
 
     recommendations = generate_recommendations(
-        metrics, ComplexityCategory.MEDIUM, integration_points
+        metrics, ComplexityCategory.MEDIUM, integration_points,
+        file_details=[], hotspots=[], inflection_points=[], role_info={"tasks": []}
     )
 
     assert any(
@@ -668,7 +676,10 @@ def test_recommendations_for_simple_role():
         avg_tasks_per_file=8.0,
     )
 
-    recommendations = generate_recommendations(metrics, ComplexityCategory.SIMPLE, [])
+    recommendations = generate_recommendations(
+        metrics, ComplexityCategory.SIMPLE, [],
+        file_details=[], hotspots=[], inflection_points=[], role_info={"tasks": []}
+    )
 
     # Should indicate role is manageable
     assert any(
