@@ -116,7 +116,7 @@ class SimplificationSuggestion(BaseModel):
         """Ensure file paths are unique."""
         return list(set(v))
 
-    class Config:
+    class ConfigDict:
         """Pydantic configuration."""
         json_schema_extra = {
             "example": {
@@ -206,7 +206,7 @@ class PatternAnalysisReport(BaseModel):
 
         self.overall_health_score = max(0.0, score)
 
-    class Config:
+    class ConfigDict:
         """Pydantic configuration."""
         json_schema_extra = {
             "example": {

@@ -117,6 +117,27 @@ class ComplexityMetrics(BaseModel):
             return 0.0
         return (self.conditional_tasks / self.total_tasks) * 100
 
+class FileComplexityDetail(BaseModel):
+    """Detailed complexity metrics for a single task file."""
+    
+    file_path: str = Field(description="Relative path to task file")
+    task_count: int = Field(description="Number of tasks in this file")
+    conditional_count: int = Field(description="Number of conditional tasks")
+    conditional_percentage: float = Field(description="Percentage of conditional tasks")
+    has_integrations: bool = Field(default=False, description="File uses external integrations")
+    integration_types: List[str] = Field(default_factory=list, description="Types of integrations used")
+    module_diversity: int = Field(description="Number of unique modules used")
+    primary_concern: Optional[str] = Field(default=None, description="Detected primary concern")
+    
+    @property
+    def is_god_file(self) -> bool:
+        """Check if this is a 'god file' (too many responsibilities)."""
+        return self.task_count > 15 or self.module_diversity > 10
+    
+    @property
+    def is_conditional_heavy(self) -> bool:
+        """Check if this file has high conditional complexity."""
+        return self.conditional_percentage > 50.0 and self.conditional_count > 5
 
 class ComplexityReport(BaseModel):
     """Complete complexity analysis report."""
@@ -132,6 +153,344 @@ class ComplexityReport(BaseModel):
         default=None,
         description="Detailed pattern analysis report with simplification suggestions"
     )
+
+def analyze_file_complexity(
+    role_info: Dict[str, Any],
+    integration_points: List[IntegrationPoint]
+) -> List[FileComplexityDetail]:
+    """
+    Analyze complexity metrics for each task file.
+    
+    Args:
+        role_info: Role information dictionary
+        integration_points: Detected integration points
+    
+    Returns:
+        List of FileComplexityDetail objects, sorted by task count (descending)
+    
+    Example:
+        >>> files = analyze_file_complexity(role_info, integrations)
+        >>> largest = files[0]
+        >>> print(f"{largest.file_path}: {largest.task_count} tasks")
+    """
+    file_details = []
+    
+    for task_file_info in role_info.get("tasks", []):
+        file_path = task_file_info.get("file", "unknown")
+        tasks = task_file_info.get("tasks", [])
+        
+        if not tasks:
+            continue
+        
+        # Count conditionals
+        conditional_tasks = [t for t in tasks if t.get("when")]
+        conditional_count = len(conditional_tasks)
+        conditional_percentage = (conditional_count / len(tasks)) * 100 if tasks else 0.0
+        
+        # Detect integrations in this file
+        has_integrations = False
+        integration_types = []
+        for integration in integration_points:
+            # Check if any integration modules are used in this file
+            file_modules = set(t.get("module", "") for t in tasks)
+            if any(mod in file_modules for mod in integration.modules_used):
+                has_integrations = True
+                integration_types.append(integration.type.value)
+        
+        # Count unique modules (diversity indicator)
+        unique_modules = len(set(t.get("module", "") for t in tasks if t.get("module")))
+        
+        # Detect primary concern (simple heuristic based on modules)
+        primary_concern = _detect_file_concern(tasks)
+        
+        file_details.append(
+            FileComplexityDetail(
+                file_path=file_path,
+                task_count=len(tasks),
+                conditional_count=conditional_count,
+                conditional_percentage=conditional_percentage,
+                has_integrations=has_integrations,
+                integration_types=list(set(integration_types)),
+                module_diversity=unique_modules,
+                primary_concern=primary_concern,
+            )
+        )
+    
+    # Sort by task count (largest first)
+    return sorted(file_details, key=lambda f: f.task_count, reverse=True)
+
+def _detect_file_concern(tasks: List[Dict[str, Any]]) -> Optional[str]:
+    """
+    Detect the primary concern/responsibility of a task file.
+    
+    Uses module patterns to identify common concerns.
+    
+    Args:
+        tasks: List of tasks in the file
+    
+    Returns:
+        String describing primary concern, or None if mixed
+    
+    Example:
+        >>> tasks = [{"module": "apt"}, {"module": "yum"}]
+        >>> _detect_file_concern(tasks)
+        'package_installation'
+    """
+    # TODO Remove below modules to make this more data driven
+    # Module patterns for common concerns
+    PACKAGE_MODULES = ["apt", "yum", "dnf", "package", "pip", "npm"]
+    CONFIG_MODULES = ["template", "copy", "lineinfile", "blockinfile"]
+    SERVICE_MODULES = ["service", "systemd", "supervisorctl"]
+    VERIFICATION_MODULES = ["command", "shell", "assert", "wait_for", "uri"]
+    
+    modules = [t.get("module", "").split(".")[-1] for t in tasks]  # Get base module name
+    module_counter = {}
+    
+    for module in modules:
+        # Categorize module
+        if any(pkg in module for pkg in PACKAGE_MODULES):
+            module_counter["package_installation"] = module_counter.get("package_installation", 0) + 1
+        elif any(cfg in module for cfg in CONFIG_MODULES):
+            module_counter["configuration"] = module_counter.get("configuration", 0) + 1
+        elif any(svc in module for svc in SERVICE_MODULES):
+            module_counter["service_management"] = module_counter.get("service_management", 0) + 1
+        elif any(ver in module for ver in VERIFICATION_MODULES):
+            module_counter["verification"] = module_counter.get("verification", 0) + 1
+    
+    if not module_counter:
+        return None
+    
+    # Find dominant concern
+    dominant = max(module_counter.items(), key=lambda x: x[1])
+    
+    # Only report if it's clearly dominant (>60% of tasks)
+    if dominant[1] / len(tasks) > 0.6:
+        return dominant[0]
+    
+    return None  # Mixed concerns
+
+class ConditionalHotspot(BaseModel):
+    """Represents a file with high conditional complexity."""
+    
+    file_path: str
+    conditional_variable: str = Field(description="Main variable driving conditionals")
+    usage_count: int = Field(description="How many times this variable appears in conditions")
+    affected_tasks: int = Field(description="Number of tasks using this condition")
+    suggestion: str = Field(description="Recommended action")
+
+def detect_conditional_hotspots(
+    role_info: Dict[str, Any],
+    file_details: List[FileComplexityDetail]
+) -> List[ConditionalHotspot]:
+    """
+    Identify files with concentrated conditional logic and the variables driving it.
+    
+    Args:
+        role_info: Role information dictionary
+        file_details: File complexity analysis results
+    
+    Returns:
+        List of ConditionalHotspot objects
+    
+    Example:
+        >>> hotspots = detect_conditional_hotspots(role_info, file_details)
+        >>> for hotspot in hotspots:
+        ...     print(f"{hotspot.file_path}: {hotspot.conditional_variable}")
+    """
+    hotspots = []
+    
+    # Focus on files with high conditional percentage
+    conditional_files = [f for f in file_details if f.is_conditional_heavy]
+    
+    for file_detail in conditional_files:
+        # Find the corresponding task file data
+        task_file_info = next(
+            (tf for tf in role_info.get("tasks", []) if tf.get("file") == file_detail.file_path),
+            None
+        )
+        
+        if not task_file_info:
+            continue
+        
+        tasks = task_file_info.get("tasks", [])
+        
+        # Analyze conditional variables
+        conditional_vars = _extract_conditional_variables(tasks)
+        
+        if conditional_vars:
+            # Find most common conditional variable
+            most_common = max(conditional_vars.items(), key=lambda x: x[1])
+            var_name, usage_count = most_common
+            
+            # Count tasks affected by this variable
+            affected_tasks = sum(
+                1 for t in tasks
+                if t.get("when") and var_name in str(t.get("when"))
+            )
+            
+            # Generate suggestion
+            suggestion = _generate_split_suggestion(var_name, file_detail.file_path)
+            
+            hotspots.append(
+                ConditionalHotspot(
+                    file_path=file_detail.file_path,
+                    conditional_variable=var_name,
+                    usage_count=usage_count,
+                    affected_tasks=affected_tasks,
+                    suggestion=suggestion,
+                )
+            )
+    
+    return hotspots
+
+
+def _extract_conditional_variables(tasks: List[Dict[str, Any]]) -> Dict[str, int]:
+    """
+    Extract variables used in 'when' conditions and count their usage.
+    
+    Args:
+        tasks: List of tasks
+    
+    Returns:
+        Dictionary mapping variable names to usage count
+    
+    Example:
+        >>> tasks = [
+        ...     {"when": "ansible_os_family == 'Debian'"},
+        ...     {"when": "ansible_os_family == 'RedHat'"}
+        ... ]
+        >>> _extract_conditional_variables(tasks)
+        {'ansible_os_family': 2}
+    """
+    import re
+    
+    var_counter = {}
+    
+    # Common Ansible fact/variable patterns
+    VAR_PATTERN = re.compile(r'([a-z_][a-z0-9_]*)')
+    
+    for task in tasks:
+        when_clause = task.get("when")
+        if not when_clause:
+            continue
+        
+        # Convert to string (can be list or string)
+        when_str = str(when_clause)
+        
+        # Extract variable names
+        matches = VAR_PATTERN.findall(when_str)
+        
+        for var_name in matches:
+            # Filter out common operators and keywords
+            if var_name in ["and", "or", "not", "is", "in", "true", "false", "defined"]:
+                continue
+            
+            var_counter[var_name] = var_counter.get(var_name, 0) + 1
+    
+    return var_counter
+
+
+def _generate_split_suggestion(var_name: str, file_path: str) -> str:
+    """
+    Generate a suggestion for splitting based on conditional variable.
+    
+    Args:
+        var_name: Variable name driving conditionals
+        file_path: Original file path
+    
+    Returns:
+        Suggested split strategy
+    
+    Example:
+        >>> _generate_split_suggestion("ansible_os_family", "tasks/main.yml")
+        'Split into tasks/debian.yml and tasks/redhat.yml based on OS family'
+    """
+    # Common patterns
+    if "os_family" in var_name or "distribution" in var_name:
+        return "Split into tasks/debian.yml and tasks/redhat.yml based on OS family"
+    elif "environment" in var_name or "env" in var_name:
+        return "Split into tasks/production.yml and tasks/staging.yml by environment"
+    elif "mode" in var_name or "strategy" in var_name:
+        return f"Split by {var_name} into separate task files"
+    else:
+        base_name = file_path.replace("tasks/", "").replace(".yml", "")
+        return f"Extract conditional logic into tasks/{base_name}_{{value}}.yml files"
+
+class InflectionPoint(BaseModel):
+    """Represents a major branching point in task execution."""
+    
+    file_path: str
+    task_name: str = Field(description="Task where branching occurs")
+    task_index: int = Field(description="Position in file (0-based)")
+    variable: str = Field(description="Variable driving the branch")
+    branch_count: int = Field(description="Number of execution paths from this point")
+    downstream_tasks: int = Field(description="Tasks affected by this branch")
+
+def detect_inflection_points(
+    role_info: Dict[str, Any],
+    hotspots: List[ConditionalHotspot]
+) -> List[InflectionPoint]:
+    """
+    Identify major branching points where execution paths diverge.
+    
+    An inflection point is a task that:
+    1. Uses a conditional variable
+    2. Is followed by many tasks using the same variable
+    3. Represents a major decision point
+    
+    Args:
+        role_info: Role information dictionary
+        hotspots: Conditional hotspot analysis results
+    
+    Returns:
+        List of InflectionPoint objects
+    
+    Example:
+        >>> inflections = detect_inflection_points(role_info, hotspots)
+        >>> for point in inflections:
+        ...     print(f"{point.file_path}:{point.task_index} - {point.variable}")
+    """
+    inflection_points = []
+    
+    for hotspot in hotspots:
+        # Find the task file
+        task_file_info = next(
+            (tf for tf in role_info.get("tasks", []) if tf.get("file") == hotspot.file_path),
+            None
+        )
+        
+        if not task_file_info:
+            continue
+        
+        tasks = task_file_info.get("tasks", [])
+        var_name = hotspot.conditional_variable
+        
+        # Find first task using this variable
+        for idx, task in enumerate(tasks):
+            when_clause = str(task.get("when", ""))
+            
+            if var_name in when_clause:
+                # Count downstream tasks using same variable
+                downstream = sum(
+                    1 for t in tasks[idx+1:]
+                    if var_name in str(t.get("when", ""))
+                )
+                
+                # Only report significant inflection points
+                if downstream >= 3:
+                    inflection_points.append(
+                        InflectionPoint(
+                            file_path=hotspot.file_path,
+                            task_name=task.get("name", f"Task {idx + 1}"),
+                            task_index=idx,
+                            variable=var_name,
+                            branch_count=2,  # Simplified: assume binary branch
+                            downstream_tasks=downstream,
+                        )
+                    )
+                    break  # Only report first major inflection per variable
+    
+    return inflection_points
 
 
 def analyze_role_complexity(
@@ -222,6 +581,15 @@ def analyze_role_complexity(
     # Detect external integrations
     integration_points = detect_integrations(role_info)
 
+    # Analyze per-file complexity
+    file_details = analyze_file_complexity(role_info, integration_points)
+    
+    # Detect conditional hotspots
+    hotspots = detect_conditional_hotspots(role_info, file_details)
+    
+    # Detect inflection points
+    inflection_points = detect_inflection_points(role_info, hotspots)
+
     # Create metrics
     metrics = ComplexityMetrics(
         total_tasks=total_tasks,
@@ -241,7 +609,13 @@ def analyze_role_complexity(
     category = classify_complexity(metrics)
 
     # Generate recommendations
-    recommendations = generate_recommendations(metrics, category, integration_points)
+    recommendations = generate_recommendations(metrics=metrics, 
+                                               category=category, 
+                                               integration_points=integration_points,
+                                               inflection_points=inflection_points,
+                                               file_details=file_details,
+                                               hotspots=hotspots
+                                               )
 
     # Task files detail
     task_files_detail = [
@@ -651,52 +1025,111 @@ def generate_recommendations(
     metrics: ComplexityMetrics,
     category: ComplexityCategory,
     integration_points: List[IntegrationPoint],
+    file_details: List[FileComplexityDetail],
+    hotspots: List[ConditionalHotspot],
+    inflection_points: List[InflectionPoint],
 ) -> List[str]:
-    """Generate actionable recommendations based on complexity analysis."""
+    """
+    Generate specific, actionable recommendations based on comprehensive analysis.
+    
+    Args:
+        metrics: Overall complexity metrics
+        category: Complexity category
+        integration_points: External system integrations
+        file_details: Per-file complexity analysis
+        hotspots: Conditional complexity hotspots
+        inflection_points: Major branching points
+    
+    Returns:
+        List of specific, actionable recommendation strings
+    
+    Example:
+        >>> recommendations = generate_recommendations(...)
+        >>> for rec in recommendations:
+        ...     print(f"- {rec}")
+    """
     recommendations = []
-
-    # Task count recommendations
-    if category == ComplexityCategory.COMPLEX:
-        recommendations.append(
-            f"Role is complex ({metrics.total_tasks} tasks) - consider splitting by concern"
-        )
-
-        if metrics.max_tasks_per_file > 15:
+    
+    # 1. FILE-SPECIFIC RECOMMENDATIONS
+    if file_details:
+        largest_file = file_details[0]
+        
+        # God file detection
+        if largest_file.is_god_file:
+            if largest_file.primary_concern:
+                concern_hint = f" (primarily {largest_file.primary_concern.replace('_', ' ')})"
+            else:
+                concern_hint = ""
+                
             recommendations.append(
-                f"Largest task file has {metrics.max_tasks_per_file} tasks - "
-                "consider breaking into smaller files"
+                f"📁 {largest_file.file_path} has {largest_file.task_count} tasks{concern_hint} - "
+                f"consider splitting into smaller, focused files"
             )
-
-    # Composition recommendations
+            
+            # Suggest specific splits based on concerns
+            if largest_file.module_diversity > 10:
+                recommendations.append(
+                    f"   → High module diversity ({largest_file.module_diversity} different modules) - "
+                    f"split by concern (install, configure, verify)"
+                )
+    
+    # 2. CONDITIONAL HOTSPOT RECOMMENDATIONS
+    for hotspot in hotspots[:2]:  # Top 2 hotspots
+        recommendations.append(
+            f"🔀 {hotspot.file_path}: {hotspot.affected_tasks} tasks depend on '{hotspot.conditional_variable}' - "
+            f"{hotspot.suggestion}"
+        )
+    
+    # 3. INFLECTION POINT HINTS
+    if inflection_points:
+        main_inflection = inflection_points[0]  # Most significant
+        recommendations.append(
+            f"⚡ Major branch point at {main_inflection.file_path} (task: '{main_inflection.task_name}') - "
+            f"{main_inflection.downstream_tasks} tasks affected by '{main_inflection.variable}'"
+        )
+    
+    # 4. INTEGRATION ISOLATION RECOMMENDATIONS
+    # Group integrations by type
+    integration_by_file = {}
+    for file_detail in file_details:
+        if file_detail.has_integrations and file_detail.integration_types:
+            for int_type in file_detail.integration_types:
+                if int_type not in integration_by_file:
+                    integration_by_file[int_type] = []
+                integration_by_file[int_type].append(file_detail.file_path)
+    
+    # Recommend isolation for scattered integrations
+    for int_type, files in integration_by_file.items():
+        if len(files) > 1:  # Integration scattered across multiple files
+            integration = next(
+                (ip for ip in integration_points if ip.type.value == int_type),
+                None
+            )
+            if integration:
+                recommendations.append(
+                    f"🔌 {integration.system_name} integration scattered across {len(files)} files - "
+                    f"consider consolidating in tasks/{int_type}.yml"
+                )
+    
+    # 5. COMPOSITION COMPLEXITY
     if metrics.composition_score >= 8:
         recommendations.append(
-            f"High composition complexity (score: {metrics.composition_score}) - "
-            "document role dependencies clearly"
+            f"🔗 High role orchestration complexity (score: {metrics.composition_score}) - "
+            f"document role dependencies and include chain in README"
         )
-
-    # Integration recommendations
-    if len(integration_points) >= 3:
-        recommendations.append(
-            f"Multiple external integrations ({len(integration_points)} systems) - "
-            "add integration architecture diagram"
-        )
-
-    # Conditional logic recommendations
-    if metrics.conditional_percentage > 30:
-        recommendations.append(
-            f"High conditional logic ({metrics.conditional_percentage:.0f}%) - "
-            "document decision points in README"
-        )
-
-    # Credential usage warnings
+    
+    # 6. CREDENTIAL WARNINGS
     if any(ip.uses_credentials for ip in integration_points):
+        cred_systems = [ip.system_name for ip in integration_points if ip.uses_credentials]
         recommendations.append(
-            "External systems require credentials - document authentication requirements"
+            f"🔐 Credentials required for {', '.join(cred_systems)} - "
+            f"document authentication requirements and use Ansible Vault"
         )
-
+    
+    # 7. FALLBACK FOR SIMPLE ROLES
     if not recommendations:
         recommendations.append(
-            "Role complexity is manageable - standard documentation sufficient"
+            "✅ Role complexity is well-managed - standard documentation is sufficient"
         )
-
+    
     return recommendations

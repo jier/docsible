@@ -108,7 +108,7 @@ role_hash: {self.role_hash}
             # Invalid metadata format - return None
             return None
 
-    class Config:
+    class ConfigDict:
         """Pydantic configuration."""
 
         json_encoders = {datetime: lambda v: v.isoformat() + "Z"}
