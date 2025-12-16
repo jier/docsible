@@ -5,7 +5,7 @@ YAML file loading functions with metadata extraction.
 import logging
 import os
 from pathlib import Path
-from typing import Any, Dict, Optional, Union
+from typing import Any
 
 import yaml
 
@@ -14,7 +14,7 @@ from .parser import get_multiline_indicator
 logger = logging.getLogger(__name__)
 
 
-def load_yaml_generic(filepath: Union[str, Path]) -> Optional[Dict[str, Any]]:
+def load_yaml_generic(filepath: str | Path) -> dict[str, Any] | None:
     """Load YAML file and return parsed data.
 
     Args:

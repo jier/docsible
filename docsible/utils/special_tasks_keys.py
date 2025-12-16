@@ -1,12 +1,12 @@
 """Module for managing block and rescue code in Ansible tasks."""
 
 import logging
-from typing import Any, Dict, List, Union
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
 
-def escape_pipes(text: Union[str, List[Any], Any]) -> Union[str, List[Any], Any]:
+def escape_pipes(text: str | list[Any] | Any) -> str | list[Any] | Any:
     """Escape pipe characters in strings or lists for Mermaid diagram compatibility.
 
     Replaces '|' with '¦' to prevent syntax issues in Mermaid diagrams.
@@ -31,8 +31,8 @@ def escape_pipes(text: Union[str, List[Any], Any]) -> Union[str, List[Any], Any]
 
 
 def process_special_task_keys(
-    task: Dict[str, Any], task_type: str = "task"
-) -> List[Dict[str, Any]]:
+    task: dict[str, Any], task_type: str = "task"
+) -> list[dict[str, Any]]:
     """Process Ansible tasks, including block and rescue constructs.
 
     Recursively processes tasks to extract name, module, type, and conditions.

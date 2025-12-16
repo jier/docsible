@@ -6,7 +6,6 @@ implementing common functionality and defining the interface.
 
 import logging
 from abc import ABC, abstractmethod
-from typing import List
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +22,7 @@ class DiagramBuilder(ABC):
 
     def __init__(self):
         """Initialize DiagramBuilder with empty lines list."""
-        self.lines: List[str] = []
+        self.lines: list[str] = []
 
     @abstractmethod
     def build(self) -> str:
@@ -52,7 +51,7 @@ class DiagramBuilder(ABC):
         indentation = "    " * indent
         self.lines.append(f"{indentation}{line}")
 
-    def add_lines(self, lines: List[str], indent: int = 0) -> None:
+    def add_lines(self, lines: list[str], indent: int = 0) -> None:
         """Add multiple lines to the diagram.
 
         Args:

@@ -5,9 +5,10 @@ across the application.
 """
 
 import logging
+from collections.abc import Callable
 from functools import wraps
 from pathlib import Path
-from typing import Callable, Optional, ParamSpec, TypeVar
+from typing import ParamSpec, TypeVar
 
 from docsible.exceptions import ConfigurationError
 
@@ -17,7 +18,7 @@ P = ParamSpec("P")
 T = TypeVar("T")
 
 
-def handle_errors(default_return: Optional[T] = None) -> Callable:
+def handle_errors(default_return: T | None = None) -> Callable:
     """Decorator to handle and log errors gracefully.
 
     Catches all exceptions, logs them with full traceback, and returns
@@ -39,9 +40,9 @@ def handle_errors(default_return: Optional[T] = None) -> Callable:
         config = load_config(path)
     """
 
-    def decorator(func: Callable[P, T]) -> Callable[P, Optional[T]]:
+    def decorator(func: Callable[P, T]) -> Callable[P, T | None]:
         @wraps(func)
-        def wrapper(*args: P.args, **kwargs: P.kwargs) -> Optional[T]:
+        def wrapper(*args: P.args, **kwargs: P.kwargs) -> T | None:
             try:
                 return func(*args, **kwargs)
             except Exception as e:
@@ -123,7 +124,7 @@ def validate_role_structure(role_path: Path, strict: bool = False) -> None:
             )
 
 
-def safe_read_file(file_path: Path, encoding: str = "utf-8") -> Optional[str]:
+def safe_read_file(file_path: Path, encoding: str = "utf-8") -> str | None:
     """Safely read a file, returning None on error.
 
     Args:

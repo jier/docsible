@@ -163,6 +163,7 @@ class TestTableValidation:
 
         # Should detect inconsistent columns (tolerance of 1)
         # This case should trigger since we're missing 2 columns (3 expected, 1 provided)
+        # FIXME should this be used or not ?
         inconsistent_issues = [
             i for i in issues if "columns, expected" in i.message.lower()
         ]

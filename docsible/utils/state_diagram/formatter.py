@@ -3,7 +3,6 @@ State transition inference and formatting for Mermaid diagrams.
 """
 
 from dataclasses import dataclass
-from typing import List, Optional
 
 from .analyzer import Phase, PhaseInfo
 
@@ -14,11 +13,11 @@ class StateTransition:
 
     from_phase: Phase
     to_phase: Phase
-    condition: Optional[str] = None  # from 'when' clause
-    description: Optional[str] = None
+    condition: str | None = None  # from 'when' clause
+    description: str | None = None
 
 
-def infer_transitions(phases: List[PhaseInfo]) -> List[StateTransition]:
+def infer_transitions(phases: list[PhaseInfo]) -> list[StateTransition]:
     """
     Infer state transitions between phases.
 

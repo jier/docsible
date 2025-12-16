@@ -5,12 +5,12 @@ Generates detailed network diagrams showing ports, protocols, and firewall rules
 """
 
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
 
-def generate_network_topology(integration_points: List) -> Optional[str]:
+def generate_network_topology(integration_points: list) -> str | None:
     """
     Generate network topology diagram for roles with network integrations.
 
@@ -70,7 +70,7 @@ def generate_network_topology(integration_points: List) -> Optional[str]:
     return "\n".join(lines)
 
 
-def should_generate_network_topology(integration_points: List) -> bool:
+def should_generate_network_topology(integration_points: list) -> bool:
     """
     Determine if a network topology diagram should be generated.
 
@@ -92,7 +92,7 @@ def should_generate_network_topology(integration_points: List) -> bool:
     return len(network_integrations) > 0
 
 
-def format_integration_details(integration_point: Any) -> Dict[str, str]:
+def format_integration_details(integration_point: Any) -> dict[str, str]:
     """
     Format integration-specific details for documentation.
 

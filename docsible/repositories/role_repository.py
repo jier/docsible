@@ -6,7 +6,6 @@ providing a clean separation between file I/O operations and business logic.
 
 import logging
 from pathlib import Path
-from typing import Dict, List, Optional
 
 from docsible.models.role import Role
 from docsible.utils.project_structure import ProjectStructure
@@ -31,7 +30,7 @@ class RoleRepository:
         project_structure: ProjectStructure instance for path resolution
     """
 
-    def __init__(self, project_structure: Optional[ProjectStructure] = None):
+    def __init__(self, project_structure: ProjectStructure | None = None):
         """Initialize RoleRepository.
 
         Args:
@@ -44,7 +43,7 @@ class RoleRepository:
         path: Path,
         include_comments: bool = False,
         include_line_numbers: bool = False,
-    ) -> Optional[Role]:
+    ) -> Role | None:
         """Load a role from filesystem path.
 
         Args:
@@ -91,7 +90,7 @@ class RoleRepository:
             logger.error(f"Failed to load role from {path}: {e}")
             return None
 
-    def _load_defaults(self, role_path: Path) -> List[Dict]:
+    def _load_defaults(self, role_path: Path) -> list[dict]:
         """Load role defaults directory.
 
         Args:
@@ -108,7 +107,7 @@ class RoleRepository:
         defaults_data = load_yaml_files_from_dir_custom(str(defaults_dir))
         return defaults_data or []
 
-    def _load_vars(self, role_path: Path) -> List[Dict]:
+    def _load_vars(self, role_path: Path) -> list[dict]:
         """Load role vars directory.
 
         Args:
@@ -130,7 +129,7 @@ class RoleRepository:
         role_path: Path,
         include_comments: bool = False,
         include_line_numbers: bool = False,
-    ) -> List[Dict]:
+    ) -> list[dict]:
         """Load role tasks directory.
 
         Args:
@@ -150,7 +149,7 @@ class RoleRepository:
         yaml_extensions = self.structure.get_yaml_extensions()
 
         import os
-
+        #FIXME What happened on used variable
         for dirpath, dirnames, filenames in os.walk(str(tasks_dir)):
             for task_file in filenames:
                 if any(task_file.endswith(ext) for ext in yaml_extensions):
@@ -185,7 +184,7 @@ class RoleRepository:
 
         return tasks_list
 
-    def _load_handlers(self, role_path: Path) -> List[Dict]:
+    def _load_handlers(self, role_path: Path) -> list[dict]:
         """Load role handlers directory.
 
         Args:
@@ -240,7 +239,7 @@ class RoleRepository:
 
         return handlers_list
 
-    def _load_meta(self, role_path: Path) -> Optional[Dict]:
+    def _load_meta(self, role_path: Path) -> dict | None:
         """Load role metadata from meta/main.yml.
 
         Args:
@@ -273,7 +272,7 @@ class RoleRepository:
         """
         return path.exists() and path.is_dir()
 
-    def get_role_names_in_collection(self, collection_path: Path) -> List[str]:
+    def get_role_names_in_collection(self, collection_path: Path) -> list[str]:
         """Get list of role names in a collection.
 
         Args:

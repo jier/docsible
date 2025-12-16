@@ -4,7 +4,7 @@ Identifies potential security issues like exposed secrets,
 missing no_log directives, and insecure defaults.
 """
 
-from typing import Any, Dict, List
+from typing import Any
 
 from docsible.analyzers.patterns.base import BasePatternDetector
 from docsible.analyzers.patterns.models import (
@@ -39,7 +39,7 @@ class SecurityDetector(BasePatternDetector):
         """Return security category."""
         return PatternCategory.SECURITY
 
-    def detect(self, role_info: Dict[str, Any]) -> List[SimplificationSuggestion]:
+    def detect(self, role_info: dict[str, Any]) -> list[SimplificationSuggestion]:
         """Detect all security patterns.
 
         Args:
@@ -58,8 +58,8 @@ class SecurityDetector(BasePatternDetector):
         return suggestions
 
     def _detect_exposed_secrets(
-        self, role_info: Dict[str, Any]
-    ) -> List[SimplificationSuggestion]:
+        self, role_info: dict[str, Any]
+    ) -> list[SimplificationSuggestion]:
         """Find potential secrets in plain text.
 
         Looks for variables with secret-like names that aren't
@@ -146,8 +146,8 @@ class SecurityDetector(BasePatternDetector):
         return suggestions
 
     def _detect_missing_no_log(
-        self, role_info: Dict[str, Any]
-    ) -> List[SimplificationSuggestion]:
+        self, role_info: dict[str, Any]
+    ) -> list[SimplificationSuggestion]:
         """Find tasks handling secrets without no_log directive.
 
         Tasks that register variables with secret-like names or
@@ -216,8 +216,8 @@ class SecurityDetector(BasePatternDetector):
         return suggestions
 
     def _detect_insecure_permissions(
-        self, role_info: Dict[str, Any]
-    ) -> List[SimplificationSuggestion]:
+        self, role_info: dict[str, Any]
+    ) -> list[SimplificationSuggestion]:
         """Find file/directory operations with overly permissive modes.
 
         Example: mode: '0777' on sensitive files
@@ -302,8 +302,8 @@ class SecurityDetector(BasePatternDetector):
         return suggestions
 
     def _detect_shell_injection_risks(
-        self, role_info: Dict[str, Any]
-    ) -> List[SimplificationSuggestion]:
+        self, role_info: dict[str, Any]
+    ) -> list[SimplificationSuggestion]:
         """Find shell/command tasks with user-controlled input.
 
         Example anti-pattern:

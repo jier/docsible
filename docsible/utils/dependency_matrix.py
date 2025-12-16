@@ -7,7 +7,7 @@ Scales to any complexity level without visual clutter.
 
 import logging
 import re
-from typing import Any, Dict, List, Optional, Set
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -20,19 +20,19 @@ class TaskDependency(BaseModel):
     task_name: str = Field(description="Name of the task")
     module: str = Field(description="Ansible module used by this task")
     file: str = Field(description="Task file location (e.g., main.yml)")
-    requires: List[str] = Field(
+    requires: list[str] = Field(
         default_factory=list, description="Variable/fact dependencies"
     )
-    triggers: List[str] = Field(
+    triggers: list[str] = Field(
         default_factory=list, description="Handlers triggered by this task"
     )
     error_handling: str = Field(
         default="None", description="Error handling strategy (rescue/always/None)"
     )
-    conditions: List[str] = Field(
+    conditions: list[str] = Field(
         default_factory=list, description="When conditions for task execution"
     )
-    sets_facts: List[str] = Field(
+    sets_facts: list[str] = Field(
         default_factory=list, description="Variables/facts this task sets"
     )
 
@@ -42,7 +42,7 @@ class TaskDependency(BaseModel):
 # ============================================================================
 
 
-def extract_variable_references(text: str) -> Set[str]:
+def extract_variable_references(text: str) -> set[str]:
     """
     Extract Ansible variable references from text.
 
@@ -70,7 +70,7 @@ def extract_variable_references(text: str) -> Set[str]:
 # ============================================================================
 
 
-def _extract_task_conditions(task: Dict[str, Any]) -> tuple[List[str], Set[str]]:
+def _extract_task_conditions(task: dict[str, Any]) -> tuple[list[str], set[str]]:
     """
     Extract when conditions and their variable dependencies from a task.
 
@@ -96,7 +96,7 @@ def _extract_task_conditions(task: Dict[str, Any]) -> tuple[List[str], Set[str]]
     return conditions, requires
 
 
-def _extract_variable_dependencies(task: Dict[str, Any]) -> Set[str]:
+def _extract_variable_dependencies(task: dict[str, Any]) -> set[str]:
     """
     Extract variable dependencies from task arguments.
 
@@ -117,7 +117,7 @@ def _extract_variable_dependencies(task: Dict[str, Any]) -> Set[str]:
     return requires
 
 
-def _extract_handler_triggers(task: Dict[str, Any]) -> List[str]:
+def _extract_handler_triggers(task: dict[str, Any]) -> list[str]:
     """
     Extract handler notification triggers from a task.
 
@@ -137,7 +137,7 @@ def _extract_handler_triggers(task: Dict[str, Any]) -> List[str]:
         return []
 
 
-def _detect_error_handling(task: Dict[str, Any]) -> str:
+def _detect_error_handling(task: dict[str, Any]) -> str:
     """
     Detect error handling strategy for a task.
 
@@ -160,7 +160,7 @@ def _detect_error_handling(task: Dict[str, Any]) -> str:
         return "None"
 
 
-def _extract_facts_set(task: Dict[str, Any]) -> List[str]:
+def _extract_facts_set(task: dict[str, Any]) -> list[str]:
     """
     Extract variables/facts that this task sets.
 
@@ -193,8 +193,8 @@ def _extract_facts_set(task: Dict[str, Any]) -> List[str]:
 
 
 def analyze_task_dependencies(
-    tasks: List[Dict[str, Any]], task_file: str
-) -> List[TaskDependency]:
+    tasks: list[dict[str, Any]], task_file: str
+) -> list[TaskDependency]:
     """
     Analyze task dependencies from role task data.
 
@@ -253,7 +253,7 @@ def analyze_task_dependencies(
 # ============================================================================
 
 
-def _collect_all_dependencies(role_info: Dict[str, Any]) -> List[TaskDependency]:
+def _collect_all_dependencies(role_info: dict[str, Any]) -> list[TaskDependency]:
     """
     Collect dependencies from all task files in a role.
 
@@ -263,7 +263,7 @@ def _collect_all_dependencies(role_info: Dict[str, Any]) -> List[TaskDependency]
     Returns:
         List of all TaskDependency objects across all task files
     """
-    all_dependencies: List[TaskDependency] = []
+    all_dependencies: list[TaskDependency] = []
     task_files = role_info.get("tasks", [])
 
     for task_file_info in task_files:
@@ -275,7 +275,7 @@ def _collect_all_dependencies(role_info: Dict[str, Any]) -> List[TaskDependency]
     return all_dependencies
 
 
-def _format_requires_list(requires: List[str], max_items: int = 3) -> str:
+def _format_requires_list(requires: list[str], max_items: int = 3) -> str:
     """
     Format variable requirements list for table display.
 
@@ -296,7 +296,7 @@ def _format_requires_list(requires: List[str], max_items: int = 3) -> str:
     return displayed
 
 
-def _format_list_column(items: List[str]) -> str:
+def _format_list_column(items: list[str]) -> str:
     """
     Format a list of items for table column display.
 
@@ -309,7 +309,7 @@ def _format_list_column(items: List[str]) -> str:
     return ", ".join(items) if items else "-"
 
 
-def _build_full_table(dependencies: List[TaskDependency]) -> List[str]:
+def _build_full_table(dependencies: list[TaskDependency]) -> list[str]:
     """
     Build complete dependency table with all columns.
 
@@ -336,7 +336,7 @@ def _build_full_table(dependencies: List[TaskDependency]) -> List[str]:
     return lines
 
 
-def _build_essential_table(dependencies: List[TaskDependency]) -> List[str]:
+def _build_essential_table(dependencies: list[TaskDependency]) -> list[str]:
     """
     Build simplified dependency table with essential columns only.
 
@@ -363,8 +363,8 @@ def _build_essential_table(dependencies: List[TaskDependency]) -> List[str]:
 
 
 def generate_dependency_matrix_markdown(
-    role_info: Dict[str, Any], show_all_columns: bool = True
-) -> Optional[str]:
+    role_info: dict[str, Any], show_all_columns: bool = True
+) -> str | None:
     """
     Generate markdown table showing task dependencies.
 
@@ -405,7 +405,7 @@ def generate_dependency_matrix_markdown(
 
 
 def should_generate_dependency_matrix(
-    role_info: Dict[str, Any], complexity_report: Any
+    role_info: dict[str, Any], complexity_report: Any
 ) -> bool:
     """
     Determine if dependency matrix should be generated.
@@ -442,7 +442,7 @@ def should_generate_dependency_matrix(
     return False
 
 
-def generate_dependency_summary(dependencies: List[TaskDependency]) -> Dict[str, Any]:
+def generate_dependency_summary(dependencies: list[TaskDependency]) -> dict[str, Any]:
     """
     Generate summary statistics about task dependencies.
 

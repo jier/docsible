@@ -2,12 +2,11 @@
 
 import logging
 import subprocess
-from typing import Optional
 
 logger = logging.getLogger(__name__)
 
 
-def get_git_version() -> Optional[str]:
+def get_git_version() -> str | None:
     """Get version from git tags.
 
     Returns version in format:

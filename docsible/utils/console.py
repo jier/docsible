@@ -5,7 +5,6 @@ Provides colorized, formatted console output for reports and analysis.
 """
 
 import logging
-from typing import Optional
 
 from docsible.analyzers import ComplexityCategory, ComplexityReport
 
@@ -26,7 +25,7 @@ MAGENTA = "\033[95m"
 
 
 def display_complexity_report(
-    report: ComplexityReport, role_name: Optional[str] = None
+    report: ComplexityReport, role_name: str | None = None
 ) -> None:
     """
     Display a formatted complexity analysis report to console.

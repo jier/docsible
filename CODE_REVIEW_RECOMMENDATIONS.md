@@ -1552,8 +1552,7 @@ git commit -m "feat(yaml): Add type hints to load functions"
 - `ruff`: Fast Python linter (already in deps)
 - `mypy`: Static type checker
 - `pytest-cov`: Coverage reporting
-- `black`: Code formatter
-- `isort`: Import sorter
+- `ruff format`: Code formatter and Import sorter
 
 ### References
 - [Python Type Hints - PEP 484](https://peps.python.org/pep-0484/)

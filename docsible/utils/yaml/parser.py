@@ -3,10 +3,9 @@ YAML parsing and analysis utilities.
 """
 
 import re
-from typing import Optional
 
 
-def get_multiline_indicator(line: str) -> Optional[str]:
+def get_multiline_indicator(line: str) -> str | None:
     """
     Detect and map YAML multiline scalar indicators to a descriptive name.
     Handles all combinations of |, >, +, -, and 1-9 indent levels.
@@ -71,7 +70,7 @@ def get_task_comments(file_path: str) -> list[dict[str, str]]:
     output_task_comments = []
     # This list will hold comment lines gathered immediately before a potential task.
     candidate_comments = []
-
+    #FIXME Index i not used why?
     for i, line_content in enumerate(lines):
         stripped_line = line_content.strip()
 

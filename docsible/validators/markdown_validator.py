@@ -9,7 +9,6 @@ Validates raw markdown formatting for human readability:
 
 import logging
 import re
-from typing import List, Optional, Tuple
 
 from .doc_validator import ValidationIssue, ValidationSeverity, ValidationType
 
@@ -30,7 +29,7 @@ class MarkdownValidator:
         self.max_consecutive_blanks = max_consecutive_blanks
         self.max_line_length = max_line_length
 
-    def validate_whitespace(self, markdown: str) -> List[ValidationIssue]:
+    def validate_whitespace(self, markdown: str) -> list[ValidationIssue]:
         """
         Check for excessive whitespace issues.
 
@@ -98,7 +97,7 @@ class MarkdownValidator:
 
         return issues
 
-    def validate_tables(self, markdown: str) -> List[ValidationIssue]:
+    def validate_tables(self, markdown: str) -> list[ValidationIssue]:
         """
         Validate markdown table formatting.
 
@@ -161,11 +160,11 @@ class MarkdownValidator:
 
     def _validate_single_table(
         self,
-        table_lines: List[Tuple[int, str]],
-        header_line: Optional[Tuple[int, str]],
-        separator_line: Optional[Tuple[int, str]],
+        table_lines: list[tuple[int, str]],
+        header_line: tuple[int, str] | None,
+        separator_line: tuple[int, str] | None,
         table_start: int,
-    ) -> List[ValidationIssue]:
+    ) -> list[ValidationIssue]:
         """Validate a single markdown table."""
         issues = []
 
@@ -232,7 +231,7 @@ class MarkdownValidator:
 
         return issues
 
-    def validate_syntax(self, markdown: str) -> List[ValidationIssue]:
+    def validate_syntax(self, markdown: str) -> list[ValidationIssue]:
         """
         Validate markdown syntax basics.
 
@@ -301,7 +300,7 @@ class MarkdownValidator:
 
         return issues
 
-    def validate(self, markdown: str) -> List[ValidationIssue]:
+    def validate(self, markdown: str) -> list[ValidationIssue]:
         """
         Run all markdown formatting validations.
 

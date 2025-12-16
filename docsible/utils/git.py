@@ -4,7 +4,6 @@ import logging
 import re
 import subprocess
 from pathlib import Path
-from typing import Dict
 from urllib.parse import urlparse, urlunparse
 
 logger = logging.getLogger(__name__)
@@ -94,7 +93,7 @@ def clean_and_standardize_url(url: str) -> str:
         return ""
 
 
-def get_repo_info(path: str | Path) -> Dict[str, str]:
+def get_repo_info(path: str | Path) -> dict[str, str]:
     """Get git repository information from a directory.
 
     Extracts repository URL, current branch, and repository type.

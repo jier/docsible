@@ -1,7 +1,7 @@
 """Base classes for concern detection."""
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -14,10 +14,10 @@ class ConcernMatch(BaseModel):
     )
     confidence: float = Field(description="Confidence score 0.0-1.0", ge=0.0, le=1.0)
     task_count: int = Field(description="Number of tasks matching this concern")
-    matched_modules: List[str] = Field(
+    matched_modules: list[str] = Field(
         default_factory=list, description="Modules that matched"
     )
-    task_indices: List[int] = Field(
+    task_indices: list[int] = Field(
         default_factory=list, description="Indices of matching tasks"
     )
 
@@ -82,7 +82,7 @@ class ConcernDetector(ABC):
 
     @property
     @abstractmethod
-    def module_patterns(self) -> List[str]:
+    def module_patterns(self) -> list[str]:
         """
         List of module name patterns that indicate this concern.
 
@@ -158,7 +158,7 @@ class ConcernDetector(ABC):
 
         return False
 
-    def detect(self, tasks: List[Dict[str, Any]]) -> ConcernMatch:
+    def detect(self, tasks: list[dict[str, Any]]) -> ConcernMatch:
         """
         Detect this concern in a list of tasks.
 

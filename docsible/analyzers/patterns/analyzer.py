@@ -5,7 +5,7 @@ coordinating multiple specialized detectors.
 """
 
 import logging
-from typing import Any, Dict, List, Type
+from typing import Any
 
 from docsible.analyzers.patterns.base import BasePatternDetector
 from docsible.analyzers.patterns.detectors import (
@@ -40,7 +40,7 @@ class PatternAnalyzer:
 
     def __init__(
         self,
-        enabled_detectors: List[Type[BasePatternDetector]] | None = None,
+        enabled_detectors: list[type[BasePatternDetector]] | None = None,
         min_confidence: float = 0.0,
     ):
         """Initialize pattern analyzer.
@@ -64,7 +64,7 @@ class PatternAnalyzer:
             ]
 
         # Instantiate detectors
-        self.detectors: List[BasePatternDetector] = [
+        self.detectors: list[BasePatternDetector] = [
             detector_class() for detector_class in enabled_detectors
         ]
 
@@ -73,7 +73,7 @@ class PatternAnalyzer:
             f"(min_confidence={min_confidence})"
         )
 
-    def analyze(self, role_info: Dict[str, Any]) -> PatternAnalysisReport:
+    def analyze(self, role_info: dict[str, Any]) -> PatternAnalysisReport:
         """Analyze role for all patterns.
 
         This is the main entry point for pattern analysis.
@@ -91,7 +91,7 @@ class PatternAnalyzer:
         """
         logger.info("Starting pattern analysis...")
 
-        all_suggestions: List[SimplificationSuggestion] = []
+        all_suggestions: list[SimplificationSuggestion] = []
 
         # Run each detector
         for detector in self.detectors:
@@ -129,8 +129,8 @@ class PatternAnalyzer:
         return report
 
     def analyze_by_severity(
-        self, role_info: Dict[str, Any], severity: SeverityLevel
-    ) -> List[SimplificationSuggestion]:
+        self, role_info: dict[str, Any], severity: SeverityLevel
+    ) -> list[SimplificationSuggestion]:
         """Analyze role and return only patterns of specified severity.
 
         Args:
@@ -144,8 +144,8 @@ class PatternAnalyzer:
         return [s for s in report.suggestions if s.severity == severity]
 
     def analyze_critical_only(
-        self, role_info: Dict[str, Any]
-    ) -> List[SimplificationSuggestion]:
+        self, role_info: dict[str, Any]
+    ) -> list[SimplificationSuggestion]:
         """Analyze role and return only critical issues.
 
         Convenience method for getting high-priority items.
@@ -174,7 +174,7 @@ class PatternAnalyzer:
 
 
 def analyze_role_patterns(
-    role_info: Dict[str, Any], min_confidence: float = 0.7
+    role_info: dict[str, Any], min_confidence: float = 0.7
 ) -> PatternAnalysisReport:
     """Convenience function to analyze role patterns.
 

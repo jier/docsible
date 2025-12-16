@@ -5,12 +5,11 @@ Generates Mermaid diagrams showing external system integrations and boundaries.
 """
 
 import logging
-from typing import List, Optional
 
 logger = logging.getLogger(__name__)
 
 
-def generate_integration_boundary(integration_points: List) -> Optional[str]:
+def generate_integration_boundary(integration_points: list) -> str | None:
     """
     Generate system boundary diagram showing external integrations.
 
@@ -105,7 +104,7 @@ def generate_integration_boundary(integration_points: List) -> Optional[str]:
     return "\n".join(lines)
 
 
-def should_generate_integration_diagram(integration_points: List) -> bool:
+def should_generate_integration_diagram(integration_points: list) -> bool:
     """
     Determine if an integration boundary diagram should be generated.
 

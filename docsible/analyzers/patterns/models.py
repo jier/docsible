@@ -9,7 +9,6 @@ analysis system. Using Pydantic provides:
 """
 
 from enum import Enum
-from typing import List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -86,7 +85,7 @@ class SimplificationSuggestion(BaseModel):
         description="Recommended refactoring approach with code examples", min_length=1
     )
 
-    affected_files: List[str] = Field(
+    affected_files: list[str] = Field(
         default_factory=list, description="List of files affected by this pattern"
     )
 
@@ -94,7 +93,7 @@ class SimplificationSuggestion(BaseModel):
         description="Expected impact of applying the suggestion", min_length=1
     )
 
-    line_numbers: Optional[List[int]] = Field(
+    line_numbers: list[int] | None = Field(
         default=None, description="Specific line numbers where pattern appears"
     )
 
@@ -107,7 +106,7 @@ class SimplificationSuggestion(BaseModel):
 
     @field_validator("affected_files")
     @classmethod
-    def validate_files(cls, v: List[str]) -> List[str]:
+    def validate_files(cls, v: list[str]) -> list[str]:
         """Ensure file paths are unique."""
         return list(set(v))
 
@@ -143,7 +142,7 @@ class PatternAnalysisReport(BaseModel):
         overall_health_score: Overall role health (0-100)
     """
 
-    suggestions: List[SimplificationSuggestion] = Field(
+    suggestions: list[SimplificationSuggestion] = Field(
         default_factory=list, description="All detected patterns and suggestions"
     )
 

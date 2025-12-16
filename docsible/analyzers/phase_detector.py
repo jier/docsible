@@ -10,7 +10,6 @@ Uses a conservative approach to minimize false positives.
 from collections import defaultdict
 from dataclasses import dataclass
 from enum import Enum
-from typing import Dict, List, Optional, Tuple
 
 
 class Phase(Enum):
@@ -34,7 +33,7 @@ class PhaseMatch:
     start_line: int
     end_line: int
     task_count: int
-    task_indices: List[int]
+    task_indices: list[int]
     confidence: float  # 0.0-1.0
 
 
@@ -42,7 +41,7 @@ class PhaseMatch:
 class PhaseDetectionResult:
     """Result of phase detection analysis."""
 
-    detected_phases: List[PhaseMatch]
+    detected_phases: list[PhaseMatch]
     is_coherent_pipeline: bool
     confidence: float  # Overall confidence that this is a pipeline
     recommendation: str
@@ -167,7 +166,7 @@ class PhaseDetector:
         self.min_confidence = min_confidence
 
     def detect_phases(
-        self, tasks: List[Dict], line_numbers: Optional[List[Tuple[int, int]]] = None
+        self, tasks: list[dict], line_numbers: list[tuple[int, int]] | None = None
     ) -> PhaseDetectionResult:
         """Detect execution phases in a task sequence.
 
@@ -213,7 +212,7 @@ class PhaseDetector:
             reasoning=reasoning,
         )
 
-    def _detect_task_phase(self, task: Dict) -> Tuple[Phase, float]:
+    def _detect_task_phase(self, task: dict) -> tuple[Phase, float]:
         """Detect the phase of a single task.
 
         Args:
@@ -253,7 +252,7 @@ class PhaseDetector:
         best_phase = max(phase_scores.items(), key=lambda x: x[1])
         return best_phase[0], best_phase[1]
 
-    def _extract_module(self, task: Dict) -> Optional[str]:
+    def _extract_module(self, task: dict) -> str | None:
         """Extract the Ansible module name from a task.
 
         Args:
@@ -293,9 +292,9 @@ class PhaseDetector:
 
     def _group_by_phase(
         self,
-        task_phases: List[Tuple[int, Phase, float]],
-        line_numbers: Optional[List[Tuple[int, int]]],
-    ) -> List[PhaseMatch]:
+        task_phases: list[tuple[int, Phase, float]],
+        line_numbers: list[tuple[int, int]] | None,
+    ) -> list[PhaseMatch]:
         """Group consecutive tasks by phase.
 
         Args:
@@ -346,9 +345,9 @@ class PhaseDetector:
     def _create_phase_match(
         self,
         phase: Phase,
-        indices: List[int],
-        confidences: List[float],
-        line_numbers: Optional[List[Tuple[int, int]]],
+        indices: list[int],
+        confidences: list[float],
+        line_numbers: list[tuple[int, int]] | None,
     ) -> PhaseMatch:
         """Create a PhaseMatch object.
 
@@ -381,9 +380,9 @@ class PhaseDetector:
 
     def _analyze_pipeline_coherence(
         self,
-        phase_groups: List[PhaseMatch],
-        task_phases: List[Tuple[int, Phase, float]],
-    ) -> Tuple[bool, float, str]:
+        phase_groups: list[PhaseMatch],
+        task_phases: list[tuple[int, Phase, float]],
+    ) -> tuple[bool, float, str]:
         """Analyze if detected phases form a coherent pipeline.
 
         Args:
@@ -451,7 +450,7 @@ class PhaseDetector:
 
         return is_pipeline, overall_confidence, reasoning
 
-    def _check_phase_ordering(self, phase_groups: List[PhaseMatch]) -> float:
+    def _check_phase_ordering(self, phase_groups: list[PhaseMatch]) -> float:
         """Check if phases appear in expected sequential order.
 
         Args:
@@ -464,9 +463,10 @@ class PhaseDetector:
             return 1.0
 
         # Get expected ordering from priorities
-        expected_order = sorted(
-            phase_groups, key=lambda g: self.PHASE_PATTERNS[g.phase]["priority"]
-        )
+        # FIXME unused, so commenting out for now
+        # expected_order = sorted(
+        #     phase_groups, key=lambda g: self.PHASE_PATTERNS[g.phase]["priority"]
+        # )
 
         # Count how many phase transitions are in correct order
         correct_transitions = 0
@@ -481,7 +481,7 @@ class PhaseDetector:
 
         return correct_transitions / total_transitions if total_transitions > 0 else 1.0
 
-    def _check_phase_repetition(self, phase_groups: List[PhaseMatch]) -> float:
+    def _check_phase_repetition(self, phase_groups: list[PhaseMatch]) -> float:
         """Check for phase repetition (back-and-forth between phases).
 
         Args:
@@ -505,7 +505,7 @@ class PhaseDetector:
         return min(repetitions / len(phase_groups), 1.0)
 
     def _generate_recommendation(
-        self, is_pipeline: bool, phase_groups: List[PhaseMatch]
+        self, is_pipeline: bool, phase_groups: list[PhaseMatch]
     ) -> str:
         """Generate recommendation based on phase detection.
 

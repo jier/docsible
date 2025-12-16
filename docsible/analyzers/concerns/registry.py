@@ -1,7 +1,7 @@
 """Registry for concern detectors."""
 
 import logging
-from typing import Any, Dict, List, Optional, Type
+from typing import Any
 
 from .base import ConcernDetector, ConcernMatch
 
@@ -24,7 +24,7 @@ class ConcernRegistry:
         >>> primary = ConcernRegistry.detect_primary_concern(tasks)
     """
 
-    _detectors: List[ConcernDetector] = []
+    _detectors: list[ConcernDetector] = []
     _initialized: bool = False
 
     @classmethod
@@ -44,7 +44,7 @@ class ConcernRegistry:
             logger.debug(f"Registered concern detector: {detector.display_name}")
 
     @classmethod
-    def register_class(cls, detector_class: Type[ConcernDetector]) -> None:
+    def register_class(cls, detector_class: type[ConcernDetector]) -> None:
         """
         Register a concern detector class (instantiates it).
 
@@ -103,7 +103,7 @@ class ConcernRegistry:
             logger.warning(f"Could not auto-register built-in concerns: {e}")
 
     @classmethod
-    def detect_all(cls, tasks: List[Dict[str, Any]]) -> List[ConcernMatch]:
+    def detect_all(cls, tasks: list[dict[str, Any]]) -> list[ConcernMatch]:
         """
         Run all registered detectors on tasks.
 
@@ -137,8 +137,8 @@ class ConcernRegistry:
 
     @classmethod
     def detect_primary_concern(
-        cls, tasks: List[Dict[str, Any]], min_confidence: float = 0.6
-    ) -> Optional[ConcernMatch]:
+        cls, tasks: list[dict[str, Any]], min_confidence: float = 0.6
+    ) -> ConcernMatch | None:
         """
         Detect the primary (dominant) concern in tasks.
 
@@ -167,7 +167,7 @@ class ConcernRegistry:
         return None  # No dominant concern
 
     @classmethod
-    def get_detector(cls, concern_name: str) -> Optional[ConcernDetector]:
+    def get_detector(cls, concern_name: str) -> ConcernDetector | None:
         """
         Get a specific detector by concern name.
 
@@ -186,7 +186,7 @@ class ConcernRegistry:
         return None
 
     @classmethod
-    def list_concerns(cls) -> List[str]:
+    def list_concerns(cls) -> list[str]:
         """
         List all registered concern names.
 

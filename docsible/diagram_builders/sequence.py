@@ -5,7 +5,6 @@ showing playbook-to-role-to-task execution flow.
 """
 
 import logging
-from typing import Optional, Set
 
 from docsible.diagram_builders.base import DiagramBuilder
 from docsible.diagram_builders.formatters import break_text, escape_pipes
@@ -31,9 +30,9 @@ class SequenceDiagramBuilder(DiagramBuilder):
     def __init__(self):
         """Initialize SequenceDiagramBuilder."""
         super().__init__()
-        self.participants: Set[str] = set()
+        self.participants: set[str] = set()
 
-    def start_diagram(self, title: Optional[str] = None) -> None:
+    def start_diagram(self, title: str | None = None) -> None:
         """Initialize sequence diagram with optional title.
 
         Args:
@@ -50,7 +49,7 @@ class SequenceDiagramBuilder(DiagramBuilder):
             safe_title = escape_pipes(title)
             self.add_line(f"    %% {safe_title}")
 
-    def add_participant(self, name: str, alias: Optional[str] = None) -> None:
+    def add_participant(self, name: str, alias: str | None = None) -> None:
         """Add a participant to the sequence diagram.
 
         Args:
@@ -175,7 +174,7 @@ class SequenceDiagramBuilder(DiagramBuilder):
         safe_condition = escape_pipes(condition)
         self.add_line(f"    alt {safe_condition}")
 
-    def add_else(self, condition: Optional[str] = None) -> None:
+    def add_else(self, condition: str | None = None) -> None:
         """Add an else branch to current alternative block.
 
         Args:

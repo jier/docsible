@@ -2,7 +2,7 @@
 
 import logging
 from pathlib import Path
-from typing import Any, List, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -45,7 +45,7 @@ class StructureConfig(BaseModel):
     # module_utils_dir: str = "module_utils"
 
     argument_specs_file: str = "argument_specs"
-    yaml_extensions: List[str] = Field(default_factory=lambda: [".yml", ".yaml"])
+    yaml_extensions: list[str] = Field(default_factory=lambda: [".yml", ".yaml"])
 
     @field_validator(
         "defaults_dir",
@@ -80,7 +80,7 @@ class StructureConfig(BaseModel):
 
     @field_validator("yaml_extensions")
     @classmethod
-    def validate_extensions(cls, v: List[str]) -> List[str]:
+    def validate_extensions(cls, v: list[str]) -> list[str]:
         """Ensure YAML extensions start with a dot.
 
         Args:
@@ -132,24 +132,24 @@ class DocsibleConfig(BaseModel):
         structure: Custom structure configuration
     """
 
-    description: Optional[str] = None
-    requester: Optional[str] = None
-    users: Optional[str] = None
-    dt_dev: Optional[str] = None
-    dt_prod: Optional[str] = None
-    dt_update: Optional[str] = None
-    version: Optional[str] = None
-    time_saving: Optional[str] = None
-    category: Optional[str] = None
-    subCategory: Optional[str] = None
-    aap_hub: Optional[str] = None
-    automation_kind: Optional[str] = None
-    critical: Optional[str] = None
-    structure: Optional[StructureConfig] = None
+    description: str | None = None
+    requester: str | None = None
+    users: str | None = None
+    dt_dev: str | None = None
+    dt_prod: str | None = None
+    dt_update: str | None = None
+    version: str | None = None
+    time_saving: str | None = None
+    category: str | None = None
+    subCategory: str | None = None
+    aap_hub: str | None = None
+    automation_kind: str | None = None
+    critical: str | None = None
+    structure: StructureConfig | None = None
 
     @field_validator("structure", mode="before")
     @classmethod
-    def parse_structure(cls, v: Any) -> Optional[StructureConfig]:
+    def parse_structure(cls, v: Any) -> StructureConfig | None:
         """Parse structure config from dict if needed."""
         if v is None:
             return None

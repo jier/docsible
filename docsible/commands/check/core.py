@@ -2,12 +2,11 @@
 
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Dict, Tuple
 
 from docsible.utils.metadata import GenerationMetadata, compute_role_hash
 
 
-def check_documentation_drift(role_path: Path, readme_path: Path) -> Tuple[bool, Dict]:
+def check_documentation_drift(role_path: Path, readme_path: Path) -> tuple[bool, dict]:
     """
     Check if documentation is up to date.
 

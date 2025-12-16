@@ -4,7 +4,7 @@ Identifies issues that make roles hard to maintain, test,
 and understand over time.
 """
 
-from typing import Any, Dict, List
+from typing import Any
 
 from docsible.analyzers.patterns.base import BasePatternDetector
 from docsible.analyzers.patterns.models import (
@@ -22,7 +22,7 @@ class MaintainabilityDetector(BasePatternDetector):
         """Return maintainability category."""
         return PatternCategory.MAINTAINABILITY
 
-    def detect(self, role_info: Dict[str, Any]) -> List[SimplificationSuggestion]:
+    def detect(self, role_info: dict[str, Any]) -> list[SimplificationSuggestion]:
         """Detect all maintainability patterns.
 
         Args:
@@ -43,8 +43,8 @@ class MaintainabilityDetector(BasePatternDetector):
         return suggestions
 
     def _detect_missing_idempotency(
-        self, role_info: Dict[str, Any]
-    ) -> List[SimplificationSuggestion]:
+        self, role_info: dict[str, Any]
+    ) -> list[SimplificationSuggestion]:
         """Detect tasks that may not be idempotent.
 
         shell/command/raw tasks without creates/removes/changed_when
@@ -123,8 +123,8 @@ class MaintainabilityDetector(BasePatternDetector):
         return suggestions
 
     def _detect_monolithic_main_file(
-        self, role_info: Dict[str, Any]
-    ) -> List[SimplificationSuggestion]:
+        self, role_info: dict[str, Any]
+    ) -> list[SimplificationSuggestion]:
         """Detect main.yml files with too many tasks.
 
         Large main.yml files are hard to navigate and understand.
@@ -190,8 +190,8 @@ class MaintainabilityDetector(BasePatternDetector):
         return suggestions
 
     def _detect_magic_values(
-        self, role_info: Dict[str, Any]
-    ) -> List[SimplificationSuggestion]:
+        self, role_info: dict[str, Any]
+    ) -> list[SimplificationSuggestion]:
         """Detect repeated literal values that should be variables.
 
         Example: Path "/opt/myapp" hardcoded in 10 different tasks
@@ -292,8 +292,8 @@ class MaintainabilityDetector(BasePatternDetector):
         return suggestions
 
     def _detect_missing_check_mode(
-        self, role_info: Dict[str, Any]
-    ) -> List[SimplificationSuggestion]:
+        self, role_info: dict[str, Any]
+    ) -> list[SimplificationSuggestion]:
         """Find tasks that need check_mode directives.
 
         Tasks that register variables used later will fail in --check mode
@@ -366,8 +366,8 @@ class MaintainabilityDetector(BasePatternDetector):
         return suggestions
 
     def _detect_missing_failed_when(
-        self, role_info: Dict[str, Any]
-    ) -> List[SimplificationSuggestion]:
+        self, role_info: dict[str, Any]
+    ) -> list[SimplificationSuggestion]:
         """Find shell commands with pipes that may hide failures.
 
         Example: shell: cmd1 | cmd2
@@ -440,8 +440,8 @@ class MaintainabilityDetector(BasePatternDetector):
         return suggestions
 
     def _detect_variable_shadowing(
-        self, role_info: Dict[str, Any]
-    ) -> List[SimplificationSuggestion]:
+        self, role_info: dict[str, Any]
+    ) -> list[SimplificationSuggestion]:
         """Detect variables defined in multiple locations.
 
         Variables in vars/ override defaults/, which can be confusing.

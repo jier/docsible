@@ -2,7 +2,6 @@
 
 import logging
 from pathlib import Path
-from typing import Optional
 
 from jinja2 import Environment, FileSystemLoader, Template
 
@@ -23,7 +22,7 @@ class TemplateLoader:
         env: Jinja2 environment instance
     """
 
-    def __init__(self, template_dir: Optional[Path] = None):
+    def __init__(self, template_dir: Path | None = None):
         """Initialize TemplateLoader.
 
         Args:

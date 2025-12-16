@@ -3,7 +3,7 @@ Main state diagram generation for Ansible roles.
 """
 
 import logging
-from typing import Any, Dict, Optional
+from typing import Any
 
 from .analyzer import Phase, analyze_phases
 from .formatter import infer_transitions
@@ -12,8 +12,8 @@ logger = logging.getLogger(__name__)
 
 
 def generate_state_diagram(
-    role_info: Dict[str, Any], role_name: Optional[str] = None
-) -> Optional[str]:
+    role_info: dict[str, Any], role_name: str | None = None
+) -> str | None:
     """
     Generate a Mermaid state transition diagram for a role.
 
@@ -110,7 +110,7 @@ def generate_state_diagram(
 
 
 def should_generate_state_diagram(
-    role_info: Dict[str, Any], complexity_category: str
+    role_info: dict[str, Any], complexity_category: str
 ) -> bool:
     """
     Determine if a state diagram should be generated for this role.

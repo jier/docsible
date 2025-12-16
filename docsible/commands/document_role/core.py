@@ -3,7 +3,6 @@
 import logging
 import os
 from pathlib import Path
-from typing import Dict, List, Optional
 
 import click
 import yaml
@@ -34,8 +33,8 @@ logger = logging.getLogger(__name__)
 
 
 def extract_playbook_role_dependencies(
-    playbook_content: Optional[str], current_role_name: str
-) -> List[str]:
+    playbook_content: str | None, current_role_name: str
+) -> list[str]:
     """Extract role names from playbook that differ from the current role name.
 
     Searches for roles in:
@@ -118,16 +117,16 @@ def extract_playbook_role_dependencies(
 
 def build_role_info(
     role_path: Path,
-    playbook_content: Optional[str],
+    playbook_content: str | None,
     generate_graph: bool,
     no_docsible: bool,
     comments: bool,
     task_line: bool,
-    belongs_to_collection: Optional[Dict],
-    repository_url: Optional[str],
-    repo_type: Optional[str],
-    repo_branch: Optional[str],
-) -> Dict:
+    belongs_to_collection: dict | None,
+    repository_url: str | None,
+    repo_type: str | None,
+    repo_branch: str | None,
+) -> dict:
     """Build comprehensive role information dictionary.
 
     Args:

@@ -5,13 +5,13 @@ Provides filters for safely rendering content in markdown tables and other conte
 """
 
 import logging
-from typing import Any, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
 
 def escape_table_cell(
-    value: Any, max_length: Optional[int] = None, truncate_indicator: str = "..."
+    value: Any, max_length: int | None = None, truncate_indicator: str = "..."
 ) -> str:
     """
     Escape a value for safe rendering in a markdown table cell.
@@ -77,7 +77,7 @@ def escape_table_cell(
 
 
 def escape_table_value(
-    value: Any, as_code: bool = True, max_length: Optional[int] = None
+    value: Any, as_code: bool = True, max_length: int | None = None
 ) -> str:
     """
     Escape a value for safe rendering in a markdown table cell, optionally with code formatting.
@@ -121,7 +121,7 @@ def escape_table_value(
 
 
 def safe_join(
-    items: Any, separator: str = ", ", max_items: Optional[int] = None
+    items: Any, separator: str = ", ", max_items: int | None = None
 ) -> str:
     """
     Safely join items into a string, escaping each item for table cells.

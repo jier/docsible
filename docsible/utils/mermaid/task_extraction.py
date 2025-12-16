@@ -3,12 +3,12 @@ Task name extraction utilities for Ansible tasks.
 """
 
 import logging
-from typing import Any, Dict
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
 
-def extract_task_name_from_module(task: Dict[str, Any], task_index: int = 0) -> str:
+def extract_task_name_from_module(task: dict[str, Any], task_index: int = 0) -> str:
     """Extract a meaningful task name from the task dict when 'name' is not provided.
 
     Uses the module name or action (include_role, import_tasks, etc.) to create

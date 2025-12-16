@@ -5,7 +5,7 @@ unnecessarily and could be consolidated.
 """
 
 from collections import defaultdict
-from typing import Any, Dict, List
+from typing import Any
 
 from docsible.analyzers.patterns.base import BasePatternDetector
 from docsible.analyzers.patterns.models import (
@@ -23,7 +23,7 @@ class DuplicationDetector(BasePatternDetector):
         """Return duplication category."""
         return PatternCategory.DUPLICATION
 
-    def detect(self, role_info: Dict[str, Any]) -> List[SimplificationSuggestion]:
+    def detect(self, role_info: dict[str, Any]) -> list[SimplificationSuggestion]:
         """Detect all duplication patterns.
 
         Args:
@@ -43,8 +43,8 @@ class DuplicationDetector(BasePatternDetector):
         return suggestions
 
     def _detect_repeated_package_installs(
-        self, role_info: Dict[str, Any]
-    ) -> List[SimplificationSuggestion]:
+        self, role_info: dict[str, Any]
+    ) -> list[SimplificationSuggestion]:
         """Find roles with many individual package installation tasks.
 
         Example anti-pattern:
@@ -106,8 +106,8 @@ class DuplicationDetector(BasePatternDetector):
         return suggestions
 
     def _detect_repeated_service_operations(
-        self, role_info: Dict[str, Any]
-    ) -> List[SimplificationSuggestion]:
+        self, role_info: dict[str, Any]
+    ) -> list[SimplificationSuggestion]:
         """Find repeated service start/stop/restart operations.
 
         Example: Starting 5 different services in 5 separate tasks
@@ -158,8 +158,8 @@ class DuplicationDetector(BasePatternDetector):
         return suggestions
 
     def _detect_repeated_file_operations(
-        self, role_info: Dict[str, Any]
-    ) -> List[SimplificationSuggestion]:
+        self, role_info: dict[str, Any]
+    ) -> list[SimplificationSuggestion]:
         """Find repeated file/directory creation or copying.
 
         Example: Creating many directories individually
@@ -207,8 +207,8 @@ class DuplicationDetector(BasePatternDetector):
         return suggestions
 
     def _detect_similar_tasks(
-        self, role_info: Dict[str, Any]
-    ) -> List[SimplificationSuggestion]:
+        self, role_info: dict[str, Any]
+    ) -> list[SimplificationSuggestion]:
         """Detect tasks with similar names suggesting duplication.
 
         Example: Tasks named "Configure X", "Configure Y", "Configure Z"

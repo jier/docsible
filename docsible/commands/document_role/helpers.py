@@ -2,7 +2,7 @@
 
 import logging
 from pathlib import Path
-from typing import Any, Dict, Optional, Tuple
+from typing import Any
 
 import click
 import yaml
@@ -27,7 +27,7 @@ def apply_minimal_flag(
     no_metadata: bool,
     no_handlers: bool,
     simplify_diagrams: bool,
-) -> Tuple[bool, bool, bool, bool, bool, bool, bool]:
+) -> tuple[bool, bool, bool, bool, bool, bool, bool]:
     """Apply minimal flag settings to enable all --no-* flags.
 
     Args:
@@ -66,7 +66,7 @@ def apply_minimal_flag(
     )
 
 
-def validate_role_path(role_path: Optional[str]) -> Path:
+def validate_role_path(role_path: str | None) -> Path:
     """Validate and resolve role path.
 
     Args:
@@ -93,7 +93,7 @@ def validate_role_path(role_path: Optional[str]) -> Path:
     return role_path
 
 
-def load_playbook_content(playbook: Optional[str]) -> Optional[str]:
+def load_playbook_content(playbook: str | None) -> str | None:
     """Load playbook content from file.
 
     Args:
@@ -114,7 +114,7 @@ def load_playbook_content(playbook: Optional[str]) -> Optional[str]:
         return None
 
 
-def handle_analyze_only_mode(role_info: Dict[str, Any], role_name: str) -> None:
+def handle_analyze_only_mode(role_info: dict[str, Any], role_name: str) -> None:
     """Display analysis summary in analyze-only mode and exit.
 
     Args:
@@ -159,12 +159,12 @@ def handle_analyze_only_mode(role_info: Dict[str, Any], role_name: str) -> None:
 
 def generate_mermaid_diagrams(
     generate_graph: bool,
-    role_info: Dict[str, Any],
-    playbook_content: Optional[str],
+    role_info: dict[str, Any],
+    playbook_content: str | None,
     analysis_report: Any,
     minimal: bool,
     simplify_diagrams: bool,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Generate all Mermaid diagrams for role visualization.
 
     Args:
@@ -237,7 +237,7 @@ def generate_mermaid_diagrams(
 
 def generate_integration_and_architecture_diagrams(
     generate_graph: bool, analysis_report: Any
-) -> Tuple[Optional[str], Optional[str]]:
+) -> tuple[str | None, str | None]:
     """Generate integration boundary and component architecture diagrams.
 
     Args:
@@ -293,8 +293,8 @@ def generate_integration_and_architecture_diagrams(
 
 
 def generate_dependency_matrix(
-    show_dependencies: bool, role_info: Dict[str, Any], analysis_report: Any
-) -> Tuple[Optional[str], Optional[Dict], bool]:
+    show_dependencies: bool, role_info: dict[str, Any], analysis_report: Any
+) -> tuple[str | None, dict | None, bool]:
     """Generate dependency matrix and summary.
 
     Args:

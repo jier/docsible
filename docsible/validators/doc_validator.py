@@ -11,7 +11,7 @@ Implements four validation dimensions:
 import logging
 import re
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -41,9 +41,9 @@ class ValidationIssue(BaseModel):
     type: ValidationType
     severity: ValidationSeverity
     message: str
-    line_number: Optional[int] = None
-    section: Optional[str] = None
-    suggestion: Optional[str] = None
+    line_number: int | None = None
+    section: str | None = None
+    suggestion: str | None = None
 
 
 class ValidationResult(BaseModel):
@@ -51,18 +51,18 @@ class ValidationResult(BaseModel):
 
     passed: bool
     score: float = Field(ge=0.0, le=100.0, description="Overall quality score 0-100")
-    issues: List[ValidationIssue] = Field(default_factory=list)
-    metrics: Dict[str, Any] = Field(default_factory=dict)
+    issues: list[ValidationIssue] = Field(default_factory=list)
+    metrics: dict[str, Any] = Field(default_factory=dict)
 
     def get_issues_by_type(
         self, validation_type: ValidationType
-    ) -> List[ValidationIssue]:
+    ) -> list[ValidationIssue]:
         """Get all issues of a specific validation type."""
         return [issue for issue in self.issues if issue.type == validation_type]
 
     def get_issues_by_severity(
         self, severity: ValidationSeverity
-    ) -> List[ValidationIssue]:
+    ) -> list[ValidationIssue]:
         """Get all issues of a specific severity."""
         return [issue for issue in self.issues if issue.severity == severity]
 
@@ -94,8 +94,8 @@ class DocumentationValidator:
     def validate(
         self,
         documentation: str,
-        role_info: Optional[Dict[str, Any]] = None,
-        complexity_report: Optional[Any] = None,
+        role_info: dict[str, Any] | None = None,
+        complexity_report: Any | None = None,
     ) -> ValidationResult:
         """
         Validate documentation against all quality criteria.
@@ -146,7 +146,7 @@ class DocumentationValidator:
 
     def _validate_clarity(
         self, documentation: str
-    ) -> Tuple[List[ValidationIssue], Dict[str, Any]]:
+    ) -> tuple[list[ValidationIssue], dict[str, Any]]:
         """
         Validate documentation clarity and readability.
 
@@ -194,6 +194,7 @@ class DocumentationValidator:
 
         # Check for overly long lines (readability)
         long_lines = 0
+        # FIXME Again not used here why?
         for i, line in enumerate(lines, 1):
             # Ignore code blocks and tables
             if line.strip().startswith("```") or line.strip().startswith("|"):
@@ -244,8 +245,8 @@ class DocumentationValidator:
         return issues, metrics
 
     def _validate_maintenance(
-        self, documentation: str, role_info: Optional[Dict[str, Any]]
-    ) -> Tuple[List[ValidationIssue], Dict[str, Any]]:
+        self, documentation: str, role_info: dict[str, Any] | None
+    ) -> tuple[list[ValidationIssue], dict[str, Any]]:
         """
         Validate documentation completeness and maintainability.
 
@@ -340,9 +341,9 @@ class DocumentationValidator:
     def _validate_truth(
         self,
         documentation: str,
-        role_info: Optional[Dict[str, Any]],
-        complexity_report: Optional[Any],
-    ) -> Tuple[List[ValidationIssue], Dict[str, Any]]:
+        role_info: dict[str, Any] | None,
+        complexity_report: Any | None,
+    ) -> tuple[list[ValidationIssue], dict[str, Any]]:
         """
         Validate documentation accuracy against actual role structure.
 
@@ -407,8 +408,8 @@ class DocumentationValidator:
         return issues, metrics
 
     def _validate_value(
-        self, documentation: str, complexity_report: Optional[Any]
-    ) -> Tuple[List[ValidationIssue], Dict[str, Any]]:
+        self, documentation: str, complexity_report: Any | None
+    ) -> tuple[list[ValidationIssue], dict[str, Any]]:
         """
         Validate documentation usefulness and actionable content.
 
@@ -495,7 +496,7 @@ class DocumentationValidator:
         return issues, metrics
 
     def _calculate_score(
-        self, issues: List[ValidationIssue], metrics: Dict[str, Any]
+        self, issues: list[ValidationIssue], metrics: dict[str, Any]
     ) -> float:
         """
         Calculate overall quality score (0-100).
@@ -522,8 +523,8 @@ class DocumentationValidator:
 
 def validate_documentation(
     documentation: str,
-    role_info: Optional[Dict[str, Any]] = None,
-    complexity_report: Optional[Any] = None,
+    role_info: dict[str, Any] | None = None,
+    complexity_report: Any | None = None,
     min_score: float = 70.0,
 ) -> ValidationResult:
     """

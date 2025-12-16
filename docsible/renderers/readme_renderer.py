@@ -4,7 +4,7 @@ import logging
 import os
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 from jinja2 import Environment, FileSystemLoader
 
@@ -59,20 +59,20 @@ class ReadmeRenderer:
 
     def render_role(
         self,
-        role_info: Dict[str, Any],
+        role_info: dict[str, Any],
         output_path: Path,
         template_type: str = "standard",
-        custom_template_path: Optional[str] = None,
-        mermaid_code_per_file: Optional[Dict[str, str]] = None,
-        sequence_diagram_high_level: Optional[str] = None,
-        sequence_diagram_detailed: Optional[str] = None,
-        state_diagram: Optional[str] = None,
-        integration_boundary_diagram: Optional[str] = None,
-        architecture_diagram: Optional[str] = None,
-        complexity_report: Optional[Any] = None,
-        include_complexity: Optional[bool] = None,
-        dependency_matrix: Optional[str] = None,
-        dependency_summary: Optional[Dict[str, Any]] = None,
+        custom_template_path: str | None = None,
+        mermaid_code_per_file: dict[str, str] | None = None,
+        sequence_diagram_high_level: str | None = None,
+        sequence_diagram_detailed: str | None = None,
+        state_diagram: str | None = None,
+        integration_boundary_diagram: str | None = None,
+        architecture_diagram: str | None = None,
+        complexity_report: Any | None = None,
+        include_complexity: bool | None = None,
+        dependency_matrix: str | None = None,
+        dependency_summary: dict[str, Any] | None = None,
         show_dependency_matrix: bool = False,
         no_vars: bool = False,
         no_tasks: bool = False,
@@ -161,10 +161,10 @@ class ReadmeRenderer:
 
     def render_collection(
         self,
-        collection_metadata: Dict[str, Any],
+        collection_metadata: dict[str, Any],
         roles_info: list,
         output_path: Path,
-        custom_template_path: Optional[str] = None,
+        custom_template_path: str | None = None,
         no_vars: bool = False,
         no_tasks: bool = False,
         no_diagrams: bool = False,
@@ -323,6 +323,7 @@ class ReadmeRenderer:
                 warnings = [
                     i for i in issues if i.severity == ValidationSeverity.WARNING
                 ]
+                #FIXME What happened here?
                 infos = [i for i in issues if i.severity == ValidationSeverity.INFO]
 
                 # Log errors

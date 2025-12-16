@@ -7,7 +7,7 @@ and external integrations to determine appropriate documentation strategy.
 
 import logging
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -58,18 +58,18 @@ class IntegrationPoint(BaseModel):
 
     type: IntegrationType
     system_name: str
-    modules_used: List[str]
+    modules_used: list[str]
     task_count: int
     uses_credentials: bool = False
     # Type-specific details
-    endpoints: List[str] = Field(
+    endpoints: list[str] = Field(
         default_factory=list, description="API endpoints or URLs"
     )
-    ports: List[int] = Field(default_factory=list, description="Network ports used")
-    services: List[str] = Field(
+    ports: list[int] = Field(default_factory=list, description="Network ports used")
+    services: list[str] = Field(
         default_factory=list, description="Cloud services or container images"
     )
-    details: Dict[str, Any] = Field(
+    details: dict[str, Any] = Field(
         default_factory=dict, description="Additional type-specific details"
     )
 
@@ -135,17 +135,17 @@ class FileComplexityDetail(BaseModel):
     has_integrations: bool = Field(
         default=False, description="File uses external integrations"
     )
-    integration_types: List[str] = Field(
+    integration_types: list[str] = Field(
         default_factory=list, description="Types of integrations used"
     )
     module_diversity: int = Field(description="Number of unique modules used")
-    primary_concern: Optional[str] = Field(
+    primary_concern: str | None = Field(
         default=None, description="Detected primary concern"
     )
-    phase_detection: Optional[Dict[str, Any]] = Field(
+    phase_detection: dict[str, Any] | None = Field(
         default=None, description="Phase detection results"
     )
-    line_ranges: Optional[List[tuple]] = Field(
+    line_ranges: list[tuple] | None = Field(
         default=None, description="Line ranges for each task"
     )
 
@@ -165,20 +165,20 @@ class ComplexityReport(BaseModel):
 
     metrics: ComplexityMetrics
     category: ComplexityCategory
-    integration_points: List[IntegrationPoint] = Field(default_factory=list)
-    recommendations: List[str] = Field(default_factory=list)
-    task_files_detail: List[Dict[str, Any]] = Field(default_factory=list)
+    integration_points: list[IntegrationPoint] = Field(default_factory=list)
+    recommendations: list[str] = Field(default_factory=list)
+    task_files_detail: list[dict[str, Any]] = Field(default_factory=list)
 
     # Pattern analysis (optional, only included when --simplification-report flag is used)
-    pattern_analysis: Optional[Any] = Field(
+    pattern_analysis: Any | None = Field(
         default=None,
         description="Detailed pattern analysis report with simplification suggestions",
     )
 
 
 def analyze_file_complexity(
-    role_info: Dict[str, Any], integration_points: List[IntegrationPoint]
-) -> List[FileComplexityDetail]:
+    role_info: dict[str, Any], integration_points: list[IntegrationPoint]
+) -> list[FileComplexityDetail]:
     """
     Analyze complexity metrics for each task file.
 
@@ -275,8 +275,8 @@ def analyze_file_complexity(
 
 
 def _detect_file_concerns(
-    tasks: List[Dict[str, Any]],
-) -> tuple[Optional[str], List[tuple[str, str, int]]]:
+    tasks: list[dict[str, Any]],
+) -> tuple[str | None, list[tuple[str, str, int]]]:
     """
     Detect all concerns in a task file and return primary + detailed breakdown.
 
@@ -310,7 +310,7 @@ def _detect_file_concerns(
     return primary_name, concerns_breakdown
 
 
-def _detect_file_concern(tasks: List[Dict[str, Any]]) -> Optional[str]:
+def _detect_file_concern(tasks: list[dict[str, Any]]) -> str | None:
     """
     Detect the primary concern/responsibility of a task file.
 
@@ -345,8 +345,8 @@ class ConditionalHotspot(BaseModel):
 
 
 def detect_conditional_hotspots(
-    role_info: Dict[str, Any], file_details: List[FileComplexityDetail]
-) -> List[ConditionalHotspot]:
+    role_info: dict[str, Any], file_details: list[FileComplexityDetail]
+) -> list[ConditionalHotspot]:
     """
     Identify files with concentrated conditional logic and the variables driving it.
 
@@ -412,7 +412,7 @@ def detect_conditional_hotspots(
     return hotspots
 
 
-def _extract_conditional_variables(tasks: List[Dict[str, Any]]) -> Dict[str, int]:
+def _extract_conditional_variables(tasks: list[dict[str, Any]]) -> dict[str, int]:
     """
     Extract variables used in 'when' conditions and count their usage.
 
@@ -497,8 +497,8 @@ class InflectionPoint(BaseModel):
 
 
 def detect_inflection_points(
-    role_info: Dict[str, Any], hotspots: List[ConditionalHotspot]
-) -> List[InflectionPoint]:
+    role_info: dict[str, Any], hotspots: list[ConditionalHotspot]
+) -> list[InflectionPoint]:
     """
     Identify major branching points where execution paths diverge.
 
@@ -567,10 +567,10 @@ def detect_inflection_points(
 
 def _generate_file_link(
     file_path: str,
-    line_number: Optional[int],
-    repository_url: Optional[str],
-    repo_type: Optional[str],
-    repo_branch: Optional[str],
+    line_number: int | None,
+    repository_url: str | None,
+    repo_type: str | None,
+    repo_branch: str | None,
 ) -> str:
     """
     Generate a markdown link to a file in the repository.
@@ -629,7 +629,7 @@ def _generate_file_link(
 
 
 def analyze_role_complexity(
-    role_info: Dict[str, Any],
+    role_info: dict[str, Any],
     include_patterns: bool = False,
     min_confidence: float = 0.7,
 ) -> ComplexityReport:
@@ -820,7 +820,7 @@ def classify_complexity(metrics: ComplexityMetrics) -> ComplexityCategory:
         return ComplexityCategory.COMPLEX
 
 
-def detect_integrations(role_info: Dict[str, Any]) -> List[IntegrationPoint]:
+def detect_integrations(role_info: dict[str, Any]) -> list[IntegrationPoint]:
     """
     Detect external system integrations by analyzing task modules.
 
@@ -1000,7 +1000,7 @@ def detect_integrations(role_info: Dict[str, Any]) -> List[IntegrationPoint]:
     return integration_points
 
 
-def _extract_endpoints(tasks: List[Dict[str, Any]]) -> List[str]:
+def _extract_endpoints(tasks: list[dict[str, Any]]) -> list[str]:
     """Extract API endpoints/URLs from tasks."""
     endpoints = []
     for task in tasks:
@@ -1019,7 +1019,7 @@ def _extract_endpoints(tasks: List[Dict[str, Any]]) -> List[str]:
     return list(set(endpoints))[:5]  # Limit to first 5 unique endpoints
 
 
-def _extract_ports(tasks: List[Dict[str, Any]]) -> List[int]:
+def _extract_ports(tasks: list[dict[str, Any]]) -> list[int]:
     """Extract network ports from tasks."""
     ports = []
     for task in tasks:
@@ -1034,7 +1034,7 @@ def _extract_ports(tasks: List[Dict[str, Any]]) -> List[int]:
     return sorted(list(set(ports)))[:10]  # Limit to first 10 unique ports
 
 
-def _extract_services(modules: List[str], int_type: IntegrationType) -> List[str]:
+def _extract_services(modules: list[str], int_type: IntegrationType) -> list[str]:
     """Extract service names based on integration type and modules used."""
     services = []
 
@@ -1086,7 +1086,7 @@ def _extract_services(modules: List[str], int_type: IntegrationType) -> List[str
     return list(set(services))
 
 
-def _detect_cloud_provider(modules: List[str]) -> str:
+def _detect_cloud_provider(modules: list[str]) -> str:
     """Detect specific cloud provider from modules."""
     if any("aws" in m or "ec2" in m or "s3" in m or "amazon" in m for m in modules):
         return "AWS (Amazon Web Services)"
@@ -1100,7 +1100,7 @@ def _detect_cloud_provider(modules: List[str]) -> str:
         return "Cloud Provider"
 
 
-def _detect_container_platform(modules: List[str]) -> str:
+def _detect_container_platform(modules: list[str]) -> str:
     """Detect specific container platform from modules."""
     if any("kubernetes" in m or "k8s" in m for m in modules):
         return "Kubernetes"
@@ -1112,7 +1112,7 @@ def _detect_container_platform(modules: List[str]) -> str:
         return "Container Platform"
 
 
-def _detect_monitoring_platform(modules: List[str]) -> str:
+def _detect_monitoring_platform(modules: list[str]) -> str:
     """Detect specific monitoring platform from modules."""
     if any("datadog" in m for m in modules):
         return "Datadog"
@@ -1130,7 +1130,7 @@ def _detect_monitoring_platform(modules: List[str]) -> str:
         return "Monitoring Platform"
 
 
-def _task_uses_credentials(task: Dict[str, Any]) -> bool:
+def _task_uses_credentials(task: dict[str, Any]) -> bool:
     """Check if task uses credential-related parameters."""
     credential_params = [
         "username",
@@ -1148,7 +1148,7 @@ def _task_uses_credentials(task: Dict[str, Any]) -> bool:
     return any(param in task for param in credential_params)
 
 
-def _detect_database_type(modules: List[str]) -> str:
+def _detect_database_type(modules: list[str]) -> str:
     """Detect specific database type from modules."""
     if any("postgresql" in m for m in modules):
         return "PostgreSQL Database"
@@ -1161,7 +1161,7 @@ def _detect_database_type(modules: List[str]) -> str:
 
 
 def _file_has_integrations(
-    task_file: Dict[str, Any], integration_points: List[IntegrationPoint]
+    task_file: dict[str, Any], integration_points: list[IntegrationPoint]
 ) -> int:
     """Count how many integration points a task file touches."""
     # Simple count for now - can be enhanced
@@ -1171,15 +1171,15 @@ def _file_has_integrations(
 def generate_recommendations(
     metrics: ComplexityMetrics,
     category: ComplexityCategory,
-    integration_points: List[IntegrationPoint],
-    file_details: List[FileComplexityDetail],
-    hotspots: List[ConditionalHotspot],
-    inflection_points: List[InflectionPoint],
-    role_info: Dict[str, Any],
-    repository_url: Optional[str] = None,
-    repo_type: Optional[str] = None,
-    repo_branch: Optional[str] = None,
-) -> List[str]:
+    integration_points: list[IntegrationPoint],
+    file_details: list[FileComplexityDetail],
+    hotspots: list[ConditionalHotspot],
+    inflection_points: list[InflectionPoint],
+    role_info: dict[str, Any],
+    repository_url: str | None = None,
+    repo_type: str | None = None,
+    repo_branch: str | None = None,
+) -> list[str]:
     """
     Generate specific, actionable recommendations based on comprehensive analysis.
 

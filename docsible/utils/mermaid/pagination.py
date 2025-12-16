@@ -1,7 +1,6 @@
 """Paginate large Mermaid diagrams for better rendering."""
 
 import logging
-from typing import Dict, List, Tuple
 
 logger = logging.getLogger(__name__)
 
@@ -41,8 +40,8 @@ def should_paginate_diagram(mermaid_code: str, max_nodes: int = 50) -> bool:
 
 
 def paginate_tasks(
-    tasks: List[Dict], tasks_per_page: int = 20
-) -> List[Tuple[str, List[Dict]]]:
+    tasks: list[dict], tasks_per_page: int = 20
+) -> list[tuple[str, list[dict]]]:
     """
     Split task list into pages for multiple diagrams.
 

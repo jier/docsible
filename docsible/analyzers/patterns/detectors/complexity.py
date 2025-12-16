@@ -4,7 +4,7 @@ Identifies overly complex logic, conditionals, and control flow
 that make roles hard to understand and maintain.
 """
 
-from typing import Any, Dict, List
+from typing import Any
 
 from docsible.analyzers.patterns.base import BasePatternDetector
 from docsible.analyzers.patterns.models import (
@@ -22,7 +22,7 @@ class ComplexityDetector(BasePatternDetector):
         """Return complexity category."""
         return PatternCategory.COMPLEXITY
 
-    def detect(self, role_info: Dict[str, Any]) -> List[SimplificationSuggestion]:
+    def detect(self, role_info: dict[str, Any]) -> list[SimplificationSuggestion]:
         """Detect all complexity patterns.
 
         Args:
@@ -40,8 +40,8 @@ class ComplexityDetector(BasePatternDetector):
         return suggestions
 
     def _detect_complex_conditionals(
-        self, role_info: Dict[str, Any]
-    ) -> List[SimplificationSuggestion]:
+        self, role_info: dict[str, Any]
+    ) -> list[SimplificationSuggestion]:
         """Find overly complex 'when' conditions.
 
         Example anti-pattern:
@@ -126,8 +126,8 @@ class ComplexityDetector(BasePatternDetector):
         return suggestions
 
     def _detect_deep_include_chains(
-        self, role_info: Dict[str, Any]
-    ) -> List[SimplificationSuggestion]:
+        self, role_info: dict[str, Any]
+    ) -> list[SimplificationSuggestion]:
         """Detect deeply nested include_tasks/import_tasks chains.
 
         Example anti-pattern:
@@ -214,8 +214,8 @@ class ComplexityDetector(BasePatternDetector):
         return suggestions
 
     def _detect_excessive_set_fact(
-        self, role_info: Dict[str, Any]
-    ) -> List[SimplificationSuggestion]:
+        self, role_info: dict[str, Any]
+    ) -> list[SimplificationSuggestion]:
         """Detect overuse of set_fact tasks.
 
         Example anti-pattern:

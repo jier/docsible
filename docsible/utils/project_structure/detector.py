@@ -2,10 +2,10 @@
 
 import os
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 
-def detect_project_type(root_path: Path, defaults: Dict[str, Any]) -> str:
+def detect_project_type(root_path: Path, defaults: dict[str, Any]) -> str:
     """Auto-detect the project type based on directory structure.
 
     Args:
@@ -120,8 +120,8 @@ def is_valid_role(path: Path) -> bool:
 
 
 def find_collection_markers(
-    root_path: Path, defaults: Dict[str, Any], search_path: Path = None
-) -> List[Path]:
+    root_path: Path, defaults: dict[str, Any], search_path: Path = None
+) -> list[Path]:
     """Find all collection marker files (galaxy.yml/yaml) in the directory tree.
 
     Useful for detecting multiple collections in a monorepo.
@@ -136,7 +136,7 @@ def find_collection_markers(
     """
     search = search_path or root_path
     markers = []
-
+    #FIXME what happened here
     for root, dirs, files in os.walk(search):
         for marker_file in defaults["collection_marker_files"]:
             if marker_file in files:
@@ -145,7 +145,7 @@ def find_collection_markers(
     return markers
 
 
-def find_roles(root_path: Path, project_type: str, get_roles_dir_func) -> List[Path]:
+def find_roles(root_path: Path, project_type: str, get_roles_dir_func) -> list[Path]:
     """Find all role directories in the project.
 
     Args:

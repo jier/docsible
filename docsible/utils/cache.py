@@ -6,9 +6,10 @@ by avoiding redundant file I/O and expensive operations.
 
 import hashlib
 import logging
+from collections.abc import Callable
 from functools import lru_cache, wraps
 from pathlib import Path
-from typing import Any, Callable, Dict, Tuple, TypeVar
+from typing import Any, TypeVar
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +42,7 @@ def cache_by_file_mtime(func: Callable[[Path], T]) -> Callable[[Path], T]:
         # Second call returns cached result (if file unchanged)
         data2 = load_yaml_file(Path("config.yml"))
     """
-    cache: Dict[Tuple[str, float], T] = {}
+    cache: dict[tuple[str, float], T] = {}
 
     @wraps(func)
     def wrapper(path: Path) -> T:
@@ -74,7 +75,7 @@ def cache_by_file_mtime(func: Callable[[Path], T]) -> Callable[[Path], T]:
             return func(path)  # Let the original function handle the error
 
     def _clean_old_entries(
-        cache_dict: Dict[Tuple[str, float], T], file_path: str, current_mtime: float
+        cache_dict: dict[tuple[str, float], T], file_path: str, current_mtime: float
     ) -> None:
         """Remove old cache entries for the same file path.
 
@@ -122,7 +123,7 @@ def cache_by_content_hash(func: Callable[[str], T]) -> Callable[[str], T]:
         # Second call with same content returns cached result
         data2 = parse_yaml_string(yaml_content)
     """
-    cache: Dict[str, T] = {}
+    cache: dict[str, T] = {}
 
     @wraps(func)
     def wrapper(content: str) -> T:
@@ -181,7 +182,7 @@ def clear_all_caches() -> None:
     logger.info("All caches cleared")
 
 
-def get_cache_stats() -> Dict[str, Any]:
+def get_cache_stats() -> dict[str, Any]:
     """Get statistics about all caches.
 
     Returns:

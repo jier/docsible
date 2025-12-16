@@ -1,6 +1,5 @@
 """CLI helper utilities for improved help formatting."""
 
-from typing import List, Tuple
 
 import click
 
@@ -112,7 +111,7 @@ class GroupedHelpCommand(click.Command):
                     formatter.write_dl(opts_by_group[group_name])
 
 
-def format_help_section(title: str, items: List[Tuple[str, str]]) -> str:
+def format_help_section(title: str, items: list[tuple[str, str]]) -> str:
     """Format a help section with title and items.
 
     Args:

@@ -6,7 +6,7 @@ import logging
 import re
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +28,7 @@ class PhaseInfo:
     """Information about a detected phase."""
 
     phase: Phase
-    tasks: List[Dict[str, Any]]
+    tasks: list[dict[str, Any]]
     has_state_check: bool = False  # present/absent detection
     has_conditions: bool = False  # has 'when' conditions
 
@@ -152,7 +152,7 @@ def detect_phase_from_task_name(task_name: str) -> Phase:
     return Phase.EXECUTE
 
 
-def has_state_management(task: Dict[str, Any]) -> bool:
+def has_state_management(task: dict[str, Any]) -> bool:
     """
     Check if a task manages state (present/absent).
 
@@ -178,7 +178,7 @@ def has_state_management(task: Dict[str, Any]) -> bool:
     return False
 
 
-def extract_condition(task: Dict[str, Any]) -> Optional[str]:
+def extract_condition(task: dict[str, Any]) -> str | None:
     """
     Extract the 'when' condition from a task.
 
@@ -200,7 +200,7 @@ def extract_condition(task: Dict[str, Any]) -> Optional[str]:
     return str(when_clause)
 
 
-def analyze_phases(role_info: Dict[str, Any]) -> List[PhaseInfo]:
+def analyze_phases(role_info: dict[str, Any]) -> list[PhaseInfo]:
     """
     Analyze role tasks and group them into phases.
 
@@ -210,7 +210,7 @@ def analyze_phases(role_info: Dict[str, Any]) -> List[PhaseInfo]:
     Returns:
         List of PhaseInfo objects
     """
-    phases: Dict[Phase, PhaseInfo] = {}
+    phases: dict[Phase, PhaseInfo] = {}
 
     tasks_data = role_info.get("tasks", [])
 

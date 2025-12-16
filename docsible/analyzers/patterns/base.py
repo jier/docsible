@@ -5,7 +5,7 @@ This follows the Template Method design pattern.
 """
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List
+from typing import Any
 
 from docsible.analyzers.patterns.models import PatternCategory, SimplificationSuggestion
 
@@ -22,7 +22,7 @@ class BasePatternDetector(ABC):
     """
 
     @abstractmethod
-    def detect(self, role_info: Dict[str, Any]) -> List[SimplificationSuggestion]:
+    def detect(self, role_info: dict[str, Any]) -> list[SimplificationSuggestion]:
         """Detect patterns in the role.
 
         Args:
@@ -44,7 +44,7 @@ class BasePatternDetector(ABC):
         """Return the category this detector handles."""
         pass
 
-    def _flatten_tasks(self, role_info: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def _flatten_tasks(self, role_info: dict[str, Any]) -> list[dict[str, Any]]:
         """Flatten all tasks from all task files into single list.
 
         Adds 'file' key to each task indicating source file.
@@ -64,7 +64,7 @@ class BasePatternDetector(ABC):
                 tasks.append(task_with_file)
         return tasks
 
-    def _get_task_files(self, role_info: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def _get_task_files(self, role_info: dict[str, Any]) -> list[dict[str, Any]]:
         """Get list of task files from role info.
 
         Args:
@@ -75,7 +75,7 @@ class BasePatternDetector(ABC):
         """
         return role_info.get("tasks", [])
 
-    def _show_task_snippet(self, tasks: List[Dict[str, Any]], limit: int = 2) -> str:
+    def _show_task_snippet(self, tasks: list[dict[str, Any]], limit: int = 2) -> str:
         """Generate example snippet from tasks.
 
         Args:
@@ -95,7 +95,7 @@ class BasePatternDetector(ABC):
         return "\n".join(lines)
 
     def _show_task(
-        self, task: Dict[str, Any], include_module_args: bool = False
+        self, task: dict[str, Any], include_module_args: bool = False
     ) -> str:
         """Generate YAML-like representation of a single task.
 
@@ -118,7 +118,7 @@ class BasePatternDetector(ABC):
 
         return "\n".join(lines)
 
-    def _count_tasks_by_module(self, role_info: Dict[str, Any]) -> Dict[str, int]:
+    def _count_tasks_by_module(self, role_info: dict[str, Any]) -> dict[str, int]:
         """Count how many times each module is used.
 
         Args:
@@ -139,8 +139,8 @@ class BasePatternDetector(ABC):
         return dict(counts)
 
     def _get_tasks_by_module(
-        self, role_info: Dict[str, Any], module: str
-    ) -> List[Dict[str, Any]]:
+        self, role_info: dict[str, Any], module: str
+    ) -> list[dict[str, Any]]:
         """Get all tasks using a specific module.
 
         Args:
@@ -156,7 +156,7 @@ class BasePatternDetector(ABC):
             if task.get("module") == module
         ]
 
-    def _has_attribute(self, task: Dict[str, Any], *attrs: str) -> bool:
+    def _has_attribute(self, task: dict[str, Any], *attrs: str) -> bool:
         """Check if task has any of the specified attributes.
 
         Args:
@@ -168,7 +168,7 @@ class BasePatternDetector(ABC):
         """
         return any(attr in task for attr in attrs)
 
-    def _get_unique_files(self, tasks: List[Dict[str, Any]]) -> List[str]:
+    def _get_unique_files(self, tasks: list[dict[str, Any]]) -> list[str]:
         """Extract unique file names from tasks.
 
         Args:

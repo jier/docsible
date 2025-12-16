@@ -2,7 +2,7 @@
 
 import logging
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -23,14 +23,14 @@ class RoleMetadata(BaseModel):
         description: Role description
     """
 
-    author: Optional[str] = None
-    company: Optional[str] = None
+    author: str | None = None
+    company: str | None = None
     license: str = "MIT"
     min_ansible_version: str = "2.9"
-    platforms: List[Dict[str, Any]] = Field(default_factory=list)
-    galaxy_tags: List[str] = Field(default_factory=list)
-    dependencies: List[Any] = Field(default_factory=list)
-    description: Optional[str] = None
+    platforms: list[dict[str, Any]] = Field(default_factory=list)
+    galaxy_tags: list[str] = Field(default_factory=list)
+    dependencies: list[Any] = Field(default_factory=list)
+    description: str | None = None
 
     model_config = {
         "json_schema_extra": {
@@ -71,10 +71,10 @@ class RoleTask(BaseModel):
     module: str = "unknown"
     file: str = "main.yml"
     line_number: int = 0
-    description: Optional[str] = None
-    when: Optional[str] = None
-    notify: Optional[List[str]] = None
-    tags: List[str] = Field(default_factory=list)
+    description: str | None = None
+    when: str | None = None
+    notify: list[str] | None = None
+    tags: list[str] = Field(default_factory=list)
 
     model_config = {
         "json_schema_extra": {
@@ -108,10 +108,10 @@ class RoleVariable(BaseModel):
     name: str
     value: Any = None
     type: str = "str"
-    description: Optional[str] = None
+    description: str | None = None
     required: bool = False
-    choices: Optional[List[Any]] = None
-    title: Optional[str] = None
+    choices: list[Any] | None = None
+    title: str | None = None
     line: int = 0
 
     @field_validator("name")
@@ -158,18 +158,18 @@ class Role(BaseModel):
 
     name: str
     path: Path
-    defaults: List[Dict[str, Any]] = Field(default_factory=list)
-    vars: List[Dict[str, Any]] = Field(default_factory=list)
-    tasks: List[Dict[str, Any]] = Field(default_factory=list)
-    handlers: List[Dict[str, Any]] = Field(default_factory=list)
-    meta: Optional[Dict[str, Any]] = None
-    argument_specs: Optional[Dict[str, Any]] = None
-    repository: Optional[str] = None
-    repository_type: Optional[str] = "github"
-    repository_branch: Optional[str] = "main"
-    belongs_to_collection: Optional[Dict[str, str]] = None
-    docsible: Optional[Dict[str, Any]] = None
-    playbook: Dict[str, Any] = Field(default_factory=dict)
+    defaults: list[dict[str, Any]] = Field(default_factory=list)
+    vars: list[dict[str, Any]] = Field(default_factory=list)
+    tasks: list[dict[str, Any]] = Field(default_factory=list)
+    handlers: list[dict[str, Any]] = Field(default_factory=list)
+    meta: dict[str, Any] | None = None
+    argument_specs: dict[str, Any] | None = None
+    repository: str | None = None
+    repository_type: str | None = "github"
+    repository_branch: str | None = "main"
+    belongs_to_collection: dict[str, str] | None = None
+    docsible: dict[str, Any] | None = None
+    playbook: dict[str, Any] = Field(default_factory=dict)
 
     @field_validator("name")
     @classmethod
@@ -187,7 +187,7 @@ class Role(BaseModel):
             logger.warning(f"Role path does not exist: {v}")
         return v
 
-    def get_all_tasks(self) -> List[RoleTask]:
+    def get_all_tasks(self) -> list[RoleTask]:
         """Get all tasks from all task files.
 
         Returns:
@@ -209,7 +209,7 @@ class Role(BaseModel):
                     logger.warning(f"Failed to parse task: {e}")
         return all_tasks
 
-    def get_all_variables(self) -> List[RoleVariable]:
+    def get_all_variables(self) -> list[RoleVariable]:
         """Get all variables from defaults and vars.
 
         Returns:

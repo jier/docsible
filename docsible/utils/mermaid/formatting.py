@@ -4,7 +4,7 @@ Mermaid flowchart generation for Ansible playbooks and roles.
 
 import logging
 import re
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 from .core import sanitize_for_condition, sanitize_for_mermaid_id, sanitize_for_title
 from .pagination import paginate_tasks, should_paginate_diagram
@@ -14,13 +14,13 @@ logger = logging.getLogger(__name__)
 
 
 def process_tasks(
-    tasks: List[Dict[str, Any]],
+    tasks: list[dict[str, Any]],
     last_node: str,
     mermaid_data: str,
-    parent_node: Optional[str] = None,
+    parent_node: str | None = None,
     level: int = 0,
     in_rescue_block: bool = False,
-) -> Tuple[str, str]:
+) -> tuple[str, str]:
     """Process Ansible tasks and generate Mermaid diagram data.
 
     Recursively processes tasks including blocks, rescue, and always sections
@@ -224,7 +224,7 @@ def process_tasks(
     return last_node, mermaid_data
 
 
-def generate_mermaid_playbook(playbook: List[Dict[str, Any]]) -> str:
+def generate_mermaid_playbook(playbook: list[dict[str, Any]]) -> str:
     """Generate Mermaid flowchart diagram from Ansible playbook.
 
     Creates a flowchart representation of playbook structure including
@@ -271,8 +271,8 @@ def generate_mermaid_playbook(playbook: List[Dict[str, Any]]) -> str:
 
 
 def generate_mermaid_role_tasks_per_file(
-    tasks_per_file: List[Dict[str, Any]],
-) -> Dict[str, str]:
+    tasks_per_file: list[dict[str, Any]],
+) -> dict[str, str]:
     """Generate Mermaid diagrams for each task file in a role.
 
     Creates separate flowchart diagrams for each task file.
@@ -320,7 +320,7 @@ def generate_mermaid_role_tasks_per_file(
     return mermaid_codes
 
 
-def _generate_single_diagram(tasks: List[Dict]) -> str:
+def _generate_single_diagram(tasks: list[dict]) -> str:
     """Generate a single Mermaid flowchart diagram."""
     mermaid_data = """flowchart TD
 Start

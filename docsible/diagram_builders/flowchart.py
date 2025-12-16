@@ -5,7 +5,6 @@ from Ansible task data.
 """
 
 import logging
-from typing import List, Optional
 
 from docsible.diagram_builders.base import DiagramBuilder
 from docsible.diagram_builders.formatters import (
@@ -43,7 +42,7 @@ class FlowchartBuilder(DiagramBuilder):
         self.direction = direction
         self.node_count = 0
 
-    def start_diagram(self, title: Optional[str] = None) -> None:
+    def start_diagram(self, title: str | None = None) -> None:
         """Initialize flowchart diagram with optional title.
 
         Args:
@@ -60,7 +59,7 @@ class FlowchartBuilder(DiagramBuilder):
             self.add_line(f"    %% {safe_title}")
 
     def add_task(
-        self, task_name: str, task_id: Optional[str] = None, shape: str = "rectangle"
+        self, task_name: str, task_id: str | None = None, shape: str = "rectangle"
     ) -> str:
         """Add a task node to the flowchart.
 
@@ -98,7 +97,7 @@ class FlowchartBuilder(DiagramBuilder):
         self.add_line(node_def)
         return safe_id
 
-    def add_decision(self, condition: str, decision_id: Optional[str] = None) -> str:
+    def add_decision(self, condition: str, decision_id: str | None = None) -> str:
         """Add a decision/conditional node (rhombus shape).
 
         Args:
@@ -121,7 +120,7 @@ class FlowchartBuilder(DiagramBuilder):
         self,
         from_id: str,
         to_id: str,
-        label: Optional[str] = None,
+        label: str | None = None,
         style: str = "arrow",
     ) -> None:
         """Add a flow/edge between two nodes.
@@ -173,7 +172,7 @@ class FlowchartBuilder(DiagramBuilder):
 
         return self.add_task(node_type.capitalize(), node_id, shape="circle")
 
-    def add_subgraph(self, title: str, node_ids: List[str]) -> None:
+    def add_subgraph(self, title: str, node_ids: list[str]) -> None:
         """Add a subgraph grouping related nodes.
 
         Args:

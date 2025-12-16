@@ -5,14 +5,14 @@ Generates Mermaid diagrams showing internal role structure and data flow.
 """
 
 import logging
-from typing import Any, Dict, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
 
 def generate_component_architecture(
-    role_info: Dict[str, Any], complexity_report: Any
-) -> Optional[str]:
+    role_info: dict[str, Any], complexity_report: Any
+) -> str | None:
     """
     Generate component architecture diagram for complex roles.
 
@@ -95,6 +95,7 @@ def generate_component_architecture(
 
     # External integrations node
     if complexity_report and complexity_report.integration_points:
+        #FIXME Unused variable, what happened here ?
         integration_count = len(complexity_report.integration_points)
         integration_names = [
             ip.system_name for ip in complexity_report.integration_points[:2]

@@ -137,7 +137,7 @@ def create_complex_role_info():
                         "module": "include_tasks",
                         "file": "common.yml",
                     },
-                    {"name": "Import role", "module": "import_role", "name": "base"},
+                    {"name": "Import role", "module": "import_role", "name": "base"}, #FIXME duplicate value name
                     {
                         "name": "Include another role",
                         "module": "ansible.builtin.include_role",

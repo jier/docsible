@@ -2,14 +2,14 @@
 
 import logging
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 import yaml
 
 logger = logging.getLogger(__name__)
 
 
-def load_config(root_path: Path) -> Dict[str, Any]:
+def load_config(root_path: Path) -> dict[str, Any]:
     """Load configuration from .docsible.yml if it exists.
 
     Args:
