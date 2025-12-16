@@ -1136,8 +1136,21 @@ def generate_recommendations(
         ...     print(f"- {rec}")
     """
     recommendations = []
-    
+
     # 1. FILE-SPECIFIC RECOMMENDATIONS (WHY + HOW format)
+
+    # Metrics-based fallback (when file_details not available - primarily for unit tests)
+    if not file_details and category == ComplexityCategory.COMPLEX:
+        recommendations.append(
+            f"📁 Role is complex ({metrics.total_tasks} tasks) - consider splitting by concern"
+        )
+        if metrics.max_tasks_per_file > 15:
+            recommendations.append(
+                f"   → Largest task file has {metrics.max_tasks_per_file} tasks - "
+                "consider breaking into smaller files"
+            )
+
+    # Detailed file-level analysis (when file_details available)
     if file_details:
         largest_file = file_details[0]
 
@@ -1261,22 +1274,45 @@ def generate_recommendations(
                     f"consider consolidating in tasks/{int_type}.yml"
                 )
     
-    # 5. COMPOSITION COMPLEXITY
+    # 5. COMPOSITION COMPLEXITY (WHY + HOW format)
     if metrics.composition_score >= 8:
-        recommendations.append(
-            f"🔗 High role orchestration complexity (score: {metrics.composition_score}) - "
-            f"document role dependencies and include chain in README"
-        )
-    
-    # 6. CREDENTIAL WARNINGS
+        rec = [
+            f"🔗 High role composition complexity (score: {metrics.composition_score})",
+            f"   WHY: Complex role dependencies make the execution chain hard to understand and debug",
+            f"   HOW: Document role dependencies and include chain in README:",
+            f"      • List all role dependencies from meta/main.yml",
+            f"      • Show execution order diagram",
+            f"      • Document required variables passed between roles"
+        ]
+        recommendations.append("\n".join(rec))
+
+    # 6. INTEGRATION ISOLATION (WHY + HOW format)
+    if len(integration_points) >= 3:
+        systems = ", ".join(ip.system_name for ip in integration_points[:3])
+        rec = [
+            f"🔌 Multiple external integrations detected ({len(integration_points)} systems: {systems})",
+            f"   WHY: External integrations add operational complexity and failure points",
+            f"   HOW: Document integration architecture:",
+            f"      • Add architecture diagram showing data flow between systems",
+            f"      • Document retry/fallback strategies for each integration",
+            f"      • List external dependencies and their versions"
+        ]
+        recommendations.append("\n".join(rec))
+
+    # 7. CREDENTIAL WARNINGS (WHY + HOW format)
     if any(ip.uses_credentials for ip in integration_points):
         cred_systems = [ip.system_name for ip in integration_points if ip.uses_credentials]
-        recommendations.append(
-            f"🔐 Credentials required for {', '.join(cred_systems)} - "
-            f"document authentication requirements and use Ansible Vault"
-        )
-    
-    # 7. FALLBACK FOR SIMPLE ROLES
+        rec = [
+            f"🔐 Credentials required for {', '.join(cred_systems)}",
+            f"   WHY: Hardcoded credentials pose security risks and complicate credential rotation",
+            f"   HOW: Secure credential management:",
+            f"      • Use Ansible Vault for sensitive variables",
+            f"      • Document required credentials in README",
+            f"      • Consider external secret management (HashiCorp Vault, AWS Secrets Manager)"
+        ]
+        recommendations.append("\n".join(rec))
+
+    # 8. FALLBACK FOR SIMPLE ROLES
     if not recommendations:
         recommendations.append(
             "✅ Role complexity is well-managed - standard documentation is sufficient"
