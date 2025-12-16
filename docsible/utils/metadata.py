@@ -1,8 +1,3 @@
-"Track when README becomes outdated when role files changes."
-
-"Exit code 0 (up-to-date) or 1 (outdated)."
-" And show what has changed and when"
-
 import hashlib
 import re
 import datetime as dt
@@ -13,6 +8,11 @@ from typing import Optional
 from pydantic import BaseModel, Field, field_validator, field_serializer
 
 from docsible.constants import VERSION
+
+"Track when README becomes outdated when role files changes."
+
+"Exit code 0 (up-to-date) or 1 (outdated)."
+" And show what has changed and when"
 
 
 class GenerationMetadata(BaseModel):
@@ -52,7 +52,7 @@ class GenerationMetadata(BaseModel):
             raise ValueError("role_hash must be 64 hex characters long")
         return hash
 
-    @field_serializer('generated_at')
+    @field_serializer("generated_at")
     def serialize_datetime(self, dt: datetime, _info) -> str:
         """
         Serialize datetime to ISO format with 'Z' timezone indicator.
@@ -65,7 +65,7 @@ class GenerationMetadata(BaseModel):
         :return: ISO format string with 'Z' suffix
         :rtype: str
         """
-        return dt.isoformat() + 'Z'
+        return dt.isoformat() + "Z"
 
     def to_comment(self) -> str:
         """

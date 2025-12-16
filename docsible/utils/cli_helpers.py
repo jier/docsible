@@ -38,19 +38,68 @@ class GroupedHelpCommand(click.Command):
                 opt_name = rv[0]
 
                 # Categorize by option name
-                if any(x in opt_name for x in ['--role', '--collection', '--playbook']):
+                if any(x in opt_name for x in ["--role", "--collection", "--playbook"]):
                     opts_by_group["📂 Input Paths"].append(rv)
-                elif any(x in opt_name for x in ['--output', '--no-backup', '--append', '--no-docsible', '--validate', '--auto-fix', '--strict']):
+                elif any(
+                    x in opt_name
+                    for x in [
+                        "--output",
+                        "--no-backup",
+                        "--append",
+                        "--no-docsible",
+                        "--validate",
+                        "--auto-fix",
+                        "--strict",
+                    ]
+                ):
                     opts_by_group["💾 Output Control"].append(rv)
-                elif any(x in opt_name for x in ['--no-vars', '--no-tasks', '--no-diagrams', '--no-examples', '--no-metadata', '--no-handlers', '--minimal', '--include-complexity']):
+                elif any(
+                    x in opt_name
+                    for x in [
+                        "--no-vars",
+                        "--no-tasks",
+                        "--no-diagrams",
+                        "--no-examples",
+                        "--no-metadata",
+                        "--no-handlers",
+                        "--minimal",
+                        "--include-complexity",
+                    ]
+                ):
                     opts_by_group["📄 Content Sections"].append(rv)
-                elif any(x in opt_name for x in ['--md-role-template', '--md-collection-template', '--hybrid']):
+                elif any(
+                    x in opt_name
+                    for x in [
+                        "--md-role-template",
+                        "--md-collection-template",
+                        "--hybrid",
+                    ]
+                ):
                     opts_by_group["🎨 Templates"].append(rv)
-                elif any(x in opt_name for x in ['--graph', '--simplify-diagrams', '--comments', '--task-line']):
+                elif any(
+                    x in opt_name
+                    for x in [
+                        "--graph",
+                        "--simplify-diagrams",
+                        "--comments",
+                        "--task-line",
+                    ]
+                ):
                     opts_by_group["📊 Visualization"].append(rv)
-                elif any(x in opt_name for x in ['--complexity-report', '--simplification-report', '--show-dependencies', '--analyze-only']):
+                elif any(
+                    x in opt_name
+                    for x in [
+                        "--complexity-report",
+                        "--simplification-report",
+                        "--show-dependencies",
+                        "--analyze-only",
+                    ]
+                ):
                     opts_by_group["🔍 Analysis & Complexity"].append(rv)
-                elif any(x in opt_name for x in ['--repository-url', '--repo-type', '--repo-branch']):
+                elif any(
+                    x in opt_name
+                    for x in ["--repository-url", "--repo-type", "--repo-branch"]
+                ):
                     opts_by_group["🔗 Repository Integration"].append(rv)
                 else:
                     opts_by_group["⚙️  Other Options"].append(rv)

@@ -6,10 +6,7 @@ This follows the Template Method design pattern.
 
 from abc import ABC, abstractmethod
 from typing import List, Dict, Any
-from docsible.analyzers.patterns.models import (
-    SimplificationSuggestion,
-    PatternCategory
-)
+from docsible.analyzers.patterns.models import SimplificationSuggestion, PatternCategory
 
 
 class BasePatternDetector(ABC):
@@ -58,11 +55,11 @@ class BasePatternDetector(ABC):
             Flat list of all tasks with file metadata
         """
         tasks = []
-        for task_file in role_info.get('tasks', []):
-            file_name = task_file.get('file', 'unknown')
-            for task in task_file.get('tasks', []):
+        for task_file in role_info.get("tasks", []):
+            file_name = task_file.get("file", "unknown")
+            for task in task_file.get("tasks", []):
                 task_with_file = task.copy()
-                task_with_file['file'] = file_name
+                task_with_file["file"] = file_name
                 tasks.append(task_with_file)
         return tasks
 
@@ -75,7 +72,7 @@ class BasePatternDetector(ABC):
         Returns:
             List of task file dictionaries
         """
-        return role_info.get('tasks', [])
+        return role_info.get("tasks", [])
 
     def _show_task_snippet(self, tasks: List[Dict[str, Any]], limit: int = 2) -> str:
         """Generate example snippet from tasks.
@@ -90,13 +87,15 @@ class BasePatternDetector(ABC):
         lines = []
         for task in tasks[:limit]:
             lines.append(f"- name: {task.get('name', 'unnamed')}")
-            module = task.get('module', 'unknown')
+            module = task.get("module", "unknown")
             lines.append(f"  {module}: ...")
         if len(tasks) > limit:
             lines.append(f"# ... and {len(tasks) - limit} more similar tasks")
         return "\n".join(lines)
 
-    def _show_task(self, task: Dict[str, Any], include_module_args: bool = False) -> str:
+    def _show_task(
+        self, task: Dict[str, Any], include_module_args: bool = False
+    ) -> str:
         """Generate YAML-like representation of a single task.
 
         Args:
@@ -107,11 +106,11 @@ class BasePatternDetector(ABC):
             YAML-like string representation
         """
         lines = [f"- name: {task.get('name', 'unnamed')}"]
-        module = task.get('module', 'unknown')
+        module = task.get("module", "unknown")
 
-        if include_module_args and 'args' in task:
+        if include_module_args and "args" in task:
             lines.append(f"  {module}:")
-            for key, value in task['args'].items():
+            for key, value in task["args"].items():
                 lines.append(f"    {key}: {value}")
         else:
             lines.append(f"  {module}: ...")
@@ -128,16 +127,19 @@ class BasePatternDetector(ABC):
             Dictionary mapping module name to count
         """
         from collections import defaultdict
+
         counts = defaultdict(int)
 
         for task in self._flatten_tasks(role_info):
-            module = task.get('module')
+            module = task.get("module")
             if module:
                 counts[module] += 1
 
         return dict(counts)
 
-    def _get_tasks_by_module(self, role_info: Dict[str, Any], module: str) -> List[Dict[str, Any]]:
+    def _get_tasks_by_module(
+        self, role_info: Dict[str, Any], module: str
+    ) -> List[Dict[str, Any]]:
         """Get all tasks using a specific module.
 
         Args:
@@ -148,8 +150,9 @@ class BasePatternDetector(ABC):
             List of tasks using the specified module
         """
         return [
-            task for task in self._flatten_tasks(role_info)
-            if task.get('module') == module
+            task
+            for task in self._flatten_tasks(role_info)
+            if task.get("module") == module
         ]
 
     def _has_attribute(self, task: Dict[str, Any], *attrs: str) -> bool:
@@ -173,5 +176,5 @@ class BasePatternDetector(ABC):
         Returns:
             Sorted list of unique file names
         """
-        files = {task.get('file') for task in tasks if task.get('file')}
+        files = {task.get("file") for task in tasks if task.get("file")}
         return sorted(files)

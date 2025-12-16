@@ -207,7 +207,9 @@ def get_task_line_ranges(file_path):
         if stripped_line.startswith("- name:"):
             # If we were tracking a previous task, end it
             if current_task_start is not None:
-                task_ranges.append((current_task_start, idx))  # End at line before this one
+                task_ranges.append(
+                    (current_task_start, idx)
+                )  # End at line before this one
 
             # Start tracking new task (1-indexed)
             current_task_start = idx + 1

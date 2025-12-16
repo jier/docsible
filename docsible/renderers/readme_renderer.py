@@ -149,7 +149,7 @@ class ReadmeRenderer:
         except Exception as e:
             # Don't fail if metadata generation fails
             logger.warning(f"Could not generate metadata: {e}")
-        
+
         # Handle existing file
         final_content = self._merge_content(output_path, new_content, append)
 
@@ -222,7 +222,7 @@ class ReadmeRenderer:
         }
         new_content = template.render(data)
         new_content = manage_docsible_tags(new_content)
-       
+
         # Handle existing file
         final_content = self._merge_content(output_path, new_content, append)
 
@@ -327,7 +327,9 @@ class ReadmeRenderer:
 
                 # Log errors
                 if errors:
-                    logger.error(f"❌ Markdown validation found {len(errors)} error(s):")
+                    logger.error(
+                        f"❌ Markdown validation found {len(errors)} error(s):"
+                    )
                     for error in errors[:5]:  # Show first 5
                         line_info = (
                             f" (line {error.line_number})" if error.line_number else ""
@@ -343,7 +345,9 @@ class ReadmeRenderer:
                     )
                     for warning in warnings[:3]:  # Show first 3
                         line_info = (
-                            f" (line {warning.line_number})" if warning.line_number else ""
+                            f" (line {warning.line_number})"
+                            if warning.line_number
+                            else ""
                         )
                         logger.warning(f"  {warning.message}{line_info}")
                     if len(warnings) > 3:
@@ -352,10 +356,7 @@ class ReadmeRenderer:
                 # Strict mode - fail on errors
                 if self.strict_validation and errors:
                     error_summary = "\n".join(
-                        [
-                            f"Line {e.line_number}: {e.message}"
-                            for e in errors[:10]
-                        ]
+                        [f"Line {e.line_number}: {e.message}" for e in errors[:10]]
                     )
                     raise ValueError(
                         f"Markdown validation failed with {len(errors)} error(s):\n{error_summary}\n\n"

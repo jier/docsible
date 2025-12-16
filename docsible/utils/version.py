@@ -29,7 +29,7 @@ def get_git_version() -> Optional[str]:
             capture_output=True,
             text=True,
             timeout=2,
-            check=False
+            check=False,
         )
         if result.returncode != 0:
             return None
@@ -40,7 +40,7 @@ def get_git_version() -> Optional[str]:
             capture_output=True,
             text=True,
             timeout=2,
-            check=False
+            check=False,
         )
 
         if result.returncode != 0:
@@ -90,6 +90,7 @@ def get_version() -> str:
 
     # Fall back to constants
     from docsible.constants import VERSION
+
     return VERSION
 
 
@@ -113,6 +114,7 @@ def get_version_info() -> dict:
         }
     else:
         from docsible.constants import VERSION
+
         return {
             "version": VERSION,
             "source": "constants",

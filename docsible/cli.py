@@ -49,6 +49,7 @@ def get_version() -> str:
         Docsible v0.8.0
     """
     from docsible.utils.version import get_version as get_dynamic_version
+
     return get_dynamic_version()
 
 

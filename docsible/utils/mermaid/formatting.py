@@ -9,6 +9,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from .task_extraction import extract_task_name_from_module
 from .core import sanitize_for_mermaid_id, sanitize_for_title, sanitize_for_condition
 from .pagination import should_paginate_diagram, paginate_tasks
+
 logger = logging.getLogger(__name__)
 
 
@@ -295,32 +296,30 @@ def generate_mermaid_role_tasks_per_file(
         tasks = task_info["mermaid"]
         # Generate full diagram first
         full_diagram = _generate_single_diagram(tasks)
-        
+
         # Check if pagination is needed
         if should_paginate_diagram(full_diagram, max_nodes=50):
             # Store pagination info
             mermaid_codes[task_file] = {
-                'paginated': True,
-                'full_diagram': full_diagram,
-                'pages': []
+                "paginated": True,
+                "full_diagram": full_diagram,
+                "pages": [],
             }
-            
+
             # Generate diagrams for each page
             pages = paginate_tasks(tasks, tasks_per_page=20)
             for page_title, page_tasks in pages:
                 page_diagram = _generate_single_diagram(page_tasks)
-                mermaid_codes[task_file]['pages'].append({
-                    'title': page_title,
-                    'diagram': page_diagram
-                })
+                mermaid_codes[task_file]["pages"].append(
+                    {"title": page_title, "diagram": page_diagram}
+                )
         else:
             # Normal diagram (not paginated)
-            mermaid_codes[task_file] = {
-                'paginated': False,
-                'diagram': full_diagram
-            }
-    
+            mermaid_codes[task_file] = {"paginated": False, "diagram": full_diagram}
+
     return mermaid_codes
+
+
 def _generate_single_diagram(tasks: List[Dict]) -> str:
     """Generate a single Mermaid flowchart diagram."""
     mermaid_data = """flowchart TD

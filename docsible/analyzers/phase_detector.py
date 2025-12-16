@@ -55,42 +55,106 @@ class PhaseDetector:
     # Phase detection patterns
     PHASE_PATTERNS = {
         Phase.SETUP: {
-            'modules': {'assert', 'debug', 'set_fact', 'include_vars', 'stat', 'fail', 'when'},
-            'name_keywords': ['prerequisite', 'pre-requisite', 'check', 'validate', 'ensure', 'verify prerequisite'],
-            'priority': 1,  # Typically first
+            "modules": {
+                "assert",
+                "debug",
+                "set_fact",
+                "include_vars",
+                "stat",
+                "fail",
+                "when",
+            },
+            "name_keywords": [
+                "prerequisite",
+                "pre-requisite",
+                "check",
+                "validate",
+                "ensure",
+                "verify prerequisite",
+            ],
+            "priority": 1,  # Typically first
         },
         Phase.INSTALL: {
-            'modules': {'apt', 'yum', 'dnf', 'pip', 'npm', 'package', 'gem', 'docker_image',
-                       'get_url', 'git', 'unarchive', 'maven_artifact'},
-            'name_keywords': ['install', 'download', 'fetch', 'pull', 'clone', 'acquire'],
-            'priority': 2,
+            "modules": {
+                "apt",
+                "yum",
+                "dnf",
+                "pip",
+                "npm",
+                "package",
+                "gem",
+                "docker_image",
+                "get_url",
+                "git",
+                "unarchive",
+                "maven_artifact",
+            },
+            "name_keywords": [
+                "install",
+                "download",
+                "fetch",
+                "pull",
+                "clone",
+                "acquire",
+            ],
+            "priority": 2,
         },
         Phase.CONFIGURE: {
-            'modules': {'template', 'copy', 'lineinfile', 'blockinfile', 'file', 'replace',
-                       'ini_file', 'xml'},
-            'name_keywords': ['configure', 'config', 'setup', 'set up', 'create config', 'apply config'],
-            'priority': 3,
+            "modules": {
+                "template",
+                "copy",
+                "lineinfile",
+                "blockinfile",
+                "file",
+                "replace",
+                "ini_file",
+                "xml",
+            },
+            "name_keywords": [
+                "configure",
+                "config",
+                "setup",
+                "set up",
+                "create config",
+                "apply config",
+            ],
+            "priority": 3,
         },
         Phase.DEPLOY: {
-            'modules': {'command', 'shell', 'docker_container', 'kubernetes', 'k8s'},
-            'name_keywords': ['deploy', 'run', 'execute', 'launch', 'apply'],
-            'priority': 4,
+            "modules": {"command", "shell", "docker_container", "kubernetes", "k8s"},
+            "name_keywords": ["deploy", "run", "execute", "launch", "apply"],
+            "priority": 4,
         },
         Phase.ACTIVATE: {
-            'modules': {'service', 'systemd', 'supervisorctl', 'docker_container'},
-            'name_keywords': ['start', 'enable', 'activate', 'restart', 'reload'],
-            'priority': 5,
+            "modules": {"service", "systemd", "supervisorctl", "docker_container"},
+            "name_keywords": ["start", "enable", "activate", "restart", "reload"],
+            "priority": 5,
         },
         Phase.VERIFY: {
-            'modules': {'uri', 'wait_for', 'assert', 'ping', 'command', 'shell'},
-            'name_keywords': ['verify', 'test', 'check', 'validate', 'health check', 'smoke test',
-                            'wait for', 'ensure running'],
-            'priority': 6,
+            "modules": {"uri", "wait_for", "assert", "ping", "command", "shell"},
+            "name_keywords": [
+                "verify",
+                "test",
+                "check",
+                "validate",
+                "health check",
+                "smoke test",
+                "wait for",
+                "ensure running",
+            ],
+            "priority": 6,
         },
         Phase.CLEANUP: {
-            'modules': {'file', 'command', 'shell'},
-            'name_keywords': ['cleanup', 'clean up', 'remove', 'delete', 'purge', 'temporary'],
-            'priority': 7,  # Typically last
+            "modules": {"file", "command", "shell"},
+            "name_keywords": [
+                "cleanup",
+                "clean up",
+                "remove",
+                "delete",
+                "purge",
+                "temporary",
+            ],
+            "priority": 7,  # Typically last
         },
     }
 
@@ -102,7 +166,9 @@ class PhaseDetector:
         """
         self.min_confidence = min_confidence
 
-    def detect_phases(self, tasks: List[Dict], line_numbers: Optional[List[Tuple[int, int]]] = None) -> PhaseDetectionResult:
+    def detect_phases(
+        self, tasks: List[Dict], line_numbers: Optional[List[Tuple[int, int]]] = None
+    ) -> PhaseDetectionResult:
         """Detect execution phases in a task sequence.
 
         Args:
@@ -119,7 +185,7 @@ class PhaseDetector:
                 is_coherent_pipeline=False,
                 confidence=0.0,
                 recommendation="Too few tasks for phase detection",
-                reasoning="Need at least 3 tasks to detect pipeline patterns"
+                reasoning="Need at least 3 tasks to detect pipeline patterns",
             )
 
         # Assign phases to each task
@@ -144,7 +210,7 @@ class PhaseDetector:
             is_coherent_pipeline=is_pipeline,
             confidence=pipeline_confidence,
             recommendation=recommendation,
-            reasoning=reasoning
+            reasoning=reasoning,
         )
 
     def _detect_task_phase(self, task: Dict) -> Tuple[Phase, float]:
@@ -159,7 +225,7 @@ class PhaseDetector:
         if not task:
             return Phase.UNKNOWN, 0.0
 
-        task_name = task.get('name', '').lower()
+        task_name = task.get("name", "").lower()
         task_module = self._extract_module(task)
 
         # Score each phase
@@ -169,11 +235,11 @@ class PhaseDetector:
             score = 0.0
 
             # Check module match (strong signal)
-            if task_module and task_module in patterns['modules']:
+            if task_module and task_module in patterns["modules"]:
                 score += 0.7
 
             # Check name keywords (moderate signal)
-            for keyword in patterns['name_keywords']:
+            for keyword in patterns["name_keywords"]:
                 if keyword in task_name:
                     score += 0.3
                     break
@@ -197,20 +263,39 @@ class PhaseDetector:
             Module name or None
         """
         # Skip non-module keys
-        skip_keys = {'name', 'when', 'with_items', 'loop', 'notify', 'tags', 'become',
-                    'become_user', 'register', 'changed_when', 'failed_when', 'ignore_errors',
-                    'vars', 'environment', 'delegate_to', 'run_once', 'no_log'}
+        skip_keys = {
+            "name",
+            "when",
+            "with_items",
+            "loop",
+            "notify",
+            "tags",
+            "become",
+            "become_user",
+            "register",
+            "changed_when",
+            "failed_when",
+            "ignore_errors",
+            "vars",
+            "environment",
+            "delegate_to",
+            "run_once",
+            "no_log",
+        }
 
         for key in task.keys():
             if key not in skip_keys:
                 # Handle fully qualified collection names
-                module_name = key.split('.')[-1]
+                module_name = key.split(".")[-1]
                 return module_name.lower()
 
         return None
 
-    def _group_by_phase(self, task_phases: List[Tuple[int, Phase, float]],
-                       line_numbers: Optional[List[Tuple[int, int]]]) -> List[PhaseMatch]:
+    def _group_by_phase(
+        self,
+        task_phases: List[Tuple[int, Phase, float]],
+        line_numbers: Optional[List[Tuple[int, int]]],
+    ) -> List[PhaseMatch]:
         """Group consecutive tasks by phase.
 
         Args:
@@ -236,24 +321,35 @@ class PhaseDetector:
             else:
                 # End current phase, start new one
                 if current_phase != Phase.UNKNOWN:
-                    groups.append(self._create_phase_match(
-                        current_phase, current_indices, current_confidences, line_numbers
-                    ))
+                    groups.append(
+                        self._create_phase_match(
+                            current_phase,
+                            current_indices,
+                            current_confidences,
+                            line_numbers,
+                        )
+                    )
                 current_phase = phase
                 current_indices = [idx]
                 current_confidences = [confidence]
 
         # Add final phase
         if current_phase != Phase.UNKNOWN:
-            groups.append(self._create_phase_match(
-                current_phase, current_indices, current_confidences, line_numbers
-            ))
+            groups.append(
+                self._create_phase_match(
+                    current_phase, current_indices, current_confidences, line_numbers
+                )
+            )
 
         return groups
 
-    def _create_phase_match(self, phase: Phase, indices: List[int],
-                           confidences: List[float],
-                           line_numbers: Optional[List[Tuple[int, int]]]) -> PhaseMatch:
+    def _create_phase_match(
+        self,
+        phase: Phase,
+        indices: List[int],
+        confidences: List[float],
+        line_numbers: Optional[List[Tuple[int, int]]],
+    ) -> PhaseMatch:
         """Create a PhaseMatch object.
 
         Args:
@@ -280,11 +376,14 @@ class PhaseDetector:
             end_line=end_line,
             task_count=len(indices),
             task_indices=indices,
-            confidence=avg_confidence
+            confidence=avg_confidence,
         )
 
-    def _analyze_pipeline_coherence(self, phase_groups: List[PhaseMatch],
-                                    task_phases: List[Tuple[int, Phase, float]]) -> Tuple[bool, float, str]:
+    def _analyze_pipeline_coherence(
+        self,
+        phase_groups: List[PhaseMatch],
+        task_phases: List[Tuple[int, Phase, float]],
+    ) -> Tuple[bool, float, str]:
         """Analyze if detected phases form a coherent pipeline.
 
         Args:
@@ -311,7 +410,9 @@ class PhaseDetector:
         signals.append(("phase_coverage", coverage_score))
 
         # Signal 3: Phase distinctiveness (average confidence of phase assignments)
-        avg_phase_confidence = sum(group.confidence for group in phase_groups) / len(phase_groups)
+        avg_phase_confidence = sum(group.confidence for group in phase_groups) / len(
+            phase_groups
+        )
         signals.append(("phase_confidence", avg_phase_confidence))
 
         # Signal 4: Minimal back-and-forth (phases shouldn't repeat)
@@ -332,11 +433,17 @@ class PhaseDetector:
         reasoning_parts = []
         for name, score in signals:
             if score >= 0.7:
-                reasoning_parts.append(f"✓ {name.replace('_', ' ').title()}: {score:.0%}")
+                reasoning_parts.append(
+                    f"✓ {name.replace('_', ' ').title()}: {score:.0%}"
+                )
             elif score >= 0.5:
-                reasoning_parts.append(f"~ {name.replace('_', ' ').title()}: {score:.0%}")
+                reasoning_parts.append(
+                    f"~ {name.replace('_', ' ').title()}: {score:.0%}"
+                )
             else:
-                reasoning_parts.append(f"✗ {name.replace('_', ' ').title()}: {score:.0%}")
+                reasoning_parts.append(
+                    f"✗ {name.replace('_', ' ').title()}: {score:.0%}"
+                )
 
         reasoning = " | ".join(reasoning_parts)
 
@@ -358,8 +465,7 @@ class PhaseDetector:
 
         # Get expected ordering from priorities
         expected_order = sorted(
-            phase_groups,
-            key=lambda g: self.PHASE_PATTERNS[g.phase]['priority']
+            phase_groups, key=lambda g: self.PHASE_PATTERNS[g.phase]["priority"]
         )
 
         # Count how many phase transitions are in correct order
@@ -367,8 +473,8 @@ class PhaseDetector:
         total_transitions = len(phase_groups) - 1
 
         for i in range(total_transitions):
-            current_priority = self.PHASE_PATTERNS[phase_groups[i].phase]['priority']
-            next_priority = self.PHASE_PATTERNS[phase_groups[i + 1].phase]['priority']
+            current_priority = self.PHASE_PATTERNS[phase_groups[i].phase]["priority"]
+            next_priority = self.PHASE_PATTERNS[phase_groups[i + 1].phase]["priority"]
 
             if next_priority >= current_priority:
                 correct_transitions += 1
@@ -398,7 +504,9 @@ class PhaseDetector:
         # Normalize by number of groups
         return min(repetitions / len(phase_groups), 1.0)
 
-    def _generate_recommendation(self, is_pipeline: bool, phase_groups: List[PhaseMatch]) -> str:
+    def _generate_recommendation(
+        self, is_pipeline: bool, phase_groups: List[PhaseMatch]
+    ) -> str:
         """Generate recommendation based on phase detection.
 
         Args:
@@ -410,8 +518,12 @@ class PhaseDetector:
         """
         if is_pipeline:
             phase_names = " → ".join([g.phase.value.title() for g in phase_groups])
-            return (f"✅ Keep together - coherent pipeline detected ({phase_names}). "
-                   f"Sequential workflow is naturally coupled.")
+            return (
+                f"✅ Keep together - coherent pipeline detected ({phase_names}). "
+                f"Sequential workflow is naturally coupled."
+            )
         else:
-            return ("🔀 Consider splitting - no clear pipeline detected. "
-                   "Tasks may represent mixed functional concerns.")
+            return (
+                "🔀 Consider splitting - no clear pipeline detected. "
+                "Tasks may represent mixed functional concerns."
+            )

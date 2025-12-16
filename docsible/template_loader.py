@@ -57,7 +57,9 @@ class TemplateLoader:
         self.env.filters.update(TEMPLATE_FILTERS)
 
         # Register global helper functions
-        self.env.globals['get_diagram_complexity_warning'] = get_diagram_complexity_warning
+        self.env.globals["get_diagram_complexity_warning"] = (
+            get_diagram_complexity_warning
+        )
 
         logger.debug(f"Initialized TemplateLoader with search paths: {search_paths}")
 

@@ -47,15 +47,15 @@ from docsible.analyzers.patterns.analyzer import (
 
 __all__ = [
     # Models
-    'SimplificationSuggestion',
-    'PatternAnalysisReport',
-    'SeverityLevel',
-    'PatternCategory',
+    "SimplificationSuggestion",
+    "PatternAnalysisReport",
+    "SeverityLevel",
+    "PatternCategory",
     # Base class
-    'BasePatternDetector',
+    "BasePatternDetector",
     # Main API
-    'PatternAnalyzer',
-    'analyze_role_patterns',
+    "PatternAnalyzer",
+    "analyze_role_patterns",
 ]
 
-__version__ = '1.0.0'
+__version__ = "1.0.0"

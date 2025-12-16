@@ -11,62 +11,55 @@ from docsible.analyzers.patterns.detectors import SecurityDetector
 def create_example_role_with_issues():
     """Create a mock role_info with various anti-patterns."""
     return {
-        'tasks': [
+        "tasks": [
             {
-                'file': 'main.yml',
-                'tasks': [
+                "file": "main.yml",
+                "tasks": [
                     # Duplication - many separate package installs
-                    {'name': 'Install nginx', 'module': 'apt', 'file': 'main.yml'},
-                    {'name': 'Install php', 'module': 'apt', 'file': 'main.yml'},
-                    {'name': 'Install mysql', 'module': 'apt', 'file': 'main.yml'},
-                    {'name': 'Install redis', 'module': 'apt', 'file': 'main.yml'},
-                    {'name': 'Install memcached', 'module': 'apt', 'file': 'main.yml'},
-                    {'name': 'Install supervisor', 'module': 'apt', 'file': 'main.yml'},
-
+                    {"name": "Install nginx", "module": "apt", "file": "main.yml"},
+                    {"name": "Install php", "module": "apt", "file": "main.yml"},
+                    {"name": "Install mysql", "module": "apt", "file": "main.yml"},
+                    {"name": "Install redis", "module": "apt", "file": "main.yml"},
+                    {"name": "Install memcached", "module": "apt", "file": "main.yml"},
+                    {"name": "Install supervisor", "module": "apt", "file": "main.yml"},
                     # Missing idempotency
                     {
-                        'name': 'Download file',
-                        'module': 'shell',
-                        'cmd': 'wget https://example.com/file.tar.gz',
-                        'file': 'main.yml'
+                        "name": "Download file",
+                        "module": "shell",
+                        "cmd": "wget https://example.com/file.tar.gz",
+                        "file": "main.yml",
                     },
-
                     # Complex conditional
                     {
-                        'name': 'Complex task',
-                        'module': 'debug',
-                        'when': 'ansible_os_family == "Debian" and ansible_distribution_major_version >= "18" or ansible_os_family == "RedHat" and ansible_distribution_major_version >= "7" or custom_flag is defined and custom_flag == true',
-                        'file': 'main.yml'
+                        "name": "Complex task",
+                        "module": "debug",
+                        "when": 'ansible_os_family == "Debian" and ansible_distribution_major_version >= "18" or ansible_os_family == "RedHat" and ansible_distribution_major_version >= "7" or custom_flag is defined and custom_flag == true',
+                        "file": "main.yml",
                     },
-
                     # Security: missing no_log
                     {
-                        'name': 'Set database password',
-                        'module': 'set_fact',
-                        'db_password': 'secret123',
-                        'file': 'main.yml'
+                        "name": "Set database password",
+                        "module": "set_fact",
+                        "db_password": "secret123",
+                        "file": "main.yml",
                     },
-
                     # Shell with pipe, no failed_when
                     {
-                        'name': 'Check service',
-                        'module': 'shell',
-                        'cmd': 'systemctl status app | grep active',
-                        'file': 'main.yml'
+                        "name": "Check service",
+                        "module": "shell",
+                        "cmd": "systemctl status app | grep active",
+                        "file": "main.yml",
                     },
-                ]
+                ],
             }
         ],
-        'defaults': {
-            'app_port': 8080,
-            'app_user': 'www-data'
+        "defaults": {"app_port": 8080, "app_user": "www-data"},
+        "vars": {
+            "app_port": 9000,  # Shadows defaults!
+            "db_password": "plain_text_secret",  # Security issue!
         },
-        'vars': {
-            'app_port': 9000,  # Shadows defaults!
-            'db_password': 'plain_text_secret'  # Security issue!
-        },
-        'handlers': [],
-        'meta': {}
+        "handlers": [],
+        "meta": {},
     }
 
 
@@ -102,7 +95,7 @@ def main():
             print(f"   - {category:15s}: {count}")
 
     # Show critical issues
-    critical = [s for s in report.suggestions if s.severity == 'critical']
+    critical = [s for s in report.suggestions if s.severity == "critical"]
     if critical:
         print("\n🚨 Critical Issues:")
         for issue in critical:
@@ -112,7 +105,7 @@ def main():
             print(f"   Confidence: {issue.confidence * 100:.0f}%")
 
     # Show warnings
-    warnings = [s for s in report.suggestions if s.severity == 'warning']
+    warnings = [s for s in report.suggestions if s.severity == "warning"]
     if warnings:
         print(f"\n⚠️  Warnings ({len(warnings)}):")
         for issue in warnings:
@@ -121,7 +114,7 @@ def main():
             print(f"   Files: {', '.join(issue.affected_files)}")
 
     # Show info
-    info = [s for s in report.suggestions if s.severity == 'info']
+    info = [s for s in report.suggestions if s.severity == "info"]
     if info:
         print(f"\n💡 Suggestions ({len(info)}):")
         for issue in info:
@@ -133,8 +126,7 @@ def main():
     print("=" * 70)
 
     security_analyzer = PatternAnalyzer(
-        enabled_detectors=[SecurityDetector],
-        min_confidence=0.75
+        enabled_detectors=[SecurityDetector], min_confidence=0.75
     )
     security_report = security_analyzer.analyze(role_info)
 
@@ -153,19 +145,22 @@ def main():
     print("=" * 70)
 
     import json
+
     report_dict = report.model_dump()
 
     # Show compact summary
     summary = {
-        'total_patterns': report_dict['total_patterns'],
-        'health_score': report_dict['overall_health_score'],
-        'by_severity': report_dict['by_severity'],
-        'by_category': report_dict['by_category'],
-        'sample_pattern': {
-            'pattern': report_dict['suggestions'][0]['pattern'],
-            'severity': report_dict['suggestions'][0]['severity'],
-            'description': report_dict['suggestions'][0]['description']
-        } if report_dict['suggestions'] else None
+        "total_patterns": report_dict["total_patterns"],
+        "health_score": report_dict["overall_health_score"],
+        "by_severity": report_dict["by_severity"],
+        "by_category": report_dict["by_category"],
+        "sample_pattern": {
+            "pattern": report_dict["suggestions"][0]["pattern"],
+            "severity": report_dict["suggestions"][0]["severity"],
+            "description": report_dict["suggestions"][0]["description"],
+        }
+        if report_dict["suggestions"]
+        else None,
     }
 
     print("\n📄 JSON Export Sample:")
@@ -176,5 +171,5 @@ def main():
     print("=" * 70 + "\n")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

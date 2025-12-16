@@ -70,9 +70,7 @@ class MarkdownValidator:
                 blank_count = 0
 
         # Check for trailing whitespace
-        trailing_lines = [
-            i for i, line in enumerate(lines, 1) if line != line.rstrip()
-        ]
+        trailing_lines = [i for i, line in enumerate(lines, 1) if line != line.rstrip()]
         if len(trailing_lines) > 10:
             issues.append(
                 ValidationIssue(

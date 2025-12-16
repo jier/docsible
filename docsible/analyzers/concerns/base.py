@@ -8,11 +8,17 @@ from pydantic import BaseModel, Field
 class ConcernMatch(BaseModel):
     """Represents a detected concern in a task file."""
 
-    concern_name: str = Field(description="Name of the concern (e.g., 'package_installation')")
+    concern_name: str = Field(
+        description="Name of the concern (e.g., 'package_installation')"
+    )
     confidence: float = Field(description="Confidence score 0.0-1.0", ge=0.0, le=1.0)
     task_count: int = Field(description="Number of tasks matching this concern")
-    matched_modules: List[str] = Field(default_factory=list, description="Modules that matched")
-    task_indices: List[int] = Field(default_factory=list, description="Indices of matching tasks")
+    matched_modules: List[str] = Field(
+        default_factory=list, description="Modules that matched"
+    )
+    task_indices: List[int] = Field(
+        default_factory=list, description="Indices of matching tasks"
+    )
 
     # Human-readable attributes
     display_name: str = Field(description="Human-readable concern name")

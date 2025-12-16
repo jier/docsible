@@ -9,6 +9,7 @@ import logging
 from typing import Dict, Any, List, Optional
 from enum import Enum
 from pydantic import BaseModel, Field
+
 # Import concern detection system
 from docsible.analyzers.concerns.registry import ConcernRegistry
 
@@ -23,6 +24,7 @@ try:
         analyze_role_patterns,
         PatternAnalysisReport,
     )
+
     PATTERN_ANALYSIS_AVAILABLE = True
 except ImportError:
     logger.debug("Pattern analysis not available")
@@ -121,6 +123,7 @@ class ComplexityMetrics(BaseModel):
             return 0.0
         return (self.conditional_tasks / self.total_tasks) * 100
 
+
 class FileComplexityDetail(BaseModel):
     """Detailed complexity metrics for a single task file."""
 
@@ -128,12 +131,22 @@ class FileComplexityDetail(BaseModel):
     task_count: int = Field(description="Number of tasks in this file")
     conditional_count: int = Field(description="Number of conditional tasks")
     conditional_percentage: float = Field(description="Percentage of conditional tasks")
-    has_integrations: bool = Field(default=False, description="File uses external integrations")
-    integration_types: List[str] = Field(default_factory=list, description="Types of integrations used")
+    has_integrations: bool = Field(
+        default=False, description="File uses external integrations"
+    )
+    integration_types: List[str] = Field(
+        default_factory=list, description="Types of integrations used"
+    )
     module_diversity: int = Field(description="Number of unique modules used")
-    primary_concern: Optional[str] = Field(default=None, description="Detected primary concern")
-    phase_detection: Optional[Dict[str, Any]] = Field(default=None, description="Phase detection results")
-    line_ranges: Optional[List[tuple]] = Field(default=None, description="Line ranges for each task")
+    primary_concern: Optional[str] = Field(
+        default=None, description="Detected primary concern"
+    )
+    phase_detection: Optional[Dict[str, Any]] = Field(
+        default=None, description="Phase detection results"
+    )
+    line_ranges: Optional[List[tuple]] = Field(
+        default=None, description="Line ranges for each task"
+    )
 
     @property
     def is_god_file(self) -> bool:
@@ -144,6 +157,7 @@ class FileComplexityDetail(BaseModel):
     def is_conditional_heavy(self) -> bool:
         """Check if this file has high conditional complexity."""
         return self.conditional_percentage > 50.0 and self.conditional_count > 5
+
 
 class ComplexityReport(BaseModel):
     """Complete complexity analysis report."""
@@ -157,12 +171,12 @@ class ComplexityReport(BaseModel):
     # Pattern analysis (optional, only included when --simplification-report flag is used)
     pattern_analysis: Optional[Any] = Field(
         default=None,
-        description="Detailed pattern analysis report with simplification suggestions"
+        description="Detailed pattern analysis report with simplification suggestions",
     )
 
+
 def analyze_file_complexity(
-    role_info: Dict[str, Any],
-    integration_points: List[IntegrationPoint]
+    role_info: Dict[str, Any], integration_points: List[IntegrationPoint]
 ) -> List[FileComplexityDetail]:
     """
     Analyze complexity metrics for each task file.
@@ -192,7 +206,9 @@ def analyze_file_complexity(
         # Count conditionals
         conditional_tasks = [t for t in tasks if t.get("when")]
         conditional_count = len(conditional_tasks)
-        conditional_percentage = (conditional_count / len(tasks)) * 100 if tasks else 0.0
+        conditional_percentage = (
+            (conditional_count / len(tasks)) * 100 if tasks else 0.0
+        )
 
         # Detect integrations in this file
         has_integrations = False
@@ -233,7 +249,7 @@ def analyze_file_complexity(
                             "confidence": phase.confidence,
                         }
                         for phase in result.detected_phases
-                    ]
+                    ],
                 }
         except Exception as e:
             logger.debug(f"Phase detection failed for {file_path}: {e}")
@@ -256,8 +272,9 @@ def analyze_file_complexity(
     # Sort by task count (largest first)
     return sorted(file_details, key=lambda f: f.task_count, reverse=True)
 
+
 def _detect_file_concerns(
-    tasks: List[Dict[str, Any]]
+    tasks: List[Dict[str, Any]],
 ) -> tuple[Optional[str], List[tuple[str, str, int]]]:
     """
     Detect all concerns in a task file and return primary + detailed breakdown.
@@ -313,68 +330,74 @@ def _detect_file_concern(tasks: List[Dict[str, Any]]) -> Optional[str]:
     primary = ConcernRegistry.detect_primary_concern(tasks, min_confidence=0.6)
     return primary.concern_name if primary else None
 
+
 class ConditionalHotspot(BaseModel):
     """Represents a file with high conditional complexity."""
-    
+
     file_path: str
     conditional_variable: str = Field(description="Main variable driving conditionals")
-    usage_count: int = Field(description="How many times this variable appears in conditions")
+    usage_count: int = Field(
+        description="How many times this variable appears in conditions"
+    )
     affected_tasks: int = Field(description="Number of tasks using this condition")
     suggestion: str = Field(description="Recommended action")
 
+
 def detect_conditional_hotspots(
-    role_info: Dict[str, Any],
-    file_details: List[FileComplexityDetail]
+    role_info: Dict[str, Any], file_details: List[FileComplexityDetail]
 ) -> List[ConditionalHotspot]:
     """
     Identify files with concentrated conditional logic and the variables driving it.
-    
+
     Args:
         role_info: Role information dictionary
         file_details: File complexity analysis results
-    
+
     Returns:
         List of ConditionalHotspot objects
-    
+
     Example:
         >>> hotspots = detect_conditional_hotspots(role_info, file_details)
         >>> for hotspot in hotspots:
         ...     print(f"{hotspot.file_path}: {hotspot.conditional_variable}")
     """
     hotspots = []
-    
+
     # Focus on files with high conditional percentage
     conditional_files = [f for f in file_details if f.is_conditional_heavy]
-    
+
     for file_detail in conditional_files:
         # Find the corresponding task file data
         task_file_info = next(
-            (tf for tf in role_info.get("tasks", []) if tf.get("file") == file_detail.file_path),
-            None
+            (
+                tf
+                for tf in role_info.get("tasks", [])
+                if tf.get("file") == file_detail.file_path
+            ),
+            None,
         )
-        
+
         if not task_file_info:
             continue
-        
+
         tasks = task_file_info.get("tasks", [])
-        
+
         # Analyze conditional variables
         conditional_vars = _extract_conditional_variables(tasks)
-        
+
         if conditional_vars:
             # Find most common conditional variable
             most_common = max(conditional_vars.items(), key=lambda x: x[1])
             var_name, usage_count = most_common
-            
+
             # Count tasks affected by this variable
             affected_tasks = sum(
-                1 for t in tasks
-                if t.get("when") and var_name in str(t.get("when"))
+                1 for t in tasks if t.get("when") and var_name in str(t.get("when"))
             )
-            
+
             # Generate suggestion
             suggestion = _generate_split_suggestion(var_name, file_detail.file_path)
-            
+
             hotspots.append(
                 ConditionalHotspot(
                     file_path=file_detail.file_path,
@@ -384,20 +407,20 @@ def detect_conditional_hotspots(
                     suggestion=suggestion,
                 )
             )
-    
+
     return hotspots
 
 
 def _extract_conditional_variables(tasks: List[Dict[str, Any]]) -> Dict[str, int]:
     """
     Extract variables used in 'when' conditions and count their usage.
-    
+
     Args:
         tasks: List of tasks
-    
+
     Returns:
         Dictionary mapping variable names to usage count
-    
+
     Example:
         >>> tasks = [
         ...     {"when": "ansible_os_family == 'Debian'"},
@@ -407,44 +430,44 @@ def _extract_conditional_variables(tasks: List[Dict[str, Any]]) -> Dict[str, int
         {'ansible_os_family': 2}
     """
     import re
-    
+
     var_counter = {}
-    
+
     # Common Ansible fact/variable patterns
-    VAR_PATTERN = re.compile(r'([a-z_][a-z0-9_]*)')
-    
+    VAR_PATTERN = re.compile(r"([a-z_][a-z0-9_]*)")
+
     for task in tasks:
         when_clause = task.get("when")
         if not when_clause:
             continue
-        
+
         # Convert to string (can be list or string)
         when_str = str(when_clause)
-        
+
         # Extract variable names
         matches = VAR_PATTERN.findall(when_str)
-        
+
         for var_name in matches:
             # Filter out common operators and keywords
             if var_name in ["and", "or", "not", "is", "in", "true", "false", "defined"]:
                 continue
-            
+
             var_counter[var_name] = var_counter.get(var_name, 0) + 1
-    
+
     return var_counter
 
 
 def _generate_split_suggestion(var_name: str, file_path: str) -> str:
     """
     Generate a suggestion for splitting based on conditional variable.
-    
+
     Args:
         var_name: Variable name driving conditionals
         file_path: Original file path
-    
+
     Returns:
         Suggested split strategy
-    
+
     Example:
         >>> _generate_split_suggestion("ansible_os_family", "tasks/main.yml")
         'Split into tasks/debian.yml and tasks/redhat.yml based on OS family'
@@ -460,9 +483,10 @@ def _generate_split_suggestion(var_name: str, file_path: str) -> str:
         base_name = file_path.replace("tasks/", "").replace(".yml", "")
         return f"Extract conditional logic into tasks/{base_name}_{{value}}.yml files"
 
+
 class InflectionPoint(BaseModel):
     """Represents a major branching point in task execution."""
-    
+
     file_path: str
     task_name: str = Field(description="Task where branching occurs")
     task_index: int = Field(description="Position in file (0-based)")
@@ -470,56 +494,59 @@ class InflectionPoint(BaseModel):
     branch_count: int = Field(description="Number of execution paths from this point")
     downstream_tasks: int = Field(description="Tasks affected by this branch")
 
+
 def detect_inflection_points(
-    role_info: Dict[str, Any],
-    hotspots: List[ConditionalHotspot]
+    role_info: Dict[str, Any], hotspots: List[ConditionalHotspot]
 ) -> List[InflectionPoint]:
     """
     Identify major branching points where execution paths diverge.
-    
+
     An inflection point is a task that:
     1. Uses a conditional variable
     2. Is followed by many tasks using the same variable
     3. Represents a major decision point
-    
+
     Args:
         role_info: Role information dictionary
         hotspots: Conditional hotspot analysis results
-    
+
     Returns:
         List of InflectionPoint objects
-    
+
     Example:
         >>> inflections = detect_inflection_points(role_info, hotspots)
         >>> for point in inflections:
         ...     print(f"{point.file_path}:{point.task_index} - {point.variable}")
     """
     inflection_points = []
-    
+
     for hotspot in hotspots:
         # Find the task file
         task_file_info = next(
-            (tf for tf in role_info.get("tasks", []) if tf.get("file") == hotspot.file_path),
-            None
+            (
+                tf
+                for tf in role_info.get("tasks", [])
+                if tf.get("file") == hotspot.file_path
+            ),
+            None,
         )
-        
+
         if not task_file_info:
             continue
-        
+
         tasks = task_file_info.get("tasks", [])
         var_name = hotspot.conditional_variable
-        
+
         # Find first task using this variable
         for idx, task in enumerate(tasks):
             when_clause = str(task.get("when", ""))
-            
+
             if var_name in when_clause:
                 # Count downstream tasks using same variable
                 downstream = sum(
-                    1 for t in tasks[idx+1:]
-                    if var_name in str(t.get("when", ""))
+                    1 for t in tasks[idx + 1 :] if var_name in str(t.get("when", ""))
                 )
-                
+
                 # Only report significant inflection points
                 if downstream >= 3:
                     inflection_points.append(
@@ -533,7 +560,7 @@ def detect_inflection_points(
                         )
                     )
                     break  # Only report first major inflection per variable
-    
+
     return inflection_points
 
 
@@ -542,7 +569,7 @@ def _generate_file_link(
     line_number: Optional[int],
     repository_url: Optional[str],
     repo_type: Optional[str],
-    repo_branch: Optional[str]
+    repo_branch: Optional[str],
 ) -> str:
     """
     Generate a markdown link to a file in the repository.
@@ -568,25 +595,25 @@ def _generate_file_link(
         return f"`{file_path}`"
 
     # Normalize repository URL (remove trailing slashes, .git suffix)
-    base_url = repository_url.rstrip('/').replace('.git', '')
-    branch = repo_branch or 'main'
+    base_url = repository_url.rstrip("/").replace(".git", "")
+    branch = repo_branch or "main"
 
     # Build URL based on repository type
-    if repo_type == 'github':
+    if repo_type == "github":
         url = f"{base_url}/blob/{branch}/{file_path}"
         if line_number:
             url += f"#L{line_number}"
             return f"[{file_path}:{line_number}]({url})"
         return f"[{file_path}]({url})"
 
-    elif repo_type == 'gitlab':
+    elif repo_type == "gitlab":
         url = f"{base_url}/-/blob/{branch}/{file_path}"
         if line_number:
             url += f"#L{line_number}"
             return f"[{file_path}:{line_number}]({url})"
         return f"[{file_path}]({url})"
 
-    elif repo_type == 'gitea':
+    elif repo_type == "gitea":
         url = f"{base_url}/src/branch/{branch}/{file_path}"
         if line_number:
             url += f"#L{line_number}"
@@ -603,7 +630,7 @@ def _generate_file_link(
 def analyze_role_complexity(
     role_info: Dict[str, Any],
     include_patterns: bool = False,
-    min_confidence: float = 0.7
+    min_confidence: float = 0.7,
 ) -> ComplexityReport:
     """
     Analyze role complexity and generate comprehensive report.
@@ -690,10 +717,10 @@ def analyze_role_complexity(
 
     # Analyze per-file complexity
     file_details = analyze_file_complexity(role_info, integration_points)
-    
+
     # Detect conditional hotspots
     hotspots = detect_conditional_hotspots(role_info, file_details)
-    
+
     # Detect inflection points
     inflection_points = detect_inflection_points(role_info, hotspots)
 
@@ -731,7 +758,7 @@ def analyze_role_complexity(
         role_info=role_info,
         repository_url=repository_url,
         repo_type=repo_type,
-        repo_branch=repo_branch
+        repo_branch=repo_branch,
     )
 
     # Task files detail
@@ -749,7 +776,9 @@ def analyze_role_complexity(
     if include_patterns and PATTERN_ANALYSIS_AVAILABLE:
         try:
             logger.info("Running pattern analysis...")
-            pattern_report = analyze_role_patterns(role_info, min_confidence=min_confidence)
+            pattern_report = analyze_role_patterns(
+                role_info, min_confidence=min_confidence
+            )
             logger.info(
                 f"Pattern analysis complete: {pattern_report.total_patterns} patterns found "
                 f"(health score: {pattern_report.overall_health_score:.1f}/100)"
@@ -1152,7 +1181,7 @@ def generate_recommendations(
 ) -> List[str]:
     """
     Generate specific, actionable recommendations based on comprehensive analysis.
-    
+
     Args:
         metrics: Overall complexity metrics
         category: Complexity category
@@ -1160,10 +1189,10 @@ def generate_recommendations(
         file_details: Per-file complexity analysis
         hotspots: Conditional complexity hotspots
         inflection_points: Major branching points
-    
+
     Returns:
         List of specific, actionable recommendation strings
-    
+
     Example:
         >>> recommendations = generate_recommendations(...)
         >>> for rec in recommendations:
@@ -1190,19 +1219,19 @@ def generate_recommendations(
 
         # Generate linkable file path
         file_link = _generate_file_link(
-            largest_file.file_path,
-            None,
-            repository_url,
-            repo_type,
-            repo_branch
+            largest_file.file_path, None, repository_url, repo_type, repo_branch
         )
 
         # God file detection
         if largest_file.is_god_file:
             # Get task file info to analyze concerns
             task_file_info = next(
-                (tf for tf in role_info.get("tasks", []) if tf.get("file") == largest_file.file_path),
-                None
+                (
+                    tf
+                    for tf in role_info.get("tasks", [])
+                    if tf.get("file") == largest_file.file_path
+                ),
+                None,
             )
 
             if task_file_info:
@@ -1220,7 +1249,7 @@ def generate_recommendations(
                     rec = [
                         f"✅ {file_link} forms a coherent pipeline ({phase_names})",
                         f"   WHY: Sequential workflow is naturally coupled ({confidence}% confidence)",
-                        "   RECOMMENDATION: Keep together - splitting would break narrative flow"
+                        "   RECOMMENDATION: Keep together - splitting would break narrative flow",
                     ]
 
                     # Show phase breakdown with line numbers
@@ -1242,11 +1271,12 @@ def generate_recommendations(
                     rec = [
                         f"🔀 {file_link} mixes {len(all_concerns)} concerns ({concern_names})",
                         "   WHY: Mixed responsibilities reduce maintainability, testability, and reusability",
-                        "   HOW: Split by concern:"
+                        "   HOW: Split by concern:",
                     ]
 
                     # Get detailed concern matches with line information
                     from docsible.analyzers.concerns.registry import ConcernRegistry
+
                     all_matches = ConcernRegistry.detect_all(tasks)
                     line_ranges = largest_file.line_ranges or []
 
@@ -1266,7 +1296,9 @@ def generate_recommendations(
                                     if len(concern_lines) == 1:
                                         line_info = f"lines {concern_lines[0][0]}-{concern_lines[0][1]}"
                                     elif len(concern_lines) <= 3:
-                                        ranges = ", ".join(f"{s}-{e}" for s, e in concern_lines)
+                                        ranges = ", ".join(
+                                            f"{s}-{e}" for s, e in concern_lines
+                                        )
                                         line_info = f"lines {ranges}"
                                     else:
                                         first_line = concern_lines[0][0]
@@ -1299,7 +1331,7 @@ def generate_recommendations(
                         "   HOW: Split into execution phases:",
                         f"      • tasks/setup_{primary_concern}.yml: Preparation tasks",
                         f"      • tasks/{primary_concern}.yml: Core implementation",
-                        f"      • tasks/verify_{primary_concern}.yml: Validation tasks"
+                        f"      • tasks/verify_{primary_concern}.yml: Validation tasks",
                     ]
                     recommendations.append("\n".join(rec))
                 else:
@@ -1307,23 +1339,19 @@ def generate_recommendations(
                     rec = [
                         f"📁 {file_link} has {largest_file.task_count} tasks with no clear single concern",
                         "   WHY: Unclear organization makes the role hard to understand and maintain",
-                        "   HOW: Reorganize by execution phase or functional area"
+                        "   HOW: Reorganize by execution phase or functional area",
                     ]
                     recommendations.append("\n".join(rec))
-    
+
     # 2. CONDITIONAL HOTSPOT RECOMMENDATIONS (WHY + HOW format)
     for hotspot in hotspots[:2]:  # Top 2 hotspots
         hotspot_link = _generate_file_link(
-            hotspot.file_path,
-            None,
-            repository_url,
-            repo_type,
-            repo_branch
+            hotspot.file_path, None, repository_url, repo_type, repo_branch
         )
         rec = [
             f"🔀 {hotspot_link}: {hotspot.affected_tasks} tasks depend on '{hotspot.conditional_variable}'",
             "   WHY: OS/environment-specific branching scattered in one file makes platform support hard to test",
-            f"   HOW: {hotspot.suggestion}"
+            f"   HOW: {hotspot.suggestion}",
         ]
         recommendations.append("\n".join(rec))
 
@@ -1332,20 +1360,21 @@ def generate_recommendations(
         main_inflection = inflection_points[0]  # Most significant
         inflection_link = _generate_file_link(
             main_inflection.file_path,
-            main_inflection.task_index + 1,  # Convert 0-based index to 1-based line (approximate)
+            main_inflection.task_index
+            + 1,  # Convert 0-based index to 1-based line (approximate)
             repository_url,
             repo_type,
-            repo_branch
+            repo_branch,
         )
         rec = [
             f"⚡ Major branch point at {inflection_link}",
             f"   WHAT: Task '{main_inflection.task_name}' branches on '{main_inflection.variable}'",
             f"   IMPACT: {main_inflection.downstream_tasks} downstream tasks affected",
             "   WHY: Multiple execution paths in one file reduce clarity and increase cognitive load",
-            "   HOW: Extract branches into separate files for each path (e.g., tasks/{value}.yml)"
+            "   HOW: Extract branches into separate files for each path (e.g., tasks/{value}.yml)",
         ]
         recommendations.append("\n".join(rec))
-    
+
     # 4. INTEGRATION ISOLATION RECOMMENDATIONS
     # Group integrations by type
     integration_by_file = {}
@@ -1355,20 +1384,19 @@ def generate_recommendations(
                 if int_type not in integration_by_file:
                     integration_by_file[int_type] = []
                 integration_by_file[int_type].append(file_detail.file_path)
-    
+
     # Recommend isolation for scattered integrations
     for int_type, files in integration_by_file.items():
         if len(files) > 1:  # Integration scattered across multiple files
             integration = next(
-                (ip for ip in integration_points if ip.type.value == int_type),
-                None
+                (ip for ip in integration_points if ip.type.value == int_type), None
             )
             if integration:
                 recommendations.append(
                     f"🔌 {integration.system_name} integration scattered across {len(files)} files - "
                     f"consider consolidating in tasks/{int_type}.yml"
                 )
-    
+
     # 5. COMPOSITION COMPLEXITY (WHY + HOW format)
     if metrics.composition_score >= 8:
         rec = [
@@ -1377,7 +1405,7 @@ def generate_recommendations(
             "   HOW: Document role dependencies and include chain in README:",
             "      • List all role dependencies from meta/main.yml",
             "      • Show execution order diagram",
-            "      • Document required variables passed between roles"
+            "      • Document required variables passed between roles",
         ]
         recommendations.append("\n".join(rec))
 
@@ -1390,20 +1418,22 @@ def generate_recommendations(
             "   HOW: Document integration architecture:",
             "      • Add architecture diagram showing data flow between systems",
             "      • Document retry/fallback strategies for each integration",
-            "      • List external dependencies and their versions"
+            "      • List external dependencies and their versions",
         ]
         recommendations.append("\n".join(rec))
 
     # 7. CREDENTIAL WARNINGS (WHY + HOW format)
     if any(ip.uses_credentials for ip in integration_points):
-        cred_systems = [ip.system_name for ip in integration_points if ip.uses_credentials]
+        cred_systems = [
+            ip.system_name for ip in integration_points if ip.uses_credentials
+        ]
         rec = [
             f"🔐 Credentials required for {', '.join(cred_systems)}",
             "   WHY: Hardcoded credentials pose security risks and complicate credential rotation",
             "   HOW: Secure credential management:",
             "      • Use Ansible Vault for sensitive variables",
             "      • Document required credentials in README",
-            "      • Consider external secret management (HashiCorp Vault, AWS Secrets Manager)"
+            "      • Consider external secret management (HashiCorp Vault, AWS Secrets Manager)",
         ]
         recommendations.append("\n".join(rec))
 
@@ -1412,5 +1442,5 @@ def generate_recommendations(
         recommendations.append(
             "✅ Role complexity is well-managed - standard documentation is sufficient"
         )
-    
+
     return recommendations

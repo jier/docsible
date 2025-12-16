@@ -7,7 +7,7 @@ class GroupedOption(click.Option):
     """Custom Option class that supports grouping in help output."""
 
     def __init__(self, *args, **kwargs):
-        self.group = kwargs.pop('group', None)
+        self.group = kwargs.pop("group", None)
         super().__init__(*args, **kwargs)
 
 
@@ -67,6 +67,7 @@ class OptionGroupMixin:
 
 class GroupedCommand(OptionGroupMixin, click.Command):
     """Command class with option grouping support."""
+
     pass
 
 
@@ -79,12 +80,14 @@ def option_group(group_name: str):
     Example:
         @click.option('--graph', cls=GroupedOption, group='Visualization')
     """
+
     def decorator(f):
         # Get the last option decorator applied (Click stores them in reverse)
-        if hasattr(f, '__click_params__'):
+        if hasattr(f, "__click_params__"):
             for param in f.__click_params__:
                 if isinstance(param, GroupedOption):
                     param.group = group_name
                     break
         return f
+
     return decorator

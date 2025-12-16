@@ -18,6 +18,7 @@ class SeverityLevel(str, Enum):
 
     Used to prioritize which patterns need immediate attention.
     """
+
     INFO = "info"
     WARNING = "warning"
     CRITICAL = "critical"
@@ -28,6 +29,7 @@ class PatternCategory(str, Enum):
 
     Helps organize findings by type of issue.
     """
+
     DUPLICATION = "duplication"
     COMPLEXITY = "complexity"
     IDEMPOTENCY = "idempotency"
@@ -62,55 +64,47 @@ class SimplificationSuggestion(BaseModel):
 
     pattern: str = Field(
         description="Pattern identifier (e.g., 'repeated_package_install')",
-        min_length=1
+        min_length=1,
     )
 
-    category: PatternCategory = Field(
-        description="Category this pattern belongs to"
-    )
+    category: PatternCategory = Field(description="Category this pattern belongs to")
 
     severity: SeverityLevel = Field(
         description="Severity level: info, warning, or critical"
     )
 
     description: str = Field(
-        description="Human-readable description of the issue",
-        min_length=1
+        description="Human-readable description of the issue", min_length=1
     )
 
     example: str = Field(
-        default="",
-        description="Code example showing the problematic pattern"
+        default="", description="Code example showing the problematic pattern"
     )
 
     suggestion: str = Field(
-        description="Recommended refactoring approach with code examples",
-        min_length=1
+        description="Recommended refactoring approach with code examples", min_length=1
     )
 
     affected_files: List[str] = Field(
-        default_factory=list,
-        description="List of files affected by this pattern"
+        default_factory=list, description="List of files affected by this pattern"
     )
 
     impact: str = Field(
-        description="Expected impact of applying the suggestion",
-        min_length=1
+        description="Expected impact of applying the suggestion", min_length=1
     )
 
     line_numbers: Optional[List[int]] = Field(
-        default=None,
-        description="Specific line numbers where pattern appears"
+        default=None, description="Specific line numbers where pattern appears"
     )
 
     confidence: float = Field(
         default=1.0,
         ge=0.0,
         le=1.0,
-        description="Confidence score (0.0-1.0) that this is a real issue"
+        description="Confidence score (0.0-1.0) that this is a real issue",
     )
 
-    @field_validator('affected_files')
+    @field_validator("affected_files")
     @classmethod
     def validate_files(cls, v: List[str]) -> List[str]:
         """Ensure file paths are unique."""
@@ -118,6 +112,7 @@ class SimplificationSuggestion(BaseModel):
 
     class ConfigDict:
         """Pydantic configuration."""
+
         json_schema_extra = {
             "example": {
                 "pattern": "repeated_package_install",
@@ -128,7 +123,7 @@ class SimplificationSuggestion(BaseModel):
                 "suggestion": "Combine into single task with loop",
                 "affected_files": ["tasks/install.yml"],
                 "impact": "Reduces 12 tasks to 1 task (-11 tasks)",
-                "confidence": 0.95
+                "confidence": 0.95,
             }
         }
 
@@ -148,31 +143,26 @@ class PatternAnalysisReport(BaseModel):
     """
 
     suggestions: List[SimplificationSuggestion] = Field(
-        default_factory=list,
-        description="All detected patterns and suggestions"
+        default_factory=list, description="All detected patterns and suggestions"
     )
 
     total_patterns: int = Field(
-        default=0,
-        ge=0,
-        description="Total number of patterns detected"
+        default=0, ge=0, description="Total number of patterns detected"
     )
 
     by_severity: dict[str, int] = Field(
-        default_factory=dict,
-        description="Count of patterns grouped by severity"
+        default_factory=dict, description="Count of patterns grouped by severity"
     )
 
     by_category: dict[str, int] = Field(
-        default_factory=dict,
-        description="Count of patterns grouped by category"
+        default_factory=dict, description="Count of patterns grouped by category"
     )
 
     overall_health_score: float = Field(
         default=100.0,
         ge=0.0,
         le=100.0,
-        description="Overall role health score (0-100, higher is better)"
+        description="Overall role health score (0-100, higher is better)",
     )
 
     def calculate_metrics(self) -> None:
@@ -183,11 +173,7 @@ class PatternAnalysisReport(BaseModel):
         self.total_patterns = len(self.suggestions)
 
         # Count by severity
-        self.by_severity = {
-            "info": 0,
-            "warning": 0,
-            "critical": 0
-        }
+        self.by_severity = {"info": 0, "warning": 0, "critical": 0}
         for suggestion in self.suggestions:
             self.by_severity[suggestion.severity.value] += 1
 
@@ -208,12 +194,13 @@ class PatternAnalysisReport(BaseModel):
 
     class ConfigDict:
         """Pydantic configuration."""
+
         json_schema_extra = {
             "example": {
                 "suggestions": [],
                 "total_patterns": 5,
                 "by_severity": {"info": 2, "warning": 2, "critical": 1},
                 "by_category": {"duplication": 3, "security": 2},
-                "overall_health_score": 75.0
+                "overall_health_score": 75.0,
             }
         }

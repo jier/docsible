@@ -241,9 +241,13 @@ def build_role_info(
 
                         # Always extract line ranges for phase detection (lightweight operation)
                         try:
-                            task_info["line_ranges"] = get_task_line_ranges(str(file_path))
+                            task_info["line_ranges"] = get_task_line_ranges(
+                                str(file_path)
+                            )
                         except Exception as e:
-                            logger.debug(f"Could not extract line ranges for {file_path}: {e}")
+                            logger.debug(
+                                f"Could not extract line ranges for {file_path}: {e}"
+                            )
 
                         if isinstance(tasks_data, list):
                             for task in tasks_data:
@@ -425,9 +429,7 @@ def doc_the_role(
     from docsible.analyzers import analyze_role_complexity
 
     analysis_report = analyze_role_complexity(
-        role_info,
-        include_patterns=simplification_report,
-        min_confidence=0.7
+        role_info, include_patterns=simplification_report, min_confidence=0.7
     )
 
     # Display complexity analysis if requested
@@ -458,12 +460,22 @@ def doc_the_role(
             if all_deps:
                 summary = generate_dependency_summary(all_deps)
                 click.echo("\n📋 Task Dependencies:")
-                click.echo(f"   - Tasks with variable dependencies: {summary['tasks_with_requirements']}/{summary['total_tasks']}")
-                click.echo(f"   - Tasks triggering handlers: {summary['tasks_with_triggers']}")
-                click.echo(f"   - Tasks with error handling: {summary['error_handling_count']}")
-                click.echo(f"   - Tasks setting facts: {summary['tasks_setting_facts']}")
+                click.echo(
+                    f"   - Tasks with variable dependencies: {summary['tasks_with_requirements']}/{summary['total_tasks']}"
+                )
+                click.echo(
+                    f"   - Tasks triggering handlers: {summary['tasks_with_triggers']}"
+                )
+                click.echo(
+                    f"   - Tasks with error handling: {summary['error_handling_count']}"
+                )
+                click.echo(
+                    f"   - Tasks setting facts: {summary['tasks_setting_facts']}"
+                )
 
-        click.echo("\n✓ Analysis complete. Use without --analyze-only to generate documentation.\n")
+        click.echo(
+            "\n✓ Analysis complete. Use without --analyze-only to generate documentation.\n"
+        )
         return  # Exit without generating documentation
 
     # Generate Mermaid diagrams if requested
@@ -570,7 +582,9 @@ def doc_the_role(
         )
 
         # Force show dependencies if user requested it, otherwise use heuristic
-        if show_dependencies or should_generate_dependency_matrix(role_info, analysis_report):
+        if show_dependencies or should_generate_dependency_matrix(
+            role_info, analysis_report
+        ):
             dependency_matrix = generate_dependency_matrix_markdown(role_info)
             if dependency_matrix:
                 show_dependency_matrix = True

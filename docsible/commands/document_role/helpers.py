@@ -26,7 +26,7 @@ def apply_minimal_flag(
     no_examples: bool,
     no_metadata: bool,
     no_handlers: bool,
-    simplify_diagrams: bool
+    simplify_diagrams: bool,
 ) -> Tuple[bool, bool, bool, bool, bool, bool, bool]:
     """Apply minimal flag settings to enable all --no-* flags.
 
@@ -55,7 +55,15 @@ def apply_minimal_flag(
     if no_diagrams:
         simplify_diagrams = False
 
-    return no_vars, no_tasks, no_diagrams, no_examples, no_metadata, no_handlers, simplify_diagrams
+    return (
+        no_vars,
+        no_tasks,
+        no_diagrams,
+        no_examples,
+        no_metadata,
+        no_handlers,
+        simplify_diagrams,
+    )
 
 
 def validate_role_path(role_path: Optional[str]) -> Path:
@@ -133,12 +141,20 @@ def handle_analyze_only_mode(role_info: Dict[str, Any], role_name: str) -> None:
         if all_deps:
             summary = generate_dependency_summary(all_deps)
             click.echo("\n📋 Task Dependencies:")
-            click.echo(f"   - Tasks with variable dependencies: {summary['tasks_with_requirements']}/{summary['total_tasks']}")
-            click.echo(f"   - Tasks triggering handlers: {summary['tasks_with_triggers']}")
-            click.echo(f"   - Tasks with error handling: {summary['error_handling_count']}")
+            click.echo(
+                f"   - Tasks with variable dependencies: {summary['tasks_with_requirements']}/{summary['total_tasks']}"
+            )
+            click.echo(
+                f"   - Tasks triggering handlers: {summary['tasks_with_triggers']}"
+            )
+            click.echo(
+                f"   - Tasks with error handling: {summary['error_handling_count']}"
+            )
             click.echo(f"   - Tasks setting facts: {summary['tasks_setting_facts']}")
 
-    click.echo("\n✓ Analysis complete. Use without --analyze-only to generate documentation.\n")
+    click.echo(
+        "\n✓ Analysis complete. Use without --analyze-only to generate documentation.\n"
+    )
 
 
 def generate_mermaid_diagrams(
@@ -147,7 +163,7 @@ def generate_mermaid_diagrams(
     playbook_content: Optional[str],
     analysis_report: Any,
     minimal: bool,
-    simplify_diagrams: bool
+    simplify_diagrams: bool,
 ) -> Dict[str, Any]:
     """Generate all Mermaid diagrams for role visualization.
 
@@ -173,7 +189,9 @@ def generate_mermaid_diagrams(
         return result
 
     # Generate per-file task flowcharts
-    result["mermaid_code_per_file"] = generate_mermaid_role_tasks_per_file(role_info["tasks"])
+    result["mermaid_code_per_file"] = generate_mermaid_role_tasks_per_file(
+        role_info["tasks"]
+    )
 
     # High-level sequence diagram (playbook → roles)
     if playbook_content:
@@ -210,9 +228,7 @@ def generate_mermaid_diagrams(
             result["state_diagram"] = generate_state_diagram(
                 role_info, role_name=role_info.get("name")
             )
-            logger.info(
-                "Generated state transition diagram for MEDIUM complexity role"
-            )
+            logger.info("Generated state transition diagram for MEDIUM complexity role")
     except Exception as e:
         logger.warning(f"Could not generate state diagram: {e}")
 
@@ -220,8 +236,7 @@ def generate_mermaid_diagrams(
 
 
 def generate_integration_and_architecture_diagrams(
-    generate_graph: bool,
-    analysis_report: Any
+    generate_graph: bool, analysis_report: Any
 ) -> Tuple[Optional[str], Optional[str]]:
     """Generate integration boundary and component architecture diagrams.
 
@@ -266,7 +281,7 @@ def generate_integration_and_architecture_diagrams(
         if should_generate_architecture_diagram(analysis_report):
             architecture_diagram = generate_component_architecture(
                 role_info=None,  # Will be passed in actual call
-                analysis_report=analysis_report
+                analysis_report=analysis_report,
             )
             logger.info(
                 f"Generated component architecture diagram for {analysis_report.category.value.upper()} role"
@@ -278,9 +293,7 @@ def generate_integration_and_architecture_diagrams(
 
 
 def generate_dependency_matrix(
-    show_dependencies: bool,
-    role_info: Dict[str, Any],
-    analysis_report: Any
+    show_dependencies: bool, role_info: Dict[str, Any], analysis_report: Any
 ) -> Tuple[Optional[str], Optional[Dict], bool]:
     """Generate dependency matrix and summary.
 
@@ -305,7 +318,9 @@ def generate_dependency_matrix(
         )
 
         # Force show dependencies if user requested it, otherwise use heuristic
-        if show_dependencies or should_generate_dependency_matrix(role_info, analysis_report):
+        if show_dependencies or should_generate_dependency_matrix(
+            role_info, analysis_report
+        ):
             dependency_matrix = generate_dependency_matrix_markdown(role_info)
             if dependency_matrix:
                 show_dependency_matrix = True

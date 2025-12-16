@@ -11,7 +11,7 @@ from docsible.analyzers.patterns.base import BasePatternDetector
 from docsible.analyzers.patterns.models import (
     PatternAnalysisReport,
     SimplificationSuggestion,
-    SeverityLevel
+    SeverityLevel,
 )
 from docsible.analyzers.patterns.detectors import (
     DuplicationDetector,
@@ -41,7 +41,7 @@ class PatternAnalyzer:
     def __init__(
         self,
         enabled_detectors: List[Type[BasePatternDetector]] | None = None,
-        min_confidence: float = 0.0
+        min_confidence: float = 0.0,
     ):
         """Initialize pattern analyzer.
 
@@ -103,8 +103,7 @@ class PatternAnalyzer:
 
                 # Filter by confidence
                 filtered_suggestions = [
-                    s for s in suggestions
-                    if s.confidence >= self.min_confidence
+                    s for s in suggestions if s.confidence >= self.min_confidence
                 ]
 
                 logger.debug(
@@ -142,12 +141,11 @@ class PatternAnalyzer:
             List of suggestions matching the severity level
         """
         report = self.analyze(role_info)
-        return [
-            s for s in report.suggestions
-            if s.severity == severity
-        ]
+        return [s for s in report.suggestions if s.severity == severity]
 
-    def analyze_critical_only(self, role_info: Dict[str, Any]) -> List[SimplificationSuggestion]:
+    def analyze_critical_only(
+        self, role_info: Dict[str, Any]
+    ) -> List[SimplificationSuggestion]:
         """Analyze role and return only critical issues.
 
         Convenience method for getting high-priority items.
@@ -176,8 +174,7 @@ class PatternAnalyzer:
 
 
 def analyze_role_patterns(
-    role_info: Dict[str, Any],
-    min_confidence: float = 0.7
+    role_info: Dict[str, Any], min_confidence: float = 0.7
 ) -> PatternAnalysisReport:
     """Convenience function to analyze role patterns.
 

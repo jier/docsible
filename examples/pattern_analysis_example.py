@@ -59,7 +59,7 @@ def example_filtered_analysis():
     report = analyze_role_patterns(role_info)
 
     # Show only critical issues
-    critical = [s for s in report.suggestions if s.severity == 'critical']
+    critical = [s for s in report.suggestions if s.severity == "critical"]
 
     if critical:
         print(f"\n🚨 Critical Issues ({len(critical)}):")
@@ -70,7 +70,7 @@ def example_filtered_analysis():
         print("\n✅ No critical issues found!")
 
     # Show security issues
-    security = [s for s in report.suggestions if s.category == 'security']
+    security = [s for s in report.suggestions if s.category == "security"]
 
     if security:
         print(f"\n🔒 Security Issues ({len(security)}):")
@@ -93,8 +93,7 @@ def example_custom_detectors():
     # Only run security and duplication checks
     print("\n🔍 Running security and duplication detectors only...")
     analyzer = PatternAnalyzer(
-        enabled_detectors=[SecurityDetector, DuplicationDetector],
-        min_confidence=0.7
+        enabled_detectors=[SecurityDetector, DuplicationDetector], min_confidence=0.7
     )
 
     report = analyzer.analyze(role_info)
@@ -145,10 +144,11 @@ def example_export_results():
 
     # Export to JSON
     import json
+
     output_file = "/tmp/pattern_analysis_report.json"
 
     report_dict = report.model_dump()
-    with open(output_file, 'w') as f:
+    with open(output_file, "w") as f:
         json.dump(report_dict, f, indent=2)
 
     print(f"\n💾 Exported to: {output_file}")
@@ -160,7 +160,7 @@ def example_export_results():
         "total_patterns": report_dict["total_patterns"],
         "overall_health_score": report_dict["overall_health_score"],
         "by_severity": report_dict["by_severity"],
-        "by_category": report_dict["by_category"]
+        "by_category": report_dict["by_category"],
     }
     print(json.dumps(sample, indent=2))
 
@@ -185,8 +185,9 @@ def main():
     except Exception as e:
         print(f"\n❌ Error: {e}")
         import traceback
+
         traceback.print_exc()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
