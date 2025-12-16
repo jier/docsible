@@ -467,6 +467,69 @@ def detect_inflection_points(
     return inflection_points
 
 
+def _generate_file_link(
+    file_path: str,
+    line_number: Optional[int],
+    repository_url: Optional[str],
+    repo_type: Optional[str],
+    repo_branch: Optional[str]
+) -> str:
+    """
+    Generate a markdown link to a file in the repository.
+
+    Args:
+        file_path: Relative path to file (e.g., "tasks/main.yml")
+        line_number: Optional line number to link to
+        repository_url: Repository URL
+        repo_type: Repository type (github, gitlab, gitea)
+        repo_branch: Branch name
+
+    Returns:
+        Markdown link string or plain file path if no repository info
+
+    Example:
+        >>> _generate_file_link("tasks/main.yml", 15, "https://github.com/user/repo", "github", "main")
+        '[tasks/main.yml:15](https://github.com/user/repo/blob/main/tasks/main.yml#L15)'
+    """
+    # If no repository info, return plain file path
+    if not repository_url or not repo_type:
+        if line_number:
+            return f"`{file_path}:{line_number}`"
+        return f"`{file_path}`"
+
+    # Normalize repository URL (remove trailing slashes, .git suffix)
+    base_url = repository_url.rstrip('/').replace('.git', '')
+    branch = repo_branch or 'main'
+
+    # Build URL based on repository type
+    if repo_type == 'github':
+        url = f"{base_url}/blob/{branch}/{file_path}"
+        if line_number:
+            url += f"#L{line_number}"
+            return f"[{file_path}:{line_number}]({url})"
+        return f"[{file_path}]({url})"
+
+    elif repo_type == 'gitlab':
+        url = f"{base_url}/-/blob/{branch}/{file_path}"
+        if line_number:
+            url += f"#L{line_number}"
+            return f"[{file_path}:{line_number}]({url})"
+        return f"[{file_path}]({url})"
+
+    elif repo_type == 'gitea':
+        url = f"{base_url}/src/branch/{branch}/{file_path}"
+        if line_number:
+            url += f"#L{line_number}"
+            return f"[{file_path}:{line_number}]({url})"
+        return f"[{file_path}]({url})"
+
+    else:
+        # Unknown repo type, return plain path
+        if line_number:
+            return f"`{file_path}:{line_number}`"
+        return f"`{file_path}`"
+
+
 def analyze_role_complexity(
     role_info: Dict[str, Any],
     include_patterns: bool = False,
@@ -582,14 +645,23 @@ def analyze_role_complexity(
     # Classify complexity
     category = classify_complexity(metrics)
 
+    # Extract repository info for linkable recommendations
+    repository_url = role_info.get("repository")
+    repo_type = role_info.get("repository_type")
+    repo_branch = role_info.get("repository_branch")
+
     # Generate recommendations
-    recommendations = generate_recommendations(metrics=metrics, 
-                                               category=category, 
-                                               integration_points=integration_points,
-                                               inflection_points=inflection_points,
-                                               file_details=file_details,
-                                               hotspots=hotspots
-                                               )
+    recommendations = generate_recommendations(
+        metrics=metrics,
+        category=category,
+        integration_points=integration_points,
+        inflection_points=inflection_points,
+        file_details=file_details,
+        hotspots=hotspots,
+        repository_url=repository_url,
+        repo_type=repo_type,
+        repo_branch=repo_branch
+    )
 
     # Task files detail
     task_files_detail = [
@@ -1002,6 +1074,9 @@ def generate_recommendations(
     file_details: List[FileComplexityDetail],
     hotspots: List[ConditionalHotspot],
     inflection_points: List[InflectionPoint],
+    repository_url: Optional[str] = None,
+    repo_type: Optional[str] = None,
+    repo_branch: Optional[str] = None,
 ) -> List[str]:
     """
     Generate specific, actionable recommendations based on comprehensive analysis.
@@ -1027,19 +1102,28 @@ def generate_recommendations(
     # 1. FILE-SPECIFIC RECOMMENDATIONS
     if file_details:
         largest_file = file_details[0]
-        
+
+        # Generate linkable file path
+        file_link = _generate_file_link(
+            largest_file.file_path,
+            None,  # No specific line number for file-level recommendation
+            repository_url,
+            repo_type,
+            repo_branch
+        )
+
         # God file detection
         if largest_file.is_god_file:
             if largest_file.primary_concern:
                 concern_hint = f" (primarily {largest_file.primary_concern.replace('_', ' ')})"
             else:
                 concern_hint = ""
-                
+
             recommendations.append(
-                f"📁 {largest_file.file_path} has {largest_file.task_count} tasks{concern_hint} - "
+                f"📁 {file_link} has {largest_file.task_count} tasks{concern_hint} - "
                 f"consider splitting into smaller, focused files"
             )
-            
+
             # Suggest specific splits based on concerns
             if largest_file.module_diversity > 10:
                 recommendations.append(
@@ -1049,16 +1133,30 @@ def generate_recommendations(
     
     # 2. CONDITIONAL HOTSPOT RECOMMENDATIONS
     for hotspot in hotspots[:2]:  # Top 2 hotspots
+        hotspot_link = _generate_file_link(
+            hotspot.file_path,
+            None,
+            repository_url,
+            repo_type,
+            repo_branch
+        )
         recommendations.append(
-            f"🔀 {hotspot.file_path}: {hotspot.affected_tasks} tasks depend on '{hotspot.conditional_variable}' - "
+            f"🔀 {hotspot_link}: {hotspot.affected_tasks} tasks depend on '{hotspot.conditional_variable}' - "
             f"{hotspot.suggestion}"
         )
-    
+
     # 3. INFLECTION POINT HINTS
     if inflection_points:
         main_inflection = inflection_points[0]  # Most significant
+        inflection_link = _generate_file_link(
+            main_inflection.file_path,
+            main_inflection.task_index + 1,  # Convert 0-based index to 1-based line (approximate)
+            repository_url,
+            repo_type,
+            repo_branch
+        )
         recommendations.append(
-            f"⚡ Major branch point at {main_inflection.file_path} (task: '{main_inflection.task_name}') - "
+            f"⚡ Major branch point at {inflection_link} (task: '{main_inflection.task_name}') - "
             f"{main_inflection.downstream_tasks} tasks affected by '{main_inflection.variable}'"
         )
     
