@@ -1,11 +1,11 @@
+import datetime as dt
 import hashlib
 import re
-import datetime as dt
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
-from pydantic import BaseModel, Field, field_validator, field_serializer
+from pydantic import BaseModel, Field, field_serializer, field_validator
 
 from docsible.constants import VERSION
 

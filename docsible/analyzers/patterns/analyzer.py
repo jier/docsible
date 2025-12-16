@@ -5,19 +5,19 @@ coordinating multiple specialized detectors.
 """
 
 import logging
-from typing import List, Dict, Any, Type
+from typing import Any, Dict, List, Type
 
 from docsible.analyzers.patterns.base import BasePatternDetector
+from docsible.analyzers.patterns.detectors import (
+    ComplexityDetector,
+    DuplicationDetector,
+    MaintainabilityDetector,
+    SecurityDetector,
+)
 from docsible.analyzers.patterns.models import (
     PatternAnalysisReport,
-    SimplificationSuggestion,
     SeverityLevel,
-)
-from docsible.analyzers.patterns.detectors import (
-    DuplicationDetector,
-    ComplexityDetector,
-    SecurityDetector,
-    MaintainabilityDetector,
+    SimplificationSuggestion,
 )
 
 logger = logging.getLogger(__name__)

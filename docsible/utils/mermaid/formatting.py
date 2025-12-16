@@ -6,9 +6,9 @@ import logging
 import re
 from typing import Any, Dict, List, Optional, Tuple
 
+from .core import sanitize_for_condition, sanitize_for_mermaid_id, sanitize_for_title
+from .pagination import paginate_tasks, should_paginate_diagram
 from .task_extraction import extract_task_name_from_module
-from .core import sanitize_for_mermaid_id, sanitize_for_title, sanitize_for_condition
-from .pagination import should_paginate_diagram, paginate_tasks
 
 logger = logging.getLogger(__name__)
 

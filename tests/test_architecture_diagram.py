@@ -1,9 +1,9 @@
 """Tests for component architecture diagram generation."""
 
 from docsible.analyzers.complexity_analyzer import (
-    ComplexityReport,
-    ComplexityMetrics,
     ComplexityCategory,
+    ComplexityMetrics,
+    ComplexityReport,
     IntegrationPoint,
     IntegrationType,
 )

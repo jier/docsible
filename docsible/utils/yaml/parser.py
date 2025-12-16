@@ -59,7 +59,7 @@ def get_task_comments(file_path: str) -> list[dict[str, str]]:
       actual inline comments.
     """
     try:
-        with open(file_path, "r", encoding="utf-8") as f:
+        with open(file_path, encoding="utf-8") as f:
             lines = f.readlines()
     except FileNotFoundError:
         print(f"Error: File not found {file_path}")
@@ -159,7 +159,7 @@ def get_task_line_numbers(file_path):
     Returns:
         Dictionary mapping task names to line numbers
     """
-    with open(file_path, "r", encoding="utf-8") as f:
+    with open(file_path, encoding="utf-8") as f:
         lines = f.readlines()
 
     tasks_lines = {}
@@ -195,7 +195,7 @@ def get_task_line_ranges(file_path):
         >>> ranges
         [(1, 5), (6, 12), (13, 15)]
     """
-    with open(file_path, "r", encoding="utf-8") as f:
+    with open(file_path, encoding="utf-8") as f:
         lines = f.readlines()
 
     task_ranges = []

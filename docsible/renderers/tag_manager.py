@@ -93,7 +93,7 @@ def manage_docsible_file_keys(docsible_path: Path) -> dict:
 
     if docsible_path.exists():
         try:
-            with open(docsible_path, "r", encoding="utf-8") as f:
+            with open(docsible_path, encoding="utf-8") as f:
                 existing_data = yaml.safe_load(f) or {}
 
             # Check if any new keys need to be added

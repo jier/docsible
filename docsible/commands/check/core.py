@@ -1,8 +1,8 @@
 """Check logic to detect README content drift compared to last generated"""
 
-from pathlib import Path
-from typing import Tuple, Dict
 from datetime import datetime, timezone
+from pathlib import Path
+from typing import Dict, Tuple
 
 from docsible.utils.metadata import GenerationMetadata, compute_role_hash
 

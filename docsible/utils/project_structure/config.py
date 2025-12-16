@@ -26,7 +26,7 @@ def load_config(root_path: Path) -> Dict[str, Any]:
     for config_path in config_paths:
         if config_path.exists():
             try:
-                with open(config_path, "r", encoding="utf-8") as f:
+                with open(config_path, encoding="utf-8") as f:
                     loaded_config = yaml.safe_load(f) or {}
                 logger.info(f"Loaded configuration from {config_path}")
                 return loaded_config.get("structure", {})

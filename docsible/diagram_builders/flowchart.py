@@ -9,10 +9,10 @@ from typing import List, Optional
 
 from docsible.diagram_builders.base import DiagramBuilder
 from docsible.diagram_builders.formatters import (
-    sanitize_for_id,
-    sanitize_for_title,
     break_text,
     escape_pipes,
+    sanitize_for_id,
+    sanitize_for_title,
 )
 
 logger = logging.getLogger(__name__)

@@ -7,10 +7,10 @@ mixed functional concerns that should be split.
 Uses a conservative approach to minimize false positives.
 """
 
+from collections import defaultdict
 from dataclasses import dataclass
 from enum import Enum
-from typing import List, Dict, Optional, Tuple
-from collections import defaultdict
+from typing import Dict, List, Optional, Tuple
 
 
 class Phase(Enum):

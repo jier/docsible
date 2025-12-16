@@ -3,7 +3,7 @@ Main state diagram generation for Ansible roles.
 """
 
 import logging
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
 
 from .analyzer import Phase, analyze_phases
 from .formatter import infer_transitions

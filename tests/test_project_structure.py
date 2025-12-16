@@ -4,6 +4,7 @@ Test suite for ProjectStructure class
 
 import tempfile
 from pathlib import Path
+
 from docsible.utils.project_structure import ProjectStructure
 
 

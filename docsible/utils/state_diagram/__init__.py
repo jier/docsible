@@ -7,10 +7,10 @@ Generates Mermaid state diagrams showing role workflow phases and state transiti
 from .analyzer import (
     Phase,
     PhaseInfo,
-    detect_phase_from_task_name,
-    has_state_management,
-    extract_condition,
     analyze_phases,
+    detect_phase_from_task_name,
+    extract_condition,
+    has_state_management,
 )
 from .formatter import StateTransition, infer_transitions
 from .generator import generate_state_diagram, should_generate_state_diagram

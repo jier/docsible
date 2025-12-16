@@ -6,8 +6,8 @@ from typing import Optional
 
 from jinja2 import Environment, FileSystemLoader, Template
 
-from docsible.utils.template_filters import TEMPLATE_FILTERS
 from docsible.utils.mermaid.pagination import get_diagram_complexity_warning
+from docsible.utils.template_filters import TEMPLATE_FILTERS
 
 logger = logging.getLogger(__name__)
 

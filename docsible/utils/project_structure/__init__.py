@@ -10,8 +10,7 @@ from typing import Any, Dict, List, Optional
 from docsible import constants
 
 from . import config as config_module
-from . import detector
-from . import paths
+from . import detector, paths
 
 logger = logging.getLogger(__name__)
 

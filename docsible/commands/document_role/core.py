@@ -8,6 +8,7 @@ from typing import Dict, List, Optional
 import click
 import yaml
 
+from docsible.exceptions import CollectionNotFoundError
 from docsible.renderers.readme_renderer import ReadmeRenderer
 from docsible.renderers.tag_manager import manage_docsible_file_keys
 from docsible.utils.git import get_repo_info
@@ -28,7 +29,6 @@ from docsible.utils.yaml import (
     load_yaml_files_from_dir_custom,
     load_yaml_generic,
 )
-from docsible.exceptions import CollectionNotFoundError
 
 logger = logging.getLogger(__name__)
 
@@ -400,7 +400,7 @@ def doc_the_role(
     if playbook:
         playbook_path = Path(playbook)
         if playbook_path.exists():
-            with open(playbook_path, "r", encoding="utf-8") as f:
+            with open(playbook_path, encoding="utf-8") as f:
                 playbook_content = f.read()
         else:
             logger.warning(f"Playbook file not found: {playbook}")
@@ -575,10 +575,10 @@ def doc_the_role(
     show_dependency_matrix = False
     try:
         from docsible.utils.dependency_matrix import (
-            generate_dependency_matrix_markdown,
-            should_generate_dependency_matrix,
             analyze_task_dependencies,
+            generate_dependency_matrix_markdown,
             generate_dependency_summary,
+            should_generate_dependency_matrix,
         )
 
         # Force show dependencies if user requested it, otherwise use heuristic

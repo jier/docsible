@@ -8,7 +8,7 @@ import logging
 from typing import Optional, Set
 
 from docsible.diagram_builders.base import DiagramBuilder
-from docsible.diagram_builders.formatters import escape_pipes, break_text
+from docsible.diagram_builders.formatters import break_text, escape_pipes
 
 logger = logging.getLogger(__name__)
 

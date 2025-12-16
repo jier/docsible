@@ -1,9 +1,10 @@
-from docsible.utils.metadata import GenerationMetadata, generate_metadata, compute_role_hash
 from datetime import datetime, timezone
-from docsible.constants import VERSION
+
 import pytest
 from pydantic import ValidationError
 
+from docsible.constants import VERSION
+from docsible.utils.metadata import GenerationMetadata, compute_role_hash, generate_metadata
 
 
 def test_metadata_validation():

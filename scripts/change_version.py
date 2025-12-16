@@ -14,11 +14,11 @@ Usage:
     python scripts/change_version.py revert
 """
 
+import argparse
+import logging
 import os
 import re
 import sys
-import logging
-import argparse
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
@@ -67,7 +67,7 @@ def update_file(
     if not os.path.exists(file_path):
         logging.error(f"File {file_path} does not exist.")
         sys.exit(1)
-    with open(file_path, "r") as f:
+    with open(file_path) as f:
         content = f.read()
     if not re.search(pattern, content):
         logging.error(f"Version string not found in {file_path}")
@@ -104,7 +104,7 @@ def main():
 
     # Read the current version from cli.py.
     try:
-        with open(cli_file, "r") as f:
+        with open(cli_file) as f:
             cli_content = f.read()
     except Exception as e:
         logging.error(f"Error reading {cli_file}: {e}")

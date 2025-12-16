@@ -48,6 +48,14 @@ test = [
     "pytest>=7.4.4",
 ]
 
+[tool.ruff]
+line-length = 100
+target-version = "py37"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+
 # URLs for project
 [project.urls]
 Homepage = "https://github.com/docsible/docsible"

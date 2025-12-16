@@ -6,15 +6,14 @@ Tests phase detection, state tracking, and diagram generation.
 
 from docsible.utils.state_diagram import (
     Phase,
-    detect_phase_from_task_name,
-    has_state_management,
-    extract_condition,
     analyze_phases,
-    infer_transitions,
+    detect_phase_from_task_name,
+    extract_condition,
     generate_state_diagram,
+    has_state_management,
+    infer_transitions,
     should_generate_state_diagram,
 )
-
 
 # Test Phase Detection
 

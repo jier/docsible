@@ -1,9 +1,9 @@
 """Tests for Mermaid diagram pagination functionality."""
 
 from docsible.utils.mermaid.pagination import (
-    should_paginate_diagram,
-    paginate_tasks,
     get_diagram_complexity_warning,
+    paginate_tasks,
+    should_paginate_diagram,
 )
 
 

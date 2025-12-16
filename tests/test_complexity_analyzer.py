@@ -5,16 +5,15 @@ Tests complexity classification, integration detection, and recommendation gener
 """
 
 from docsible.analyzers.complexity_analyzer import (
+    ComplexityCategory,
+    ComplexityMetrics,
+    IntegrationPoint,
+    IntegrationType,
     analyze_role_complexity,
     classify_complexity,
     detect_integrations,
     generate_recommendations,
-    ComplexityCategory,
-    ComplexityMetrics,
-    IntegrationType,
-    IntegrationPoint,
 )
-
 
 # Test Fixtures
 

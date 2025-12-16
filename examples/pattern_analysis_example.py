@@ -6,9 +6,11 @@ to detect issues in Ansible roles and generate improvement suggestions.
 """
 
 from pathlib import Path
-from docsible.analyzers.patterns import analyze_role_patterns, PatternAnalyzer
-from docsible.analyzers.patterns.detectors import SecurityDetector, DuplicationDetector
+
 from docsible.parsers.role_parser import parse_role
+
+from docsible.analyzers.patterns import PatternAnalyzer, analyze_role_patterns
+from docsible.analyzers.patterns.detectors import DuplicationDetector, SecurityDetector
 
 
 def example_basic_analysis():

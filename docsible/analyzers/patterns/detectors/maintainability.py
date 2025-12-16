@@ -4,12 +4,13 @@ Identifies issues that make roles hard to maintain, test,
 and understand over time.
 """
 
-from typing import List, Dict, Any
+from typing import Any, Dict, List
+
 from docsible.analyzers.patterns.base import BasePatternDetector
 from docsible.analyzers.patterns.models import (
-    SimplificationSuggestion,
-    SeverityLevel,
     PatternCategory,
+    SeverityLevel,
+    SimplificationSuggestion,
 )
 
 

@@ -5,7 +5,7 @@ Generates detailed network diagrams showing ports, protocols, and firewall rules
 """
 
 import logging
-from typing import List, Optional, Dict, Any
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 

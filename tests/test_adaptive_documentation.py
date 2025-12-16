@@ -1,9 +1,9 @@
 """Tests for adaptive documentation based on complexity."""
 
 from docsible.analyzers.complexity_analyzer import (
-    ComplexityReport,
-    ComplexityMetrics,
     ComplexityCategory,
+    ComplexityMetrics,
+    ComplexityReport,
     IntegrationPoint,
     IntegrationType,
 )

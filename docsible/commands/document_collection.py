@@ -7,10 +7,10 @@ from pathlib import Path
 import yaml
 
 from docsible.commands.document_role import build_role_info
+from docsible.exceptions import CollectionNotFoundError
 from docsible.renderers.readme_renderer import ReadmeRenderer
 from docsible.utils.git import get_repo_info
 from docsible.utils.project_structure import ProjectStructure
-from docsible.exceptions import CollectionNotFoundError
 
 logger = logging.getLogger(__name__)
 
@@ -109,7 +109,7 @@ def document_collection_roles(
         collection_root = galaxy_path.parent
 
         # Load collection metadata
-        with open(galaxy_path, "r", encoding="utf-8") as f:
+        with open(galaxy_path, encoding="utf-8") as f:
             collection_metadata = yaml.safe_load(f)
 
         # Determine README path
@@ -140,7 +140,7 @@ def document_collection_roles(
                 if playbook:
                     role_playbook_path = role_path / playbook
                     try:
-                        with open(role_playbook_path, "r", encoding="utf-8") as f:
+                        with open(role_playbook_path, encoding="utf-8") as f:
                             playbook_content = f.read()
                     except FileNotFoundError:
                         logger.warning(

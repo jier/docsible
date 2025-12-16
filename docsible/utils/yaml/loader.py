@@ -2,8 +2,8 @@
 YAML file loading functions with metadata extraction.
 """
 
-import os
 import logging
+import os
 from pathlib import Path
 from typing import Any, Dict, Optional, Union
 
@@ -29,7 +29,7 @@ def load_yaml_generic(filepath: Union[str, Path]) -> Optional[Dict[str, Any]]:
         ...     print(data.get('my_var'))
     """
     try:
-        with open(filepath, "r", encoding="utf-8") as f:
+        with open(filepath, encoding="utf-8") as f:
             data = yaml.safe_load(f)
         return data
     except (FileNotFoundError, yaml.constructor.ConstructorError) as e:
@@ -52,10 +52,10 @@ def load_yaml_file_custom(file_path):
         or None if the file is empty or an error occurs.
     """
     try:
-        with open(file_path, "r", encoding="utf-8") as file:
+        with open(file_path, encoding="utf-8") as file:
             lines = file.readlines()
 
-        with open(file_path, "r", encoding="utf-8") as file:
+        with open(file_path, encoding="utf-8") as file:
             data = yaml.safe_load(file)
 
         if not data:

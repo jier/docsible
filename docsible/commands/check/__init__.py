@@ -1,8 +1,9 @@
 """Check command for documentation drift detection."""
 
-import click
-from pathlib import Path
 import sys
+from pathlib import Path
+
+import click
 
 
 @click.command(name="check")

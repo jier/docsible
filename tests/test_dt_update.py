@@ -1,5 +1,7 @@
-import yaml
 from pathlib import Path
+
+import yaml
+
 from docsible.renderers.tag_manager import manage_docsible_file_keys
 
 
@@ -20,7 +22,7 @@ def test_dt_update():
         assert "version" in result
 
         # Read file and verify structure
-        with open(test_file, "r") as f:
+        with open(test_file) as f:
             data = yaml.safe_load(f)
 
         # dt_update should exist (even if empty initially)

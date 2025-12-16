@@ -2,7 +2,7 @@
 
 import os
 from pathlib import Path
-from typing import List, Dict, Any
+from typing import Any, Dict, List
 
 
 def detect_project_type(root_path: Path, defaults: Dict[str, Any]) -> str:

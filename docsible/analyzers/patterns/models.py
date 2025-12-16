@@ -8,8 +8,9 @@ analysis system. Using Pydantic provides:
 - Clear schema documentation
 """
 
-from typing import List, Optional
 from enum import Enum
+from typing import List, Optional
+
 from pydantic import BaseModel, Field, field_validator
 
 

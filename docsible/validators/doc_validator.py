@@ -8,10 +8,11 @@ Implements four validation dimensions:
 4. VALUE: Does the documentation provide useful information?
 """
 
-import re
 import logging
-from typing import Dict, List, Any, Optional, Tuple
+import re
 from enum import Enum
+from typing import Any, Dict, List, Optional, Tuple
+
 from pydantic import BaseModel, Field
 
 logger = logging.getLogger(__name__)

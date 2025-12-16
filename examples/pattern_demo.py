@@ -4,7 +4,7 @@
 This shows how the pattern analyzer works without requiring a full role.
 """
 
-from docsible.analyzers.patterns import analyze_role_patterns, PatternAnalyzer
+from docsible.analyzers.patterns import PatternAnalyzer, analyze_role_patterns
 from docsible.analyzers.patterns.detectors import SecurityDetector
 
 

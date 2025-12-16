@@ -9,9 +9,9 @@ import sys
 
 import click
 
+from docsible.commands.check import check
 from docsible.commands.document_role import doc_the_role
 from docsible.commands.init_config import init_config
-from docsible.commands.check import check
 
 # Setup logging
 logger = logging.getLogger(__name__)

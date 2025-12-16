@@ -10,11 +10,11 @@ from jinja2 import Environment, FileSystemLoader
 
 from docsible import constants
 from docsible.renderers.tag_manager import manage_docsible_tags, replace_between_tags
-from docsible.utils.metadata import generate_metadata
 from docsible.template_loader import TemplateLoader
-from docsible.validators.markdown_validator import MarkdownValidator
-from docsible.validators.markdown_fixer import MarkdownFixer
+from docsible.utils.metadata import generate_metadata
 from docsible.validators.doc_validator import ValidationSeverity
+from docsible.validators.markdown_fixer import MarkdownFixer
+from docsible.validators.markdown_validator import MarkdownValidator
 
 logger = logging.getLogger(__name__)
 
@@ -279,7 +279,7 @@ class ReadmeRenderer:
         if not output_path.exists():
             return new_content
 
-        with open(output_path, "r", encoding="utf-8") as f:
+        with open(output_path, encoding="utf-8") as f:
             existing_content = f.read()
 
         if not append:

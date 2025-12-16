@@ -5,8 +5,9 @@ This follows the Template Method design pattern.
 """
 
 from abc import ABC, abstractmethod
-from typing import List, Dict, Any
-from docsible.analyzers.patterns.models import SimplificationSuggestion, PatternCategory
+from typing import Any, Dict, List
+
+from docsible.analyzers.patterns.models import PatternCategory, SimplificationSuggestion
 
 
 class BasePatternDetector(ABC):

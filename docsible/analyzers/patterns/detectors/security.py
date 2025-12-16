@@ -4,13 +4,13 @@ Identifies potential security issues like exposed secrets,
 missing no_log directives, and insecure defaults.
 """
 
-from typing import List, Dict, Any
+from typing import Any, Dict, List
 
 from docsible.analyzers.patterns.base import BasePatternDetector
 from docsible.analyzers.patterns.models import (
-    SimplificationSuggestion,
-    SeverityLevel,
     PatternCategory,
+    SeverityLevel,
+    SimplificationSuggestion,
 )
 
 

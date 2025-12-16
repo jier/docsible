@@ -1,15 +1,15 @@
 """Tests for Priority 3: Enhanced Integration Features."""
 
 from docsible.analyzers.complexity_analyzer import (
-    IntegrationType,
     IntegrationPoint,
+    IntegrationType,
     detect_integrations,
 )
 from docsible.utils.integration_diagram import generate_integration_boundary
 from docsible.utils.network_topology import (
+    format_integration_details,
     generate_network_topology,
     should_generate_network_topology,
-    format_integration_details,
 )
 
 

@@ -1,11 +1,11 @@
 """CLI option groups for document_role command."""
 
-from .paths import add_path_options
-from .output import add_output_options
 from .content import add_content_options
-from .templates import add_template_options
 from .generation import add_generation_options
+from .output import add_output_options
+from .paths import add_path_options
 from .repository import add_repository_options
+from .templates import add_template_options
 
 __all__ = [
     "add_path_options",

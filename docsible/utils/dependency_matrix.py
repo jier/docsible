@@ -7,7 +7,8 @@ Scales to any complexity level without visual clutter.
 
 import logging
 import re
-from typing import Dict, Any, List, Set, Optional
+from typing import Any, Dict, List, Optional, Set
+
 from pydantic import BaseModel, Field
 
 logger = logging.getLogger(__name__)

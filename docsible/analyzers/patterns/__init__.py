@@ -33,16 +33,16 @@ Advanced Usage:
     >>> report = analyzer.analyze(role_info)
 """
 
-from docsible.analyzers.patterns.models import (
-    SimplificationSuggestion,
-    PatternAnalysisReport,
-    SeverityLevel,
-    PatternCategory,
-)
-from docsible.analyzers.patterns.base import BasePatternDetector
 from docsible.analyzers.patterns.analyzer import (
     PatternAnalyzer,
     analyze_role_patterns,
+)
+from docsible.analyzers.patterns.base import BasePatternDetector
+from docsible.analyzers.patterns.models import (
+    PatternAnalysisReport,
+    PatternCategory,
+    SeverityLevel,
+    SimplificationSuggestion,
 )
 
 __all__ = [

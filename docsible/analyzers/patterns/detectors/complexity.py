@@ -4,12 +4,13 @@ Identifies overly complex logic, conditionals, and control flow
 that make roles hard to understand and maintain.
 """
 
-from typing import List, Dict, Any
+from typing import Any, Dict, List
+
 from docsible.analyzers.patterns.base import BasePatternDetector
 from docsible.analyzers.patterns.models import (
-    SimplificationSuggestion,
-    SeverityLevel,
     PatternCategory,
+    SeverityLevel,
+    SimplificationSuggestion,
 )
 
 

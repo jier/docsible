@@ -4,14 +4,14 @@ Identifies tasks, configurations, or logic that is repeated
 unnecessarily and could be consolidated.
 """
 
-from typing import List, Dict, Any
 from collections import defaultdict
+from typing import Any, Dict, List
 
 from docsible.analyzers.patterns.base import BasePatternDetector
 from docsible.analyzers.patterns.models import (
-    SimplificationSuggestion,
-    SeverityLevel,
     PatternCategory,
+    SeverityLevel,
+    SimplificationSuggestion,
 )
 
 

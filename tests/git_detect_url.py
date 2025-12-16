@@ -1,4 +1,5 @@
 import pytest
+
 from docsible.utils.git import clean_and_standardize_url
 
 TEST_CASES = [

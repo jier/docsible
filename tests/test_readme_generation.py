@@ -4,6 +4,7 @@ Test cases for README generation with various playbook scenarios.
 
 import shutil
 from pathlib import Path
+
 import pytest
 from click.testing import CliRunner
 

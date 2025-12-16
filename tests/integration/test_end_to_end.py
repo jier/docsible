@@ -6,8 +6,8 @@ ensuring that all components work together correctly.
 
 from click.testing import CliRunner
 
-from docsible.cli import cli
 from docsible import constants
+from docsible.cli import cli
 
 
 class TestRoleDocumentation:

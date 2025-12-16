@@ -6,8 +6,9 @@ and external integrations to determine appropriate documentation strategy.
 """
 
 import logging
-from typing import Dict, Any, List, Optional
 from enum import Enum
+from typing import Any, Dict, List, Optional
+
 from pydantic import BaseModel, Field
 
 # Import concern detection system
@@ -21,8 +22,8 @@ logger = logging.getLogger(__name__)
 # Import pattern analysis (optional dependency)
 try:
     from docsible.analyzers.patterns import (
-        analyze_role_patterns,
         PatternAnalysisReport,
+        analyze_role_patterns,
     )
 
     PATTERN_ANALYSIS_AVAILABLE = True

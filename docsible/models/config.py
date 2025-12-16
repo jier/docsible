@@ -185,7 +185,7 @@ class DocsibleConfig(BaseModel):
             return cls()
 
         try:
-            with open(file_path, "r", encoding="utf-8") as f:
+            with open(file_path, encoding="utf-8") as f:
                 data = yaml.safe_load(f) or {}
             return cls(**data)
         except Exception as e:

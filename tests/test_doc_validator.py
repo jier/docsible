@@ -1,19 +1,19 @@
 """Tests for Priority 4: Documentation Validation Framework."""
 
+from docsible.analyzers.complexity_analyzer import (
+    ComplexityCategory,
+    ComplexityMetrics,
+    ComplexityReport,
+    IntegrationPoint,
+    IntegrationType,
+)
 from docsible.validators.doc_validator import (
     DocumentationValidator,
+    ValidationIssue,
     ValidationResult,
     ValidationSeverity,
     ValidationType,
-    ValidationIssue,
     validate_documentation,
-)
-from docsible.analyzers.complexity_analyzer import (
-    ComplexityReport,
-    ComplexityMetrics,
-    ComplexityCategory,
-    IntegrationPoint,
-    IntegrationType,
 )
 
 

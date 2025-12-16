@@ -12,10 +12,10 @@ Utilities:
     - formatters: Text formatting and sanitization utilities
 """
 
+from docsible.diagram_builders import formatters
 from docsible.diagram_builders.base import DiagramBuilder
 from docsible.diagram_builders.flowchart import FlowchartBuilder
 from docsible.diagram_builders.sequence import SequenceDiagramBuilder
-from docsible.diagram_builders import formatters
 
 __all__ = [
     "DiagramBuilder",

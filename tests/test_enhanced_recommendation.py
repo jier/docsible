@@ -1,6 +1,8 @@
 from pathlib import Path
+
 from docsible.analyzers.complexity_analyzer import analyze_role_complexity
 from docsible.commands.document_role.core import build_role_info
+
 
 def test_enhanced_recommendations():
     """Test that recommendations are specific and actionable."""

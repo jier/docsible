@@ -1,5 +1,5 @@
-from docsible.utils.metadata import generate_metadata
 from docsible.commands.check.core import check_documentation_drift
+from docsible.utils.metadata import generate_metadata
 
 
 def test_check_fresh_documentation(tmp_path):

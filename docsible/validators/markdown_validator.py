@@ -7,9 +7,10 @@ Validates raw markdown formatting for human readability:
 - Syntax correctness (unclosed code blocks, heading hierarchy)
 """
 
-import re
 import logging
-from typing import List, Tuple, Optional
+import re
+from typing import List, Optional, Tuple
+
 from .doc_validator import ValidationIssue, ValidationSeverity, ValidationType
 
 logger = logging.getLogger(__name__)

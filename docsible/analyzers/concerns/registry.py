@@ -1,8 +1,9 @@
 """Registry for concern detectors."""
 
-from typing import List, Dict, Any, Type, Optional
-from .base import ConcernDetector, ConcernMatch
 import logging
+from typing import Any, Dict, List, Optional, Type
+
+from .base import ConcernDetector, ConcernMatch
 
 logger = logging.getLogger(__name__)
 
@@ -68,16 +69,16 @@ class ConcernRegistry:
 
         try:
             from docsible.analyzers.concerns.built_in import (
-                PackageInstallationConcern,
-                ConfigurationConcern,
-                ServiceManagementConcern,
-                IdentityPermissionConcern,
-                FilesystemManagementConcern,
-                NetworkConfigurationConcern,
-                WindowsPowerShellConcern,
                 ArtifactManagementConcern,
+                ConfigurationConcern,
                 DatabaseOperationsConcern,
+                FilesystemManagementConcern,
+                IdentityPermissionConcern,
+                NetworkConfigurationConcern,
+                PackageInstallationConcern,
+                ServiceManagementConcern,
                 VerificationConcern,
+                WindowsPowerShellConcern,
             )
 
             # Register all built-in concerns

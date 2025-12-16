@@ -1,7 +1,8 @@
 """CLI helper utilities for improved help formatting."""
 
-import click
 from typing import List, Tuple
+
+import click
 
 
 class GroupedHelpCommand(click.Command):

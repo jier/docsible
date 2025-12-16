@@ -2,8 +2,8 @@
 State transition inference and formatting for Mermaid diagrams.
 """
 
-from typing import List, Optional
 from dataclasses import dataclass
+from typing import List, Optional
 
 from .analyzer import Phase, PhaseInfo
 

@@ -1,7 +1,7 @@
 """Paginate large Mermaid diagrams for better rendering."""
 
-from typing import List, Dict, Tuple
 import logging
+from typing import Dict, List, Tuple
 
 logger = logging.getLogger(__name__)
 

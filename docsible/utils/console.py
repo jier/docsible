@@ -6,7 +6,8 @@ Provides colorized, formatted console output for reports and analysis.
 
 import logging
 from typing import Optional
-from docsible.analyzers import ComplexityReport, ComplexityCategory
+
+from docsible.analyzers import ComplexityCategory, ComplexityReport
 
 logger = logging.getLogger(__name__)
 

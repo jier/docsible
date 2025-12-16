@@ -2,7 +2,7 @@
 
 import logging
 from pathlib import Path
-from typing import Dict, Any, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple
 
 import click
 import yaml
@@ -107,7 +107,7 @@ def load_playbook_content(playbook: Optional[str]) -> Optional[str]:
 
     playbook_path = Path(playbook)
     if playbook_path.exists():
-        with open(playbook_path, "r", encoding="utf-8") as f:
+        with open(playbook_path, encoding="utf-8") as f:
             return f.read()
     else:
         logger.warning(f"Playbook file not found: {playbook}")
@@ -311,10 +311,10 @@ def generate_dependency_matrix(
 
     try:
         from docsible.utils.dependency_matrix import (
-            generate_dependency_matrix_markdown,
-            should_generate_dependency_matrix,
             analyze_task_dependencies,
+            generate_dependency_matrix_markdown,
             generate_dependency_summary,
+            should_generate_dependency_matrix,
         )
 
         # Force show dependencies if user requested it, otherwise use heuristic

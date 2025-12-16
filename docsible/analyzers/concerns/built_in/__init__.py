@@ -1,15 +1,15 @@
 """Built-in concern detectors."""
 
-from .package import PackageInstallationConcern
-from .configuration import ConfigurationConcern
-from .service import ServiceManagementConcern
-from .identity import IdentityPermissionConcern
-from .filesystem import FilesystemManagementConcern
-from .network import NetworkConfigurationConcern
-from .windows import WindowsPowerShellConcern
 from .artifact import ArtifactManagementConcern
+from .configuration import ConfigurationConcern
 from .database import DatabaseOperationsConcern
+from .filesystem import FilesystemManagementConcern
+from .identity import IdentityPermissionConcern
+from .network import NetworkConfigurationConcern
+from .package import PackageInstallationConcern
+from .service import ServiceManagementConcern
 from .verification import VerificationConcern
+from .windows import WindowsPowerShellConcern
 
 __all__ = [
     "PackageInstallationConcern",
