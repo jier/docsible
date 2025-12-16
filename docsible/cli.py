@@ -39,14 +39,18 @@ def setup_logging(verbose: bool = False) -> None:
 def get_version() -> str:
     """Get the current version of docsible.
 
+    Tries to get version from git tags first, falls back to constants.
+
     Returns:
-        Version string from constants module
+        Version string (e.g., "0.8.0" or "0.8.0.dev5+gabc1234" if in development)
 
     Example:
         >>> version = get_version()
         >>> print(f"Docsible v{version}")
+        Docsible v0.8.0
     """
-    return constants.VERSION
+    from docsible.utils.version import get_version as get_dynamic_version
+    return get_dynamic_version()
 
 
 @click.group()

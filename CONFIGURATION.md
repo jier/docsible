@@ -917,6 +917,219 @@ The default threshold balances precision and recall for practical use.
 - Report errors to GitHub issues
 - Pattern analysis failures don't crash main complexity analysis
 
+## Phase Detection & Migration Assistance
+
+Docsible includes intelligent phase detection and precise line numbering to help migrate messy codebases into atomic, well-organized playbooks. This feature automatically determines **IF** files should be split and **WHERE** to split them.
+
+### Overview
+
+When analyzing complex task files, Docsible uses two complementary approaches:
+
+1. **Phase Detection** (Conservative, 80% confidence threshold):
+   - Detects chronological execution pipelines (setup → install → configure → deploy → activate → verify → cleanup)
+   - Recommends **keeping together** files that form coherent sequential workflows
+   - Prevents incorrect splitting of naturally coupled tasks
+
+2. **Line Number Tracking**:
+   - Extracts precise line ranges (start, end) for every task
+   - Shows exactly where to cut when splitting is recommended
+   - Reduces cognitive load during migration
+
+### Use Cases
+
+#### 1. Codebase Migration
+
+**Problem**: You inherited a role with a 200-line `tasks/main.yml` mixing multiple concerns.
+
+**Solution**: Run complexity analysis to get actionable guidance:
+
+```bash
+docsible role --role ./messy-role --complexity-report
+```
+
+**Output Example 1** (Coherent Pipeline Detected):
+```
+✅ tasks/deploy.yml forms a coherent pipeline (Install → Configure → Activate → Verify)
+   WHY: Sequential workflow is naturally coupled (87% confidence)
+   RECOMMENDATION: Keep together - splitting would break narrative flow
+   PHASE BREAKDOWN:
+      • Lines 1-12: Install (4 tasks)
+      • Lines 13-25: Configure (6 tasks)
+      • Lines 26-30: Activate (2 tasks)
+      • Lines 31-35: Verify (2 tasks)
+```
+
+**Action**: Keep the file intact. The tasks form a logical deployment sequence.
+
+**Output Example 2** (Mixed Concerns Detected):
+```
+🔀 tasks/main.yml mixes 3 concerns (Package Installation, Configuration, Service)
+   WHY: Mixed responsibilities reduce maintainability, testability, and reusability
+   HOW: Split by concern:
+      • tasks/install.yml: Package Installation (5 tasks, lines 1-18, 40-45)
+      • tasks/configure.yml: Configuration Management (3 tasks, lines 19-21)
+      • tasks/service.yml: Service Management (2 tasks, lines 22-25)
+```
+
+**Action**:
+1. Extract lines 1-18 and 40-45 to `tasks/install.yml`
+2. Extract lines 19-21 to `tasks/configure.yml`
+3. Extract lines 22-25 to `tasks/service.yml`
+4. Update `tasks/main.yml` to include these files
+
+#### 2. Testing Simple Playbooks
+
+**Problem**: After splitting, you want to test individual concerns independently.
+
+**Solution**: With atomic task files, you can:
+
+```bash
+# Test just package installation
+ansible-playbook -i inventory test.yml --tags install
+
+# Test just configuration
+ansible-playbook -i inventory test.yml --tags configure
+```
+
+#### 3. Onboarding New Team Members
+
+**Problem**: New developers struggle to understand large monolithic task files.
+
+**Solution**: Phase detection output serves as documentation:
+
+- Shows the execution flow (phases)
+- Indicates which parts are coupled
+- Provides line numbers for quick navigation
+
+### Phase Detection Algorithm
+
+Docsible uses a conservative, multi-signal approach (80% confidence threshold):
+
+1. **Sequential Ordering** (35% weight):
+   - Are phases in expected priority order? (Setup before Install, Install before Configure, etc.)
+
+2. **Phase Coverage** (25% weight):
+   - What percentage of tasks fit into detected phases?
+
+3. **Phase Distinctiveness** (25% weight):
+   - How confident is each phase assignment?
+   - Based on module names (e.g., `apt` → Install) and task names (e.g., "Configure nginx" → Configure)
+
+4. **Minimal Repetition** (15% weight):
+   - Phases shouldn't repeat (e.g., Install → Configure → Install is suspicious)
+
+**Example Analysis**:
+```
+Phase Detection Confidence: 87%
+✓ Sequential Ordering: 92%
+✓ Phase Coverage: 85%
+✓ Phase Confidence: 88%
+✓ No Repetition: 100%
+```
+
+### Detected Phases
+
+| Phase | Description | Example Modules | Example Task Names |
+|-------|-------------|----------------|-------------------|
+| **Setup** | Pre-requisites, validation | `assert`, `stat`, `set_fact` | "Check prerequisites", "Validate config" |
+| **Install** | Package installation, downloads | `apt`, `yum`, `pip`, `git`, `get_url` | "Install nginx", "Download artifact" |
+| **Configure** | File management, configuration | `template`, `copy`, `lineinfile` | "Configure nginx", "Create config file" |
+| **Deploy** | Deployment operations | `command`, `shell`, `docker_container` | "Deploy application", "Run migration" |
+| **Activate** | Start services | `service`, `systemd` | "Start nginx", "Enable service" |
+| **Verify** | Health checks, validation | `uri`, `wait_for`, `assert` | "Health check", "Verify service running" |
+| **Cleanup** | Temporary file removal | `file`, `command` | "Cleanup temp files", "Remove artifacts" |
+
+### Line Number Output Formats
+
+#### Single Block
+```
+tasks/install.yml: Package Installation (5 tasks, lines 1-18)
+```
+
+#### Multiple Scattered Blocks
+```
+tasks/install.yml: Package Installation (5 tasks, lines 1-18, 40-45)
+```
+
+#### Many Blocks (Summarized)
+```
+tasks/install.yml: Package Installation (12 tasks, lines 1-120 (8 blocks))
+```
+
+### Conservative Approach
+
+**Why 80% confidence threshold?**
+- Minimizes false positives
+- Avoids recommending "keep together" for files that should be split
+- Errs on the side of suggesting splits when uncertain
+
+**When phase detection doesn't trigger:**
+- Falls back to concern-based analysis
+- Still provides line numbers for splitting recommendations
+- Users get actionable guidance regardless
+
+### Integration with Complexity Report
+
+Phase detection runs automatically during complexity analysis:
+
+```bash
+# Generate documentation with complexity report
+docsible role --role ./my-role --complexity-report
+
+# Analyze without generating docs (faster)
+docsible role --role ./my-role --analyze-only
+```
+
+**Output includes**:
+- Overall complexity category (SIMPLE/MEDIUM/COMPLEX)
+- File-level analysis with phase detection
+- Integration points and dependencies
+- Actionable recommendations with line numbers
+
+### Best Practices
+
+1. **Start with Analysis**: Run `--analyze-only` first to understand the role structure before making changes
+
+2. **Follow Recommendations**: Phase detection prevents common mistakes:
+   - Don't split coherent pipelines
+   - Do split mixed concerns
+
+3. **Test After Splitting**: Verify each split file independently
+
+4. **Use Line Numbers**: Copy exact line ranges to avoid missing tasks or breaking YAML syntax
+
+5. **Incremental Migration**: Split the largest/most complex files first, then move to smaller ones
+
+### Troubleshooting
+
+**Issue**: Phase detection says "keep together" but file seems complex
+
+**Solution**:
+- Check the confidence score (lower means less certain)
+- Review the phase breakdown - are phases logically grouped?
+- If you disagree, you can still split based on concern recommendations
+
+**Issue**: Line numbers don't match after editing
+
+**Solution**:
+- Line numbers are from the analysis snapshot
+- Re-run analysis after any file changes
+- Use version control to track changes
+
+**Issue**: Recommendations don't cover all files
+
+**Solution**:
+- Phase detection focuses on the largest/most complex files first
+- Use `--complexity-report` to see all file-level metrics
+- Smaller files often don't need splitting
+
+### Limitations
+
+- **Language-Specific**: Optimized for YAML Ansible tasks (doesn't analyze Python modules or Jinja2 templates)
+- **Module-Based Detection**: Relies on Ansible module names (may miss custom modules)
+- **Static Analysis**: Doesn't consider runtime behavior or variable values
+- **Conservative**: May not detect all possible phase patterns to avoid false positives
+
 ## Markdown Quality Validation
 
 Docsible includes automated markdown formatting validation to ensure generated documentation is clean and well-formatted. This validation runs as a pre-delivery quality gate before writing README files.
@@ -1194,39 +1407,116 @@ docsible  role --role ./my-role --graph --comments --task-line
 # Enable verbose logging for troubleshooting
 docsible --verbose role --role ./my-role
 ```
-```yaml
-Available Role Options:
 
+#### Grouped Help Output
+
+The `docsible role --help` command organizes options into logical categories for easier navigation:
+
+```bash
+$ docsible role --help
+
+📂 Input Paths:
+  -r, --role TEXT        Path to the Ansible role directory.
+  -c, --collection TEXT  Path to the Ansible collection directory.
+  -p, --playbook TEXT    Path to the playbook file.
+
+💾 Output Control:
+  -o, --output TEXT      Output readme file name.
+  -nob, --no-backup      Do not backup the readme before remove.
+  -a, --append           Append to the existing README.md instead of replacing.
+  --validate/--no-validate  Validate markdown formatting before writing.
+  --auto-fix             Automatically fix common markdown formatting issues.
+  --strict-validation    Fail generation if markdown validation errors are found.
+
+📄 Content Sections:
+  --no-vars             Hide variable documentation
+  --no-tasks            Hide task lists and task details
+  --no-diagrams         Hide all Mermaid diagrams
+  --no-examples         Hide example playbook sections
+  --no-metadata         Hide role metadata, author, and license
+  --no-handlers         Hide handlers section
+  --include-complexity  Include complexity analysis section in README
+  --minimal             Generate minimal documentation (enables all --no-* flags)
+
+🎨 Templates:
+  --md-role-template    Path to the role markdown template file
+  --md-collection-template  Path to the collection markdown template file
+  --hybrid              Use hybrid template (manual + auto-generated sections)
+
+📊 Visualization:
+  -g, --graph           Generate Mermaid diagrams for role visualization
+  -com, --comments      Extract and include inline comments from task files
+  -tl, --task-line      Include source file line numbers for each task
+  --simplify-diagrams   Show only high-level diagrams, hide detailed flowcharts
+
+🔍 Analysis & Complexity:
+  --complexity-report      Include role complexity analysis in documentation
+  --simplification-report  Include detailed pattern analysis with simplification suggestions
+  --show-dependencies      Generate task dependency matrix table
+  --analyze-only           Analyze role complexity without generating documentation
+
+🔗 Repository Integration:
+  -ru, --repository-url TEXT  Repository base URL (used for standalone roles)
+  -rt, --repo-type TEXT       Repository type: github, gitlab, gitea, etc.
+  -rb, --repo-branch TEXT     Repository branch name (e.g., main or master)
+```
+
+**Benefits of Grouped Help**:
+- Quickly find related options
+- Understand feature categories at a glance
+- Reduced cognitive load when exploring CLI capabilities
+- Professional, organized interface
+
+#### Available Role Options (Full List)
+
+```yaml
+📂 Input Paths:
 --role, -r: Path to Ansible role directory
 --collection, -c: Path to Ansible collection directory
 --playbook, -p: Path to playbook file
---graph, -g: Generate Mermaid diagrams
---hybrid: Use hybrid template (manual + auto-generated sections)
---no-vars: Skip variable documentation
---no-tasks: Skip task documentation
---no-diagrams: Skip all Mermaid diagrams
---no-examples: Skip example playbook sections
---no-metadata: Skip role metadata
---no-handlers: Skip handlers section
---minimal: Generate minimal documentation (enables all --no-* flags)
---comments, -com: Read comments from task files
---task-line, -tl: Read line numbers from tasks
---complexity-report: Show role complexity analysis
---simplification-report: Include detailed pattern analysis with simplification suggestions
---show-dependencies: Generate task dependency matrix showing relationships, triggers, and error handling
---analyze-only: Analyze role complexity and show report without generating documentation
---append, -a: Append to existing README instead of replacing
---no-backup, -nob: Don't create backup before overwriting
+
+💾 Output Control:
 --output, -o: Output filename (default: README.md)
+--no-backup, -nob: Don't create backup before overwriting
+--append, -a: Append to existing README instead of replacing
+--no-docsible, -nod: Do not generate .docsible file
 --validate/--no-validate: Enable/disable markdown formatting validation (default: enabled)
 --auto-fix: Automatically fix common markdown formatting issues (whitespace, tables)
 --strict-validation: Fail generation if markdown validation errors are found (default: warn only)
---repository-url, -ru: Repository base URL
---repo-type, -rt: Repository type (github, gitlab, gitea)
---repo-branch, -rb: Repository branch name
 
-Global Options:
+📄 Content Sections:
+--no-vars: Skip variable documentation (defaults, vars, argument_specs)
+--no-tasks: Skip task lists and task details
+--no-diagrams: Skip all Mermaid diagrams (flowcharts, sequence diagrams)
+--simplify-diagrams: Show only high-level diagrams, hide detailed task flowcharts
+--no-examples: Skip example playbook sections
+--no-metadata: Skip role metadata, author, and license information
+--no-handlers: Skip handlers section
+--include-complexity: Include complexity analysis section in README
+--minimal: Generate minimal documentation (enables all --no-* flags)
 
+🎨 Templates:
+--md-role-template, -rtpl, -tpl: Path to the role markdown template file
+--md-collection-template, -ctpl: Path to the collection markdown template file
+--hybrid: Use hybrid template (manual + auto-generated sections)
+
+📊 Visualization:
+--graph, -g: Generate Mermaid diagrams for role visualization
+--comments, -com: Extract and include inline comments from task files in documentation
+--task-line, -tl: Include source file line numbers for each task in generated documentation
+
+🔍 Analysis & Complexity:
+--complexity-report: Include role complexity analysis in generated documentation
+--simplification-report: Include detailed pattern analysis with simplification suggestions in documentation
+--show-dependencies: Generate task dependency matrix table in documentation
+--analyze-only: Analyze role complexity and display detailed metrics without generating documentation
+
+🔗 Repository Integration:
+--repository-url, -ru: Repository base URL (used for standalone roles)
+--repo-type, -rt: Repository type (github, gitlab, gitea, etc.)
+--repo-branch, -rb: Repository branch name (e.g., main or master)
+
+⚙️ Global Options:
 --verbose, -v: Enable debug logging
 --version: Show version
 --help: Show help message
