@@ -12,6 +12,9 @@ from pydantic import BaseModel, Field
 
 logger = logging.getLogger(__name__)
 
+# Import concern detection system
+from docsible.analyzers.concerns.registry import ConcernRegistry
+
 
 # Import pattern analysis (optional dependency)
 try:
@@ -222,52 +225,23 @@ def analyze_file_complexity(
 def _detect_file_concern(tasks: List[Dict[str, Any]]) -> Optional[str]:
     """
     Detect the primary concern/responsibility of a task file.
-    
-    Uses module patterns to identify common concerns.
-    
+
+    Uses pluggable concern detection system for extensibility.
+
     Args:
         tasks: List of tasks in the file
-    
+
     Returns:
         String describing primary concern, or None if mixed
-    
+
     Example:
         >>> tasks = [{"module": "apt"}, {"module": "yum"}]
         >>> _detect_file_concern(tasks)
         'package_installation'
     """
-    # TODO Remove below modules to make this more data driven
-    # Module patterns for common concerns
-    PACKAGE_MODULES = ["apt", "yum", "dnf", "package", "pip", "npm"]
-    CONFIG_MODULES = ["template", "copy", "lineinfile", "blockinfile"]
-    SERVICE_MODULES = ["service", "systemd", "supervisorctl"]
-    VERIFICATION_MODULES = ["command", "shell", "assert", "wait_for", "uri"]
-    
-    modules = [t.get("module", "").split(".")[-1] for t in tasks]  # Get base module name
-    module_counter = {}
-    
-    for module in modules:
-        # Categorize module
-        if any(pkg in module for pkg in PACKAGE_MODULES):
-            module_counter["package_installation"] = module_counter.get("package_installation", 0) + 1
-        elif any(cfg in module for cfg in CONFIG_MODULES):
-            module_counter["configuration"] = module_counter.get("configuration", 0) + 1
-        elif any(svc in module for svc in SERVICE_MODULES):
-            module_counter["service_management"] = module_counter.get("service_management", 0) + 1
-        elif any(ver in module for ver in VERIFICATION_MODULES):
-            module_counter["verification"] = module_counter.get("verification", 0) + 1
-    
-    if not module_counter:
-        return None
-    
-    # Find dominant concern
-    dominant = max(module_counter.items(), key=lambda x: x[1])
-    
-    # Only report if it's clearly dominant (>60% of tasks)
-    if dominant[1] / len(tasks) > 0.6:
-        return dominant[0]
-    
-    return None  # Mixed concerns
+    # Use pluggable concern registry
+    primary = ConcernRegistry.detect_primary_concern(tasks, min_confidence=0.6)
+    return primary.concern_name if primary else None
 
 class ConditionalHotspot(BaseModel):
     """Represents a file with high conditional complexity."""
