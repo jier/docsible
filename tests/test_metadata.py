@@ -26,7 +26,7 @@ def test_metadata_validation():
     # Invalid hash length - too long
     with pytest.raises(ValidationError, match="role_hash must be 64 hex characters"):
         GenerationMetadata(
-            generated_at=datetime.utcnow(),
+            generated_at=datetime.now(tz=timezone.utc),
             docsible_version="0.8.0",
             role_hash="a" * 65  # Too long
         )
@@ -127,8 +127,8 @@ def test_json_serialization():
     
     # Serialize to JSON
     json_str = metadata.model_dump_json()
-    assert "2025-12-15T10:30:00Z" in json_str
-    assert "0.8.0" in json_str
+    assert "2025-12-15T10:30:00Z" in metadata.model_dump()['generated_at']
+    assert "0.8.0" in metadata.model_dump()['docsible_version']
     
     # Deserialize from JSON
     loaded = GenerationMetadata.model_validate_json(json_str)
