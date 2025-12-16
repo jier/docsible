@@ -5,7 +5,7 @@ showing playbook-to-role-to-task execution flow.
 """
 
 import logging
-from typing import List, Optional, Set
+from typing import Optional, Set
 
 from docsible.diagram_builders.base import DiagramBuilder
 from docsible.diagram_builders.formatters import escape_pipes, break_text

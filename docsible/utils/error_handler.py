@@ -7,7 +7,7 @@ across the application.
 import logging
 from functools import wraps
 from pathlib import Path
-from typing import Any, Callable, Optional, ParamSpec, TypeVar
+from typing import Callable, Optional, ParamSpec, TypeVar
 
 from docsible.exceptions import ConfigurationError
 

@@ -1,6 +1,5 @@
 """Tests for MarkdownValidator - raw markdown formatting validation."""
 
-import pytest
 from docsible.validators.markdown_validator import MarkdownValidator
 from docsible.validators.doc_validator import ValidationSeverity, ValidationType
 

@@ -2,8 +2,6 @@
 Test cases for README generation with various playbook scenarios.
 """
 
-import os
-import tempfile
 import shutil
 from pathlib import Path
 import pytest

@@ -1,6 +1,5 @@
 """Tests for MarkdownFixer - automatic markdown formatting fixes."""
 
-import pytest
 from docsible.validators.markdown_fixer import MarkdownFixer
 
 

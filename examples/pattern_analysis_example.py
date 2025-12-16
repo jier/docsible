@@ -25,7 +25,7 @@ def example_basic_analysis():
     report = analyze_role_patterns(role_info)
 
     # Print summary
-    print(f"\n📊 Analysis Results:")
+    print("\n📊 Analysis Results:")
     print(f"   Overall Health Score: {report.overall_health_score:.1f}/100")
     print(f"   Total Patterns Found: {report.total_patterns}")
     print(f"   - Critical:  {report.by_severity.get('critical', 0)}")
@@ -33,13 +33,13 @@ def example_basic_analysis():
     print(f"   - Info:      {report.by_severity.get('info', 0)}")
 
     # Show breakdown by category
-    print(f"\n📂 By Category:")
+    print("\n📂 By Category:")
     for category, count in sorted(report.by_category.items()):
         print(f"   - {category:15s}: {count}")
 
     # Show first few suggestions
     if report.suggestions:
-        print(f"\n💡 Sample Suggestions:")
+        print("\n💡 Sample Suggestions:")
         for suggestion in report.suggestions[:3]:
             print(f"\n   {suggestion.severity.upper()}: {suggestion.description}")
             print(f"   Pattern: {suggestion.pattern}")
@@ -99,7 +99,7 @@ def example_custom_detectors():
 
     report = analyzer.analyze(role_info)
 
-    print(f"\n📊 Focused Analysis Results:")
+    print("\n📊 Focused Analysis Results:")
     print(f"   Patterns Found: {report.total_patterns}")
 
     for suggestion in report.suggestions:
@@ -119,11 +119,11 @@ def example_high_confidence_only():
     analyzer = PatternAnalyzer(min_confidence=0.85)
     report = analyzer.analyze(role_info)
 
-    print(f"\n📊 High-Confidence Results:")
+    print("\n📊 High-Confidence Results:")
     print(f"   Patterns Found: {report.total_patterns}")
 
     if report.suggestions:
-        print(f"\n💯 High-Confidence Suggestions:")
+        print("\n💯 High-Confidence Suggestions:")
         for suggestion in report.suggestions:
             print(f"\n   {suggestion.description}")
             print(f"   Confidence: {suggestion.confidence * 100:.0f}%")
@@ -155,7 +155,7 @@ def example_export_results():
     print(f"   Size: {Path(output_file).stat().st_size} bytes")
 
     # Show sample of exported data
-    print(f"\n📄 Sample Export Data:")
+    print("\n📄 Sample Export Data:")
     sample = {
         "total_patterns": report_dict["total_patterns"],
         "overall_health_score": report_dict["overall_health_score"],

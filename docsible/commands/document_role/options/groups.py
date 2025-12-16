@@ -1,7 +1,6 @@
 """Option group utilities for better CLI help organization."""
 
 import click
-from typing import Optional
 
 
 class GroupedOption(click.Option):

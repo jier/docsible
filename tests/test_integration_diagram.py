@@ -1,6 +1,5 @@
 """Tests for integration boundary diagram generation."""
 
-import pytest
 from docsible.analyzers.complexity_analyzer import IntegrationPoint, IntegrationType
 from docsible.utils.integration_diagram import (
     generate_integration_boundary,

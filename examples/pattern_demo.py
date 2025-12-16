@@ -5,7 +5,7 @@ This shows how the pattern analyzer works without requiring a full role.
 """
 
 from docsible.analyzers.patterns import analyze_role_patterns, PatternAnalyzer
-from docsible.analyzers.patterns.detectors import SecurityDetector, DuplicationDetector
+from docsible.analyzers.patterns.detectors import SecurityDetector
 
 
 def create_example_role_with_issues():
@@ -88,7 +88,7 @@ def main():
     report = analyze_role_patterns(role_info, min_confidence=0.7)
 
     # Show summary
-    print(f"\n📊 Analysis Results:")
+    print("\n📊 Analysis Results:")
     print(f"   Overall Health Score: {report.overall_health_score:.1f}/100")
     print(f"   Total Patterns Found: {report.total_patterns}")
     print(f"   - Critical:  {report.by_severity.get('critical', 0)}")
@@ -97,14 +97,14 @@ def main():
 
     # Show breakdown by category
     if report.by_category:
-        print(f"\n📂 Issues by Category:")
+        print("\n📂 Issues by Category:")
         for category, count in sorted(report.by_category.items()):
             print(f"   - {category:15s}: {count}")
 
     # Show critical issues
     critical = [s for s in report.suggestions if s.severity == 'critical']
     if critical:
-        print(f"\n🚨 Critical Issues:")
+        print("\n🚨 Critical Issues:")
         for issue in critical:
             print(f"\n   Pattern: {issue.pattern}")
             print(f"   Description: {issue.description}")
@@ -128,7 +128,7 @@ def main():
             print(f"   - {issue.description}")
 
     # Example: Security-only analysis
-    print(f"\n" + "=" * 70)
+    print("\n" + "=" * 70)
     print("SECURITY-FOCUSED ANALYSIS")
     print("=" * 70)
 
@@ -138,17 +138,17 @@ def main():
     )
     security_report = security_analyzer.analyze(role_info)
 
-    print(f"\n🔒 Security Analysis:")
+    print("\n🔒 Security Analysis:")
     print(f"   Issues Found: {security_report.total_patterns}")
 
     for issue in security_report.suggestions:
         print(f"\n   {issue.severity.upper()}: {issue.description}")
         print(f"   Impact: {issue.impact}")
-        print(f"   How to fix:")
+        print("   How to fix:")
         print(f"   {issue.suggestion[:200]}...")
 
     # Example: Export to JSON
-    print(f"\n" + "=" * 70)
+    print("\n" + "=" * 70)
     print("JSON EXPORT")
     print("=" * 70)
 
@@ -168,10 +168,10 @@ def main():
         } if report_dict['suggestions'] else None
     }
 
-    print(f"\n📄 JSON Export Sample:")
+    print("\n📄 JSON Export Sample:")
     print(json.dumps(summary, indent=2))
 
-    print(f"\n" + "=" * 70)
+    print("\n" + "=" * 70)
     print("✅ Demonstration Complete!")
     print("=" * 70 + "\n")
 

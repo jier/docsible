@@ -53,9 +53,9 @@ def generate_state_diagram(
 
     # Add title if role name provided
     if role_name:
-        lines.append(f"---")
+        lines.append("---")
         lines.append(f"title: {role_name} - State Transitions")
-        lines.append(f"---")
+        lines.append("---")
 
     lines.append("stateDiagram-v2")
 

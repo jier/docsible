@@ -1,6 +1,5 @@
 """Tests for Mermaid diagram pagination functionality."""
 
-import pytest
 from docsible.utils.mermaid.pagination import (
     should_paginate_diagram,
     paginate_tasks,

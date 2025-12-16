@@ -1,6 +1,5 @@
 """Tests for Priority 4: Documentation Validation Framework."""
 
-import pytest
 from docsible.validators.doc_validator import (
     DocumentationValidator,
     ValidationResult,

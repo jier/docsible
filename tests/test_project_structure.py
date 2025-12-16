@@ -2,9 +2,7 @@
 Test suite for ProjectStructure class
 """
 
-import os
 import tempfile
-import shutil
 from pathlib import Path
 from docsible.utils.project_structure import ProjectStructure
 

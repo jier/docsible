@@ -2,7 +2,6 @@
 Test cases for docsible-init-config command.
 """
 
-import os
 from pathlib import Path
 import pytest
 import yaml

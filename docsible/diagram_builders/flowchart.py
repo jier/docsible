@@ -5,7 +5,7 @@ from Ansible task data.
 """
 
 import logging
-from typing import Any, Dict, List, Optional
+from typing import List, Optional
 
 from docsible.diagram_builders.base import DiagramBuilder
 from docsible.diagram_builders.formatters import (

@@ -39,6 +39,15 @@ dependencies = [
     "pydantic>=2.0.0",
 ]
 
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.14.8",
+]
+
+test = [
+    "pytest>=7.4.4",
+]
+
 # URLs for project
 [project.urls]
 Homepage = "https://github.com/docsible/docsible"
@@ -55,6 +64,7 @@ docsible = "docsible.cli:cli"
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
+#########################################################################
 # Poetry configuration (for backward compatibility)
 [tool.poetry]
 name = "docsible"
@@ -84,9 +94,11 @@ PyYAML = "^6.0.1"
 Jinja2 = "^3.1.2"
 pydantic = "^2.0.0"
 
+
 [tool.poetry.scripts]
 docsible = 'docsible.cli:cli'
 
+#########################################################################
 # uv specific configuration
 [tool.uv]
 [dependency-groups]

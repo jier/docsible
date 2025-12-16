@@ -1,7 +1,5 @@
 """Tests for adaptive documentation based on complexity."""
 
-import pytest
-from pathlib import Path
 from docsible.analyzers.complexity_analyzer import (
     ComplexityReport,
     ComplexityMetrics,

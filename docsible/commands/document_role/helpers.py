@@ -132,13 +132,13 @@ def handle_analyze_only_mode(role_info: Dict[str, Any], role_name: str) -> None:
 
         if all_deps:
             summary = generate_dependency_summary(all_deps)
-            click.echo(f"\n📋 Task Dependencies:")
+            click.echo("\n📋 Task Dependencies:")
             click.echo(f"   - Tasks with variable dependencies: {summary['tasks_with_requirements']}/{summary['total_tasks']}")
             click.echo(f"   - Tasks triggering handlers: {summary['tasks_with_triggers']}")
             click.echo(f"   - Tasks with error handling: {summary['error_handling_count']}")
             click.echo(f"   - Tasks setting facts: {summary['tasks_setting_facts']}")
 
-    click.echo(f"\n✓ Analysis complete. Use without --analyze-only to generate documentation.\n")
+    click.echo("\n✓ Analysis complete. Use without --analyze-only to generate documentation.\n")
 
 
 def generate_mermaid_diagrams(
@@ -211,7 +211,7 @@ def generate_mermaid_diagrams(
                 role_info, role_name=role_info.get("name")
             )
             logger.info(
-                f"Generated state transition diagram for MEDIUM complexity role"
+                "Generated state transition diagram for MEDIUM complexity role"
             )
     except Exception as e:
         logger.warning(f"Could not generate state diagram: {e}")

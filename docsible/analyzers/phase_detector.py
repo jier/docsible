@@ -7,7 +7,6 @@ mixed functional concerns that should be split.
 Uses a conservative approach to minimize false positives.
 """
 
-import re
 from dataclasses import dataclass
 from enum import Enum
 from typing import List, Dict, Optional, Tuple

@@ -29,7 +29,7 @@ def test_enhanced_recommendations():
     print(f"\nCategory: {report.category.value.upper()}")
     print(f"Total Tasks: {report.metrics.total_tasks}")
     print(f"Conditional Tasks: {report.metrics.conditional_tasks} ({report.metrics.conditional_percentage:.1f}%)")
-    print(f"\nRecommendations:\n")
+    print("\nRecommendations:\n")
     
     for i, rec in enumerate(report.recommendations, 1):
         print(f"{i}. {rec}")

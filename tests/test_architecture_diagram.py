@@ -1,6 +1,5 @@
 """Tests for component architecture diagram generation."""
 
-import pytest
 from docsible.analyzers.complexity_analyzer import (
     ComplexityReport,
     ComplexityMetrics,

@@ -1,5 +1,3 @@
-import os
-import pytest
 import yaml
 from pathlib import Path
 from docsible.renderers.tag_manager import manage_docsible_file_keys

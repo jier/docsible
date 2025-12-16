@@ -5,7 +5,6 @@ missing no_log directives, and insecure defaults.
 """
 
 from typing import List, Dict, Any
-import re
 
 from docsible.analyzers.patterns.base import BasePatternDetector
 from docsible.analyzers.patterns.models import (

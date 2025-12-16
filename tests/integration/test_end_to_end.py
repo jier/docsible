@@ -4,9 +4,7 @@ These tests exercise complete workflows from CLI invocation to output file gener
 ensuring that all components work together correctly.
 """
 
-import pytest
 from click.testing import CliRunner
-from pathlib import Path
 
 from docsible.cli import cli
 from docsible import constants

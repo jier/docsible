@@ -8,7 +8,7 @@ import logging
 from pathlib import Path
 from typing import Dict, List, Optional
 
-from docsible.models.role import Role, RoleMetadata, RoleTask, RoleVariable
+from docsible.models.role import Role
 from docsible.utils.project_structure import ProjectStructure
 from docsible.utils.yaml import (
     get_task_comments,

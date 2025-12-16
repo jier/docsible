@@ -9,7 +9,6 @@ import sys
 
 import click
 
-from docsible import constants
 from docsible.commands.document_role import doc_the_role
 from docsible.commands.init_config import init_config
 from docsible.commands.check import check

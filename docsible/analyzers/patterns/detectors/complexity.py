@@ -257,7 +257,7 @@ class ComplexityDetector(BasePatternDetector):
                         "Reserve set_fact for truly dynamic values that change during playbook execution."
                     ),
                     affected_files=self._get_unique_files(set_fact_tasks),
-                    impact=f"Reduces cognitive load and improves performance (fewer task executions)",
+                    impact="Reduces cognitive load and improves performance (fewer task executions)",
                     confidence=0.75
                 ))
 

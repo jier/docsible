@@ -2,13 +2,10 @@
 
 import logging
 import os
-from datetime import datetime
 from pathlib import Path
-from typing import List
 
 import yaml
 
-from docsible import constants
 from docsible.commands.document_role import build_role_info
 from docsible.renderers.readme_renderer import ReadmeRenderer
 from docsible.utils.git import get_repo_info

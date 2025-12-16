@@ -1,6 +1,5 @@
 """Tests for Priority 3: Enhanced Integration Features."""
 
-import pytest
 from docsible.analyzers.complexity_analyzer import (
     IntegrationType,
     IntegrationPoint,

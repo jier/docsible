@@ -8,7 +8,6 @@ from abc import ABC, abstractmethod
 from typing import List, Dict, Any
 from docsible.analyzers.patterns.models import (
     SimplificationSuggestion,
-    SeverityLevel,
     PatternCategory
 )
 

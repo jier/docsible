@@ -9,15 +9,13 @@ import logging
 from typing import Dict, Any, List, Optional
 from enum import Enum
 from pydantic import BaseModel, Field
-
-logger = logging.getLogger(__name__)
-
 # Import concern detection system
 from docsible.analyzers.concerns.registry import ConcernRegistry
 
 # Import phase detection system
 from docsible.analyzers.phase_detector import PhaseDetector
 
+logger = logging.getLogger(__name__)
 
 # Import pattern analysis (optional dependency)
 try:
@@ -1222,7 +1220,7 @@ def generate_recommendations(
                     rec = [
                         f"✅ {file_link} forms a coherent pipeline ({phase_names})",
                         f"   WHY: Sequential workflow is naturally coupled ({confidence}% confidence)",
-                        f"   RECOMMENDATION: Keep together - splitting would break narrative flow"
+                        "   RECOMMENDATION: Keep together - splitting would break narrative flow"
                     ]
 
                     # Show phase breakdown with line numbers
@@ -1243,8 +1241,8 @@ def generate_recommendations(
 
                     rec = [
                         f"🔀 {file_link} mixes {len(all_concerns)} concerns ({concern_names})",
-                        f"   WHY: Mixed responsibilities reduce maintainability, testability, and reusability",
-                        f"   HOW: Split by concern:"
+                        "   WHY: Mixed responsibilities reduce maintainability, testability, and reusability",
+                        "   HOW: Split by concern:"
                     ]
 
                     # Get detailed concern matches with line information
@@ -1297,8 +1295,8 @@ def generate_recommendations(
                     # Single concern but large file
                     rec = [
                         f"📁 {file_link} has {largest_file.task_count} tasks focused on {primary_concern.replace('_', ' ')}",
-                        f"   WHY: Large single-purpose files are hard to navigate and review",
-                        f"   HOW: Split into execution phases:",
+                        "   WHY: Large single-purpose files are hard to navigate and review",
+                        "   HOW: Split into execution phases:",
                         f"      • tasks/setup_{primary_concern}.yml: Preparation tasks",
                         f"      • tasks/{primary_concern}.yml: Core implementation",
                         f"      • tasks/verify_{primary_concern}.yml: Validation tasks"
@@ -1308,8 +1306,8 @@ def generate_recommendations(
                     # No clear concern detected
                     rec = [
                         f"📁 {file_link} has {largest_file.task_count} tasks with no clear single concern",
-                        f"   WHY: Unclear organization makes the role hard to understand and maintain",
-                        f"   HOW: Reorganize by execution phase or functional area"
+                        "   WHY: Unclear organization makes the role hard to understand and maintain",
+                        "   HOW: Reorganize by execution phase or functional area"
                     ]
                     recommendations.append("\n".join(rec))
     
@@ -1324,7 +1322,7 @@ def generate_recommendations(
         )
         rec = [
             f"🔀 {hotspot_link}: {hotspot.affected_tasks} tasks depend on '{hotspot.conditional_variable}'",
-            f"   WHY: OS/environment-specific branching scattered in one file makes platform support hard to test",
+            "   WHY: OS/environment-specific branching scattered in one file makes platform support hard to test",
             f"   HOW: {hotspot.suggestion}"
         ]
         recommendations.append("\n".join(rec))
@@ -1343,8 +1341,8 @@ def generate_recommendations(
             f"⚡ Major branch point at {inflection_link}",
             f"   WHAT: Task '{main_inflection.task_name}' branches on '{main_inflection.variable}'",
             f"   IMPACT: {main_inflection.downstream_tasks} downstream tasks affected",
-            f"   WHY: Multiple execution paths in one file reduce clarity and increase cognitive load",
-            f"   HOW: Extract branches into separate files for each path (e.g., tasks/{{value}}.yml)"
+            "   WHY: Multiple execution paths in one file reduce clarity and increase cognitive load",
+            "   HOW: Extract branches into separate files for each path (e.g., tasks/{value}.yml)"
         ]
         recommendations.append("\n".join(rec))
     
@@ -1375,11 +1373,11 @@ def generate_recommendations(
     if metrics.composition_score >= 8:
         rec = [
             f"🔗 High role composition complexity (score: {metrics.composition_score})",
-            f"   WHY: Complex role dependencies make the execution chain hard to understand and debug",
-            f"   HOW: Document role dependencies and include chain in README:",
-            f"      • List all role dependencies from meta/main.yml",
-            f"      • Show execution order diagram",
-            f"      • Document required variables passed between roles"
+            "   WHY: Complex role dependencies make the execution chain hard to understand and debug",
+            "   HOW: Document role dependencies and include chain in README:",
+            "      • List all role dependencies from meta/main.yml",
+            "      • Show execution order diagram",
+            "      • Document required variables passed between roles"
         ]
         recommendations.append("\n".join(rec))
 
@@ -1388,11 +1386,11 @@ def generate_recommendations(
         systems = ", ".join(ip.system_name for ip in integration_points[:3])
         rec = [
             f"🔌 Multiple external integrations detected ({len(integration_points)} systems: {systems})",
-            f"   WHY: External integrations add operational complexity and failure points",
-            f"   HOW: Document integration architecture:",
-            f"      • Add architecture diagram showing data flow between systems",
-            f"      • Document retry/fallback strategies for each integration",
-            f"      • List external dependencies and their versions"
+            "   WHY: External integrations add operational complexity and failure points",
+            "   HOW: Document integration architecture:",
+            "      • Add architecture diagram showing data flow between systems",
+            "      • Document retry/fallback strategies for each integration",
+            "      • List external dependencies and their versions"
         ]
         recommendations.append("\n".join(rec))
 
@@ -1401,11 +1399,11 @@ def generate_recommendations(
         cred_systems = [ip.system_name for ip in integration_points if ip.uses_credentials]
         rec = [
             f"🔐 Credentials required for {', '.join(cred_systems)}",
-            f"   WHY: Hardcoded credentials pose security risks and complicate credential rotation",
-            f"   HOW: Secure credential management:",
-            f"      • Use Ansible Vault for sensitive variables",
-            f"      • Document required credentials in README",
-            f"      • Consider external secret management (HashiCorp Vault, AWS Secrets Manager)"
+            "   WHY: Hardcoded credentials pose security risks and complicate credential rotation",
+            "   HOW: Secure credential management:",
+            "      • Use Ansible Vault for sensitive variables",
+            "      • Document required credentials in README",
+            "      • Consider external secret management (HashiCorp Vault, AWS Secrets Manager)"
         ]
         recommendations.append("\n".join(rec))
 
