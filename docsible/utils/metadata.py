@@ -10,7 +10,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, field_serializer
 
 from docsible.constants import VERSION
 
@@ -51,6 +51,21 @@ class GenerationMetadata(BaseModel):
         if not re.match(r"^[0-f0-9]{64}$", hash):
             raise ValueError("role_hash must be 64 hex characters long")
         return hash
+
+    @field_serializer('generated_at')
+    def serialize_datetime(self, dt: datetime, _info) -> str:
+        """
+        Serialize datetime to ISO format with 'Z' timezone indicator.
+
+        This ensures JSON serialization includes the 'Z' suffix for UTC times,
+        matching the format expected by from_comment() and maintaining consistency.
+
+        :param dt: datetime to serialize
+        :type dt: datetime
+        :return: ISO format string with 'Z' suffix
+        :rtype: str
+        """
+        return dt.isoformat() + 'Z'
 
     def to_comment(self) -> str:
         """
@@ -107,11 +122,6 @@ role_hash: {self.role_hash}
         except Exception:
             # Invalid metadata format - return None
             return None
-
-    class ConfigDict:
-        """Pydantic configuration."""
-
-        json_encoders = {datetime: lambda v: v.isoformat() + "Z"}
 
 
 def compute_role_hash(role_path: Path) -> str:
