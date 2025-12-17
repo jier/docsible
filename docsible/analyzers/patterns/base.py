@@ -129,7 +129,7 @@ class BasePatternDetector(ABC):
         """
         from collections import defaultdict
 
-        counts = defaultdict(int)
+        counts: defaultdict[Any, int] = defaultdict(int)
 
         for task in self._flatten_tasks(role_info):
             module = task.get("module")

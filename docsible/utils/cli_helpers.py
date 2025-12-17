@@ -1,6 +1,8 @@
 """CLI helper utilities for improved help formatting."""
 
 
+from typing import Any
+
 import click
 
 
@@ -20,7 +22,8 @@ class GroupedHelpCommand(click.Command):
     def format_options(self, ctx, formatter):
         """Format options grouped by category."""
         # Collect all options
-        opts_by_group = {
+
+        opts_by_group: dict[str, Any] = {
             "📂 Input Paths": [],
             "💾 Output Control": [],
             "📄 Content Sections": [],

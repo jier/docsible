@@ -6,7 +6,7 @@ from typing import Any
 
 def resolve_path(
     key: str,
-    config: dict[str, Any],
+    config: dict[str, str| Path],
     defaults: dict[str, Any],
     base_path: Path,
     default: str | None = None,
@@ -32,7 +32,7 @@ def resolve_path(
     if default is None:
         default = defaults.get(key, key)
 
-    return base_path / default
+    return base_path / str(default)
 
 
 def get_defaults_dir(
@@ -159,7 +159,7 @@ def get_roles_dir(
 
     # Check config first
     if "roles_dir" in config:
-        return base / config["roles_dir"]
+        return base / str(config["roles_dir"])
 
     # Auto-detect for monorepo
     if project_type == "monorepo":
@@ -176,7 +176,7 @@ def get_roles_dir(
                 return roles_path
 
     # Default
-    return base / defaults["roles_dir"]
+    return base / str(defaults["roles_dir"])
 
 
 def get_test_playbook(

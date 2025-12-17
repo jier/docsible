@@ -10,6 +10,7 @@ Uses a conservative approach to minimize false positives.
 from collections import defaultdict
 from dataclasses import dataclass
 from enum import Enum
+from typing import TypedDict
 
 
 class Phase(Enum):
@@ -47,12 +48,15 @@ class PhaseDetectionResult:
     recommendation: str
     reasoning: str
 
-
+class PhasePattern(TypedDict):
+    modules: set[str]
+    name_keywords: list[str]
+    priority: int
 class PhaseDetector:
     """Detects execution phases in Ansible task files."""
 
     # Phase detection patterns
-    PHASE_PATTERNS = {
+    PHASE_PATTERNS: dict[Phase, PhasePattern] = {
         Phase.SETUP: {
             "modules": {
                 "assert",
@@ -285,7 +289,7 @@ class PhaseDetector:
         for key in task.keys():
             if key not in skip_keys:
                 # Handle fully qualified collection names
-                module_name = key.split(".")[-1]
+                module_name = str(key).split(".")[-1]
                 return module_name.lower()
 
         return None

@@ -120,7 +120,7 @@ def is_valid_role(path: Path) -> bool:
 
 
 def find_collection_markers(
-    root_path: Path, defaults: dict[str, Any], search_path: Path = None
+    root_path: Path, defaults: dict[str, Any], search_path: Path | None = None
 ) -> list[Path]:
     """Find all collection marker files (galaxy.yml/yaml) in the directory tree.
 
@@ -143,7 +143,7 @@ def find_collection_markers(
 
     return markers
 
-
+# FIXME Hard to read this function, what is this ?
 def find_roles(root_path: Path, project_type: str, get_roles_dir_func) -> list[Path]:
     """Find all role directories in the project.
 

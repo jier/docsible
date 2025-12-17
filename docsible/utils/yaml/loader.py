@@ -61,7 +61,7 @@ def load_yaml_file_custom(file_path):
         if not data:
             return None
 
-        result = {}
+        result: dict[str, str | None] = {}
         parent_line = 0
 
         def is_multiline_value(line):

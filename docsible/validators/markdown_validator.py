@@ -44,7 +44,7 @@ class MarkdownValidator:
         Returns:
             List of validation issues found
         """
-        issues = []
+        issues: list[ValidationIssue] = []
         lines = markdown.split("\n")
 
         # Check for excessive consecutive blank lines
@@ -112,7 +112,7 @@ class MarkdownValidator:
         Returns:
             List of validation issues found
         """
-        issues = []
+        issues: list[ValidationIssue] = []
         lines = markdown.split("\n")
 
         in_table = False
@@ -166,7 +166,7 @@ class MarkdownValidator:
         table_start: int,
     ) -> list[ValidationIssue]:
         """Validate a single markdown table."""
-        issues = []
+        issues: list[ValidationIssue] = []
 
         if not header_line or not separator_line:
             issues.append(
@@ -246,7 +246,7 @@ class MarkdownValidator:
         Returns:
             List of validation issues found
         """
-        issues = []
+        issues: list[ValidationIssue] = []
         lines = markdown.split("\n")
 
         # Check for unclosed code blocks
@@ -310,7 +310,7 @@ class MarkdownValidator:
         Returns:
             List of all validation issues found
         """
-        issues = []
+        issues: list[ValidationIssue] = []
         issues.extend(self.validate_whitespace(markdown))
         issues.extend(self.validate_tables(markdown))
         issues.extend(self.validate_syntax(markdown))

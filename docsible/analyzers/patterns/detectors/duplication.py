@@ -32,7 +32,7 @@ class DuplicationDetector(BasePatternDetector):
         Returns:
             List of suggestions for reducing duplication
         """
-        suggestions = []
+        suggestions: list[SimplificationSuggestion] = []
 
         # Run all duplication checks
         suggestions.extend(self._detect_repeated_package_installs(role_info))
@@ -60,7 +60,7 @@ class DuplicationDetector(BasePatternDetector):
                 name: "{{ item }}"
               loop: [nginx, php, ...]
         """
-        suggestions = []
+        suggestions: list[SimplificationSuggestion] = []
 
         # Package management modules to check
         package_modules = ["apt", "yum", "dnf", "package", "pip", "npm"]
@@ -112,7 +112,7 @@ class DuplicationDetector(BasePatternDetector):
 
         Example: Starting 5 different services in 5 separate tasks
         """
-        suggestions = []
+        suggestions: list[SimplificationSuggestion] = []
 
         service_tasks = self._get_tasks_by_module(role_info, "service")
         systemd_tasks = self._get_tasks_by_module(role_info, "systemd")
@@ -164,7 +164,7 @@ class DuplicationDetector(BasePatternDetector):
 
         Example: Creating many directories individually
         """
-        suggestions = []
+        suggestions: list[SimplificationSuggestion] = []
 
         file_tasks = self._get_tasks_by_module(role_info, "file")
 
@@ -214,7 +214,7 @@ class DuplicationDetector(BasePatternDetector):
         Example: Tasks named "Configure X", "Configure Y", "Configure Z"
         might indicate a pattern that could be abstracted.
         """
-        suggestions = []
+        suggestions: list[SimplificationSuggestion] = []
         tasks = self._flatten_tasks(role_info)
 
         # Group tasks by common name prefixes

@@ -41,6 +41,7 @@ dependencies = [
 dev = [
     "ruff>=0.14.8",
     "mypy>=1.10",
+    "types-PyYAML>=6.0",
 ]
 
 test = [
@@ -125,6 +126,7 @@ docsible = 'docsible.cli:cli'
 dev =[
     "ruff>=0.14.8",
     "mypy>=1.10",
+    "types-PyYAML>=6.0",
 ]
 test = [
     "pytest>=7.4.4",

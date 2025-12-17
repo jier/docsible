@@ -82,15 +82,16 @@ def validate_role_path(role_path: str | None) -> Path:
     if not role_path:
         raise click.UsageError("Either --role or --collection must be specified.")
 
-    role_path = Path(role_path).resolve()
+    assert isinstance(role_path, str), "Please provide a path, nothing provided."
+    resolved_path = Path(role_path).resolve()
 
-    if not role_path.exists():
-        raise click.ClickException(f"Role directory does not exist: {role_path}")
+    if not resolved_path.exists():
+        raise click.ClickException(f"Role directory does not exist: {resolved_path}")
 
-    if not role_path.is_dir():
+    if not resolved_path.is_dir():
         raise click.ClickException(f"Path is not a directory: {role_path}")
 
-    return role_path
+    return resolved_path
 
 
 def load_playbook_content(playbook: str | None) -> str | None:
@@ -178,7 +179,7 @@ def generate_mermaid_diagrams(
     Returns:
         Dictionary containing all generated diagrams
     """
-    result = {
+    result: dict[str, str | dict[Any, Any] | None ] = {
         "mermaid_code_per_file": {},
         "sequence_diagram_high_level": None,
         "sequence_diagram_detailed": None,
@@ -277,7 +278,7 @@ def generate_integration_and_architecture_diagrams(
             generate_component_architecture,
             should_generate_architecture_diagram,
         )
-
+        #FIXME Wrong parameter passed, what happened?
         if should_generate_architecture_diagram(analysis_report):
             architecture_diagram = generate_component_architecture(
                 role_info=None,  # Will be passed in actual call

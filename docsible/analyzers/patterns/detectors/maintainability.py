@@ -31,7 +31,7 @@ class MaintainabilityDetector(BasePatternDetector):
         Returns:
             List of suggestions for improving maintainability
         """
-        suggestions = []
+        suggestions: list[SimplificationSuggestion] = []
 
         suggestions.extend(self._detect_missing_idempotency(role_info))
         suggestions.extend(self._detect_monolithic_main_file(role_info))
@@ -50,7 +50,7 @@ class MaintainabilityDetector(BasePatternDetector):
         shell/command/raw tasks without creates/removes/changed_when
         will always report 'changed' even if nothing actually changed.
         """
-        suggestions = []
+        suggestions: list[SimplificationSuggestion] = []
 
         # Modules that often lack idempotency
         risky_modules = ["shell", "command", "raw"]
@@ -130,7 +130,7 @@ class MaintainabilityDetector(BasePatternDetector):
         Large main.yml files are hard to navigate and understand.
         Better to split into logical groups.
         """
-        suggestions = []
+        suggestions: list[SimplificationSuggestion] = []
 
         task_files = self._get_task_files(role_info)
 
@@ -196,7 +196,7 @@ class MaintainabilityDetector(BasePatternDetector):
 
         Example: Path "/opt/myapp" hardcoded in 10 different tasks
         """
-        suggestions = []
+        suggestions: list[SimplificationSuggestion] = []
         from collections import defaultdict
 
         # Track string/number literals used across tasks
@@ -299,7 +299,7 @@ class MaintainabilityDetector(BasePatternDetector):
         Tasks that register variables used later will fail in --check mode
         if they can't actually run.
         """
-        suggestions = []
+        suggestions: list[SimplificationSuggestion] = []
 
         tasks = self._flatten_tasks(role_info)
         problematic_tasks = []
@@ -373,7 +373,7 @@ class MaintainabilityDetector(BasePatternDetector):
         Example: shell: cmd1 | cmd2
         If cmd1 fails but cmd2 succeeds, task reports success!
         """
-        suggestions = []
+        suggestions: list[SimplificationSuggestion] = []
 
         shell_tasks = self._get_tasks_by_module(role_info, "shell")
         command_tasks = self._get_tasks_by_module(role_info, "command")
@@ -446,7 +446,7 @@ class MaintainabilityDetector(BasePatternDetector):
 
         Variables in vars/ override defaults/, which can be confusing.
         """
-        suggestions = []
+        suggestions: list[SimplificationSuggestion] = []
 
         # Handle both dict and list formats
         defaults_raw = role_info.get("defaults", {})

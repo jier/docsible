@@ -108,8 +108,8 @@ class DocumentationValidator:
         Returns:
             ValidationResult with score, issues, and metrics
         """
-        issues = []
-        metrics = {}
+        issues: list[ValidationIssue] = []
+        metrics: dict[str, Any] = {}
 
         # Run all validation checks
         clarity_issues, clarity_metrics = self._validate_clarity(documentation)
@@ -157,8 +157,8 @@ class DocumentationValidator:
         - Has code blocks properly formatted
         - Avoids excessive jargon
         """
-        issues = []
-        metrics = {}
+        issues: list[ValidationIssue] = []
+        metrics: dict[str, Any] = {}
 
         lines = documentation.split("\n")
         metrics["total_lines"] = len(lines)
@@ -256,8 +256,8 @@ class DocumentationValidator:
         - Examples are provided
         - Metadata is present
         """
-        issues = []
-        metrics = {}
+        issues: list[ValidationIssue] = []
+        metrics: dict[str, Any] = {}
 
         if not role_info:
             return issues, metrics
@@ -352,8 +352,8 @@ class DocumentationValidator:
         - Dependencies are accurate
         - Integration claims are verified
         """
-        issues = []
-        metrics = {}
+        issues: list[ValidationIssue] = []
+        metrics: dict[str, Any] = {}
 
         # Check for auto-generated markers (always check, even without role_info)
         has_generated_markers = "DOCSIBLE GENERATED" in documentation
@@ -419,8 +419,8 @@ class DocumentationValidator:
         - Contains performance tips
         - Has clear examples
         """
-        issues = []
-        metrics = {}
+        issues: list[ValidationIssue] = []
+        metrics: dict[str, Any] = {}
 
         # Check for diagrams (especially for complex roles)
         has_diagrams = "```mermaid" in documentation

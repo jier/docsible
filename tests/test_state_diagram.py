@@ -3,6 +3,7 @@ Unit tests for state diagram generator.
 
 Tests phase detection, state tracking, and diagram generation.
 """
+from typing import Any
 
 from docsible.utils.state_diagram import (
     Phase,
@@ -351,7 +352,7 @@ def test_generate_state_diagram_insufficient_tasks():
 
 def test_generate_state_diagram_no_tasks():
     """Test diagram generation with no tasks."""
-    role_info = {"tasks": []}
+    role_info: dict[str, list[dict[str, Any]]] = {"tasks": []}
 
     diagram = generate_state_diagram(role_info)
     assert diagram is None

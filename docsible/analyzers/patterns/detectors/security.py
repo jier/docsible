@@ -48,7 +48,7 @@ class SecurityDetector(BasePatternDetector):
         Returns:
             List of suggestions for improving security
         """
-        suggestions = []
+        suggestions: list[SimplificationSuggestion] = []
 
         suggestions.extend(self._detect_exposed_secrets(role_info))
         suggestions.extend(self._detect_missing_no_log(role_info))
@@ -65,7 +65,7 @@ class SecurityDetector(BasePatternDetector):
         Looks for variables with secret-like names that aren't
         using ansible-vault or proper secret management.
         """
-        suggestions = []
+        suggestions: list[SimplificationSuggestion] = []
 
         # Check defaults and vars
         for var_type in ["defaults", "vars"]:
@@ -153,7 +153,7 @@ class SecurityDetector(BasePatternDetector):
         Tasks that register variables with secret-like names or
         use modules like set_fact with secrets should have no_log: true.
         """
-        suggestions = []
+        suggestions: list[SimplificationSuggestion] = []
 
         risky_tasks = []
 
@@ -222,7 +222,7 @@ class SecurityDetector(BasePatternDetector):
 
         Example: mode: '0777' on sensitive files
         """
-        suggestions = []
+        suggestions: list[SimplificationSuggestion] = []
 
         file_tasks = self._get_tasks_by_module(role_info, "file")
         copy_tasks = self._get_tasks_by_module(role_info, "copy")
@@ -309,7 +309,7 @@ class SecurityDetector(BasePatternDetector):
         Example anti-pattern:
             shell: "rm -rf {{ user_input }}"  ← Injection risk!
         """
-        suggestions = []
+        suggestions: list[SimplificationSuggestion] = []
 
         shell_tasks = self._get_tasks_by_module(role_info, "shell")
         command_tasks = self._get_tasks_by_module(role_info, "command")

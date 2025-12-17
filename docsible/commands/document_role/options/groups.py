@@ -1,5 +1,7 @@
 """Option group utilities for better CLI help organization."""
 
+from typing import Any
+
 import click
 
 
@@ -11,14 +13,14 @@ class GroupedOption(click.Option):
         super().__init__(*args, **kwargs)
 
 
-class OptionGroupMixin:
+class OptionGroupMixin(click.Command):
     """Mixin to add option grouping support to Click commands."""
 
     def format_options(self, ctx, formatter):
         """Group options by category in help output."""
         # Group options by their 'group' attribute
-        groups = {}
-        ungrouped = []
+        groups: dict[str, list[Any]] = {}
+        ungrouped: list[Any] = []
 
         for param in self.get_params(ctx):
             if isinstance(param, GroupedOption) and param.group:

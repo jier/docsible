@@ -165,7 +165,8 @@ def compute_role_hash(role_path: Path) -> str:
     ]
 
     # Sort files for consistent hashing across platforms
-    all_files = []
+    from pathlib import Path
+    all_files: list[Path] = []
     for pattern in patterns:
         all_files.extend(role_path.glob(pattern))
 

@@ -31,7 +31,7 @@ class ComplexityDetector(BasePatternDetector):
         Returns:
             List of suggestions for reducing complexity
         """
-        suggestions = []
+        suggestions: list[SimplificationSuggestion] = []
 
         suggestions.extend(self._detect_complex_conditionals(role_info))
         suggestions.extend(self._detect_deep_include_chains(role_info))
@@ -52,7 +52,7 @@ class ComplexityDetector(BasePatternDetector):
         Better:
             Set intermediate facts or split into separate task files
         """
-        suggestions = []
+        suggestions: list[SimplificationSuggestion] = []
 
         for task_file in self._get_task_files(role_info):
             file_name = task_file.get("file", "unknown")
@@ -136,7 +136,7 @@ class ComplexityDetector(BasePatternDetector):
         Better:
             Flatten to 2-3 levels maximum
         """
-        suggestions = []
+        suggestions: list[SimplificationSuggestion] = []
 
         # Build include graph
         include_graph = {}
@@ -224,7 +224,7 @@ class ComplexityDetector(BasePatternDetector):
         Better:
             Use vars: at play/task level, or role defaults
         """
-        suggestions = []
+        suggestions: list[SimplificationSuggestion] = []
 
         tasks = self._flatten_tasks(role_info)
         if not tasks:
