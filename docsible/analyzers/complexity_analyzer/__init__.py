@@ -16,6 +16,14 @@ All previous public APIs are maintained via re-exports below.
 """
 
 # Re-export all public APIs for backward compatibility
+from .analyzers import (
+    analyze_file_complexity,
+    analyze_role_complexity,
+    classify_complexity,
+)
+from .hotspots import detect_conditional_hotspots
+from .inflections import detect_inflection_points
+from .integrations import IntegrationDetector, detect_integrations
 from .models import (
     ComplexityCategory,
     ComplexityMetrics,
@@ -26,14 +34,6 @@ from .models import (
     IntegrationPoint,
     IntegrationType,
 )
-from .integrations import IntegrationDetector, detect_integrations
-from .analyzers import (
-    analyze_file_complexity,
-    analyze_role_complexity,
-    classify_complexity,
-)
-from .hotspots import detect_conditional_hotspots
-from .inflections import detect_inflection_points
 from .recommendations import generate_recommendations
 
 __all__ = [

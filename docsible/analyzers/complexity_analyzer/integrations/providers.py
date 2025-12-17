@@ -2,7 +2,7 @@
 
 from typing import Any
 
-from ..models import IntegrationType, IntegrationPoint
+from ..models import IntegrationPoint, IntegrationType
 
 
 class BaseIntegrationDetector:

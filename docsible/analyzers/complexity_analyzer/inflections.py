@@ -2,8 +2,8 @@
 
 from typing import Any
 
-from .models import InflectionPoint
 from .hotspots import ConditionalHotspot
+from .models import InflectionPoint
 
 
 def detect_inflection_points(

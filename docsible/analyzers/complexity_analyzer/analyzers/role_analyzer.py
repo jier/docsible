@@ -49,9 +49,9 @@ def analyze_role_complexity(
         ...     print(f"Health Score: {report.pattern_analysis.overall_health_score}")
     """
     # Import here to avoid circular dependency
-    from ..integrations import detect_integrations
     from ..hotspots import detect_conditional_hotspots
     from ..inflections import detect_inflection_points
+    from ..integrations import detect_integrations
     from ..recommendations import generate_recommendations
 
     # Count tasks

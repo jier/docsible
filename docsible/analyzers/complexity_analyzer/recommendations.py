@@ -2,14 +2,14 @@
 
 from typing import Any
 
+from .hotspots import ConditionalHotspot
+from .inflections import InflectionPoint
 from .models import (
     ComplexityCategory,
     ComplexityMetrics,
     FileComplexityDetail,
     IntegrationPoint,
 )
-from .inflections import InflectionPoint
-from .hotspots import ConditionalHotspot
 
 
 def generate_recommendations(
@@ -46,8 +46,9 @@ def generate_recommendations(
         >>> for rec in recommendations:
         ...     print(f"- {rec}")
     """
-    from .analyzers.file_analyzer import _detect_file_concerns
     from docsible.analyzers.concerns.registry import ConcernRegistry
+
+    from .analyzers.file_analyzer import _detect_file_concerns
 
     recommendations = []
 
