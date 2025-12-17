@@ -136,7 +136,7 @@ class PatternLoader:
         with open(patterns_path, encoding="utf-8") as f:
             config = yaml.safe_load(f)
 
-        patterns = {}
+        patterns: dict[Phase, PhasePattern] = {}
         phases_config = config.get("phases", {})
 
         for phase_name, pattern_config in phases_config.items():
