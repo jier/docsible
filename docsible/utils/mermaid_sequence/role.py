@@ -4,17 +4,17 @@ Generates detailed diagrams showing role → tasks → handlers interaction.
 """
 
 import logging
-from typing import Dict, Any
+from typing import Any
 
 from docsible.utils.mermaid import extract_task_name_from_module
 
-from .sanitization import sanitize_participant_name, sanitize_note_text
+from .sanitization import sanitize_note_text, sanitize_participant_name
 
 logger = logging.getLogger(__name__)
 
 
 def generate_mermaid_sequence_role_detailed(
-    role_info: Dict[str, Any],
+    role_info: dict[str, Any],
     include_handlers: bool = True,
     simplify_large: bool = False,
     max_lines: int = 20,
@@ -58,7 +58,7 @@ def generate_mermaid_sequence_role_detailed(
     return diagram
 
 
-def _detect_state_support(role_info: Dict[str, Any]) -> bool:
+def _detect_state_support(role_info: dict[str, Any]) -> bool:
     """
     Detect if the role explicitly supports present/absent states.
 
@@ -129,7 +129,7 @@ def _detect_state_support(role_info: Dict[str, Any]) -> bool:
 
 
 def _generate_simplified_sequence_diagram(
-    role_info: Dict[str, Any], include_handlers: bool
+    role_info: dict[str, Any], include_handlers: bool
 ) -> str:
     """
     Generate simplified sequence diagram for large/complex roles.
@@ -236,7 +236,7 @@ def _generate_simplified_sequence_diagram(
 
 
 def _generate_full_sequence_diagram(
-    role_info: Dict[str, Any], include_handlers: bool
+    role_info: dict[str, Any], include_handlers: bool
 ) -> str:
     """
     Generate detailed sequence diagram showing role → tasks → handlers interaction.

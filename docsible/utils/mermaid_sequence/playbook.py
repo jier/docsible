@@ -4,15 +4,14 @@ Generates high-level architecture diagrams showing playbook → roles → tasks 
 """
 
 import logging
-from typing import List, Dict, Optional
 
-from .sanitization import sanitize_participant_name, sanitize_note_text
+from .sanitization import sanitize_note_text, sanitize_participant_name
 
 logger = logging.getLogger(__name__)
 
 
 def generate_mermaid_sequence_playbook_high_level(
-    playbook: List[Dict], role_meta: Optional[Dict] = None
+    playbook: list[dict], role_meta: dict | None = None
 ) -> str:
     """Generate high-level sequence diagram showing playbook → roles → tasks interaction.
 
@@ -188,7 +187,7 @@ def generate_mermaid_sequence_playbook_high_level(
 
 def _add_task_details(
     diagram: str,
-    tasks: List[Dict],
+    tasks: list[dict],
     executor: str,
     participants: set,
     has_handlers: bool,
