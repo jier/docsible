@@ -7,9 +7,9 @@ to detect issues in Ansible roles and generate improvement suggestions.
 
 from pathlib import Path
 
-from docsible.repositories.role_repository import RoleRepository
 from docsible.analyzers.patterns import PatternAnalyzer, analyze_role_patterns
 from docsible.analyzers.patterns.detectors import DuplicationDetector, SecurityDetector
+from docsible.repositories.role_repository import RoleRepository
 
 
 def load_role_as_dict(role_path: Path) -> dict:
