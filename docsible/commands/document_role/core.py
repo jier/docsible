@@ -7,6 +7,15 @@ from pathlib import Path
 import click
 import yaml
 
+from docsible.commands.document_role.helpers import (
+    apply_minimal_flag,
+    generate_dependency_matrix,
+    generate_integration_and_architecture_diagrams,
+    generate_mermaid_diagrams,
+    handle_analyze_only_mode,
+    load_playbook_content,
+    validate_role_path,
+)
 from docsible.exceptions import CollectionNotFoundError
 from docsible.renderers.readme_renderer import ReadmeRenderer
 from docsible.renderers.tag_manager import manage_docsible_file_keys
@@ -345,18 +354,25 @@ def doc_the_role(
     # Import here to avoid circular imports
     from docsible.commands.document_collection import document_collection_roles
 
-    # If --minimal is set, enable all --no-* flags
-    if minimal:
-        no_vars = True
-        no_tasks = True
-        no_diagrams = True
-        no_examples = True
-        no_metadata = True
-        no_handlers = True
-
-    # If --no-diagrams is set, it overrides --simplify-diagrams
-    if no_diagrams:
-        simplify_diagrams = False
+    # Apply minimal flag settings
+    (
+        no_vars,
+        no_tasks,
+        no_diagrams,
+        no_examples,
+        no_metadata,
+        no_handlers,
+        simplify_diagrams,
+    ) = apply_minimal_flag(
+        minimal,
+        no_vars,
+        no_tasks,
+        no_diagrams,
+        no_examples,
+        no_metadata,
+        no_handlers,
+        simplify_diagrams,
+    )
 
     # Determine if documenting a collection or role
     if collection_path:
@@ -390,26 +406,11 @@ def doc_the_role(
             raise click.ClickException(str(e)) from e
         return
 
-    if not role_path:
-        raise click.UsageError("Either --role or --collection must be specified.")
-
-    role_path = Path(role_path).resolve()
+    # Validate role path
+    role_path = validate_role_path(role_path)
 
     # Load playbook content if provided
-    playbook_content = None
-    if playbook:
-        playbook_path = Path(playbook)
-        if playbook_path.exists():
-            with open(playbook_path, encoding="utf-8") as f:
-                playbook_content = f.read()
-        else:
-            logger.warning(f"Playbook file not found: {playbook}")
-
-    if not role_path.exists():
-        raise click.ClickException(f"Role directory does not exist: {role_path}")
-
-    if not role_path.is_dir():
-        raise click.ClickException(f"Path is not a directory: {role_path}")
+    playbook_content = load_playbook_content(playbook)
 
     # Build role information
     role_info = build_role_info(
@@ -440,166 +441,43 @@ def doc_the_role(
 
     # If analyze-only mode, display dependency summary and exit without generating docs
     if analyze_only:
-        click.echo("\n" + "=" * 60)
-        click.echo("📊 ANALYSIS COMPLETE")
-        click.echo("=" * 60)
-
-        # Show dependency statistics if available
-        if role_info.get("tasks"):
-            from docsible.utils.dependency_matrix import (
-                analyze_task_dependencies,
-                generate_dependency_summary,
-            )
-
-            all_deps = []
-            for task_file_info in role_info.get("tasks", []):
-                file_name = task_file_info.get("file", "unknown")
-                tasks = task_file_info.get("tasks", [])
-                all_deps.extend(analyze_task_dependencies(tasks, file_name))
-
-            if all_deps:
-                summary = generate_dependency_summary(all_deps)
-                click.echo("\n📋 Task Dependencies:")
-                click.echo(
-                    f"   - Tasks with variable dependencies: {summary['tasks_with_requirements']}/{summary['total_tasks']}"
-                )
-                click.echo(
-                    f"   - Tasks triggering handlers: {summary['tasks_with_triggers']}"
-                )
-                click.echo(
-                    f"   - Tasks with error handling: {summary['error_handling_count']}"
-                )
-                click.echo(
-                    f"   - Tasks setting facts: {summary['tasks_setting_facts']}"
-                )
-
-        click.echo(
-            "\n✓ Analysis complete. Use without --analyze-only to generate documentation.\n"
-        )
+        handle_analyze_only_mode(role_info, role_info.get("name", "unknown"))
         return  # Exit without generating documentation
 
     # Generate Mermaid diagrams if requested
-    mermaid_code_per_file = {}
-    sequence_diagram_high_level = None
-    sequence_diagram_detailed = None
-    state_diagram = None
+    diagrams = generate_mermaid_diagrams(
+        generate_graph=generate_graph,
+        role_info=role_info,
+        playbook_content=playbook_content,
+        analysis_report=analysis_report,
+        minimal=minimal,
+        simplify_diagrams=simplify_diagrams,
+    )
+    mermaid_code_per_file = diagrams["mermaid_code_per_file"]
+    sequence_diagram_high_level = diagrams["sequence_diagram_high_level"]
+    sequence_diagram_detailed = diagrams["sequence_diagram_detailed"]
+    state_diagram = diagrams["state_diagram"]
 
-    if generate_graph:
-        mermaid_code_per_file = generate_mermaid_role_tasks_per_file(role_info["tasks"])
-
-        # High-level sequence diagram (playbook → roles)
-        if playbook_content:
-            try:
-                playbook_parsed = yaml.safe_load(playbook_content)
-                sequence_diagram_high_level = (
-                    generate_mermaid_sequence_playbook_high_level(
-                        playbook_parsed, role_meta=role_info.get("meta")
-                    )
-                )
-            except Exception as e:
-                logger.warning(f"Could not generate high-level sequence diagram: {e}")
-
-        # Detailed sequence diagram (role → tasks → handlers)
-        # Only simplify if --minimal or --simplify-diagrams is set
-        # Otherwise, always show full detailed task execution flow
-        try:
-            should_simplify = minimal or simplify_diagrams
-            sequence_diagram_detailed = generate_mermaid_sequence_role_detailed(
-                role_info,
-                include_handlers=len(role_info.get("handlers", [])) > 0,
-                simplify_large=should_simplify,
-                max_lines=20,
-            )
-        except Exception as e:
-            logger.warning(f"Could not generate detailed sequence diagram: {e}")
-
-        # Generate state transition diagram for MEDIUM complexity roles
-        # State diagrams show workflow phases (install -> configure -> validate -> start)
-        try:
-            from docsible.utils.state_diagram import (
-                generate_state_diagram,
-                should_generate_state_diagram,
-            )
-
-            if should_generate_state_diagram(role_info, analysis_report.category.value):
-                state_diagram = generate_state_diagram(
-                    role_info, role_name=role_info.get("name")
-                )
-                logger.info(
-                    "Generated state transition diagram for MEDIUM complexity role"
-                )
-        except Exception as e:
-            logger.warning(f"Could not generate state diagram: {e}")
-
-    # Generate integration boundary diagram
-    integration_boundary_diagram = None
-    if generate_graph and analysis_report.integration_points:
-        try:
-            from docsible.utils.integration_diagram import (
-                generate_integration_boundary,
-                should_generate_integration_diagram,
-            )
-
-            if should_generate_integration_diagram(analysis_report.integration_points):
-                integration_boundary_diagram = generate_integration_boundary(
-                    analysis_report.integration_points
-                )
-                logger.info(
-                    f"Generated integration boundary diagram ({len(analysis_report.integration_points)} integrations)"
-                )
-        except Exception as e:
-            logger.warning(f"Could not generate integration boundary diagram: {e}")
-
-    # Generate component architecture diagram for complex roles
-    architecture_diagram = None
-    if generate_graph:
-        try:
-            from docsible.utils.architecture_diagram import (
-                generate_component_architecture,
-                should_generate_architecture_diagram,
-            )
-
-            if should_generate_architecture_diagram(analysis_report):
-                architecture_diagram = generate_component_architecture(
-                    role_info, analysis_report
-                )
-                logger.info(
-                    f"Generated component architecture diagram for {analysis_report.category.value.upper()} role"
-                )
-        except Exception as e:
-            logger.warning(f"Could not generate architecture diagram: {e}")
+    # Generate integration boundary and architecture diagrams
+    (
+        integration_boundary_diagram,
+        architecture_diagram,
+    ) = generate_integration_and_architecture_diagrams(
+        generate_graph=generate_graph,
+        role_info=role_info,
+        analysis_report=analysis_report,
+    )
 
     # Generate dependency matrix for complex roles
-    dependency_matrix = None
-    dependency_summary = None
-    show_dependency_matrix = False
-    try:
-        from docsible.utils.dependency_matrix import (
-            analyze_task_dependencies,
-            generate_dependency_matrix_markdown,
-            generate_dependency_summary,
-            should_generate_dependency_matrix,
-        )
-
-        # Force show dependencies if user requested it, otherwise use heuristic
-        if show_dependencies or should_generate_dependency_matrix(
-            role_info, analysis_report
-        ):
-            dependency_matrix = generate_dependency_matrix_markdown(role_info)
-            if dependency_matrix:
-                show_dependency_matrix = True
-                # Generate summary statistics
-                all_deps = []
-                for task_file_info in role_info.get("tasks", []):
-                    file_name = task_file_info.get("file", "unknown")
-                    tasks = task_file_info.get("tasks", [])
-                    all_deps.extend(analyze_task_dependencies(tasks, file_name))
-                dependency_summary = generate_dependency_summary(all_deps)
-                logger.info(
-                    f"Generated dependency matrix for {analysis_report.category.value.upper()} role"
-                )
-    except Exception as e:
-        logger.warning(f"Could not generate dependency matrix: {e}")
+    (
+        dependency_matrix,
+        dependency_summary,
+        show_dependency_matrix,
+    ) = generate_dependency_matrix(
+        show_dependencies=show_dependencies,
+        role_info=role_info,
+        analysis_report=analysis_report,
+    )
 
     # Determine template type
     template_type = "hybrid" if hybrid else "standard_modular"
