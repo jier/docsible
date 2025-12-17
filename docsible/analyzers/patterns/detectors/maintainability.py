@@ -307,7 +307,7 @@ class MaintainabilityDetector(BasePatternDetector):
         # Build dependency graph: which tasks register vars used by others
         for i, task in enumerate(tasks):
             if task.get("register"):
-                registered_var = task.get("register")
+                registered_var = str(task.get("register"))
 
                 # Check if this variable is used by later tasks
                 for later_task in tasks[i + 1 :]:

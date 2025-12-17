@@ -249,14 +249,14 @@ def generate_mermaid_playbook(playbook: list[dict[str, Any]]) -> str:
         roles = play.get("roles", [])
         if not isinstance(hosts, list):
             hosts = [hosts]
-        sanitized_hosts = []
+        sanitized_hosts: list[str] = []
         for host in hosts:
             host = re.sub(r"{{\s*(\w+)\s*}}", r"\1", host)
             host = sanitize_for_mermaid_id(host)
             sanitized_hosts.append(host)
-        sanitized_hosts = ", ".join(sanitized_hosts)
-        sanitized_hosts = "hosts[" + sanitized_hosts + "]"
-        last_node = sanitized_hosts
+        hosts_str = ", ".join(sanitized_hosts)
+        hosts_node = "hosts[" + hosts_str + "]"
+        last_node: str = hosts_node
         if roles:
             for i, role in enumerate(roles):
                 role_name = role["role"] if isinstance(role, dict) else role
@@ -272,7 +272,7 @@ def generate_mermaid_playbook(playbook: list[dict[str, Any]]) -> str:
 
 def generate_mermaid_role_tasks_per_file(
     tasks_per_file: list[dict[str, Any]],
-) -> dict[str, str]:
+) -> dict[str, Any]:
     """Generate Mermaid diagrams for each task file in a role.
 
     Creates separate flowchart diagrams for each task file.

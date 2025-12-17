@@ -94,8 +94,8 @@ def cache_by_file_mtime(func: Callable[[Path], T]) -> Callable[[Path], T]:
             logger.debug(f"Removed stale cache entry: {key}")
 
     # Add cache inspection methods
-    wrapper.cache_info = lambda: {"size": len(cache), "entries": list(cache.keys())}
-    wrapper.cache_clear = lambda: cache.clear()
+    wrapper.cache_info = lambda: {"size": len(cache), "entries": list(cache.keys())}  # type: ignore[attr-defined]
+    wrapper.cache_clear = lambda: cache.clear()  # type: ignore[attr-defined]
 
     return wrapper
 
@@ -144,8 +144,8 @@ def cache_by_content_hash(func: Callable[[str], T]) -> Callable[[str], T]:
         return result
 
     # Add cache inspection methods
-    wrapper.cache_info = lambda: {"size": len(cache), "hashes": list(cache.keys())}
-    wrapper.cache_clear = lambda: cache.clear()
+    wrapper.cache_info = lambda: {"size": len(cache), "hashes": list(cache.keys())}  # type: ignore[attr-defined]
+    wrapper.cache_clear = lambda: cache.clear()  # type: ignore[attr-defined]
 
     return wrapper
 

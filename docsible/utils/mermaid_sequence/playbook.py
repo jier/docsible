@@ -49,7 +49,7 @@ def generate_mermaid_sequence_playbook_high_level(
         roles = play.get("roles", [])
         for role in roles:
             if isinstance(role, dict):
-                role_name = role.get("role", role.get("name", "unnamed_role"))
+                role_name = str(role.get("role", role.get("name", "unnamed_role")))
             else:
                 role_name = str(role)
 
@@ -71,7 +71,7 @@ def generate_mermaid_sequence_playbook_high_level(
                         if isinstance(role_spec, str):
                             role_name = role_spec
                         elif isinstance(role_spec, dict):
-                            role_name = role_spec.get("name")
+                            role_name = str(role_spec.get("name", "unnamed"))
                         else:
                             continue
 
@@ -119,7 +119,7 @@ def generate_mermaid_sequence_playbook_high_level(
             diagram += "    Note right of Playbook: Role Dependencies\n"
             for dep in role_meta["dependencies"]:
                 if isinstance(dep, dict):
-                    dep_name = dep.get("role", str(dep))
+                    dep_name = str(dep.get("role", dep.get("name", "unnamed")))
                 else:
                     dep_name = str(dep)
                 dep_name_clean = sanitize_participant_name(dep_name)
@@ -136,7 +136,7 @@ def generate_mermaid_sequence_playbook_high_level(
         roles = play.get("roles", [])
         for role in roles:
             if isinstance(role, dict):
-                role_name = role.get("role", role.get("name", "unnamed_role"))
+                role_name = str(role.get("role", role.get("name", "unnamed_role")))
                 role_vars = role.get("vars", {})
             else:
                 role_name = str(role)

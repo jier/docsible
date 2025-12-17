@@ -128,7 +128,7 @@ class MarkdownValidator:
                 if not in_table:
                     in_table = True
                     table_start = i
-                    table_lines: list[Any] = []
+                    table_lines = []
                     separator_line = None
                     header_line = None
 

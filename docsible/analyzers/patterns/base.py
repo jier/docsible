@@ -177,5 +177,5 @@ class BasePatternDetector(ABC):
         Returns:
             Sorted list of unique file names
         """
-        files = {task.get("file") for task in tasks if task.get("file")}
+        files: set[str] = {str(task.get("file")) for task in tasks if task.get("file")}
         return sorted(files)

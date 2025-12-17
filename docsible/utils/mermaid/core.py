@@ -53,7 +53,7 @@ def break_text(text: str, max_length: int = 50) -> str:
         if current_length + len(word) + len(current_line) > max_length:
             lines.append(" ".join(current_line))
             current_length = 0
-            current_line: list[str] = []
+            current_line = []
         current_line.append(word)
         current_length += len(word)
     if current_line:

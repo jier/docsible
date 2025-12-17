@@ -61,7 +61,7 @@ def load_yaml_file_custom(file_path):
         if not data:
             return None
 
-        result: dict[str, str | None] = {}
+        result: dict[str, dict[str, Any]] = {}
         parent_line = 0
 
         def is_multiline_value(line):
@@ -99,7 +99,7 @@ def load_yaml_file_custom(file_path):
                     break
             comments.reverse()
 
-            meta = {
+            meta: dict[str, str | None] = {
                 "title": None,
                 "required": None,
                 "choices": None,
