@@ -221,7 +221,7 @@ def _add_task_details(
                 if isinstance(role_spec, str):
                     role_name = role_spec
                 elif isinstance(role_spec, dict):
-                    role_name = role_spec.get("name")
+                    role_name = str(role_spec.get("name", ""))
                 else:
                     continue
 

@@ -290,7 +290,7 @@ def generate_mermaid_role_tasks_per_file(
         >>> 'main.yml' in diagrams
         True
     """
-    mermaid_codes = {}
+    mermaid_codes: dict[str, Any] = {}
     for task_info in tasks_per_file:
         task_file = task_info["file"]
         tasks = task_info["mermaid"]

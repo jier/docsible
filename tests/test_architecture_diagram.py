@@ -403,6 +403,7 @@ class TestArchitectureDiagram:
         )
 
         diagram = generate_component_architecture(role_info, complexity_report)
+        assert diagram is not None
 
         # Check basic Mermaid syntax
         assert diagram.startswith("graph TB")

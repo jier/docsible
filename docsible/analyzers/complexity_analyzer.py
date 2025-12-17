@@ -905,7 +905,7 @@ def detect_integrations(role_info: dict[str, Any]) -> list[IntegrationPoint]:
         "ansible.builtin.import_tasks",
     ]
 
-    integration_map: dict[int, Any]= {}  # type -> list of tasks
+    integration_map: dict[IntegrationType, Any] = {}  # type -> list of tasks
 
     for task_file_info in role_info.get("tasks", []):
         for task in task_file_info.get("tasks", []):

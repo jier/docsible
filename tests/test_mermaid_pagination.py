@@ -1,5 +1,7 @@
 """Tests for Mermaid diagram pagination functionality."""
 
+from typing import Any
+
 from docsible.utils.mermaid.pagination import (
     get_diagram_complexity_warning,
     paginate_tasks,
@@ -118,7 +120,7 @@ class TestPaginateTasks:
 
     def test_task_data_preserved(self):
         """Task dictionaries should be preserved unchanged."""
-        tasks = [
+        tasks: list[dict[str, Any]] = [
             {"name": "Task 1", "module": "apt", "when": "True"},
             {"name": "Task 2", "module": "service", "tags": ["prod"]},
         ]

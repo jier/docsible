@@ -88,10 +88,10 @@ def document_collection_roles(
         git_info = get_repo_info(collection_path) or {}
         repository_url = git_info.get("repository") or repository_url
         repo_branch = repo_branch or git_info.get("branch", "main")
-        repo_type = repo_type or git_info.get("repository_type")
+        repo_type = repo_type or str(git_info.get("repository_type") or "github")
     except Exception as e:
         logger.warning(f"Could not get Git info: {e}")
-        repository_url = repository_url or None
+        repository_url = repository_url or ""
         repo_branch = repo_branch or "main"
         repo_type = repo_type or "github"
 

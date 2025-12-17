@@ -94,7 +94,7 @@ class ConcernRegistry:
                 DatabaseOperationsConcern,
                 VerificationConcern,
             ]:
-                cls.register_class(detector_class)
+                cls.register_class(detector_class)  # type: ignore[type-abstract]
 
             cls._initialized = True
             logger.info(f"Registered {len(cls._detectors)} built-in concern detectors")

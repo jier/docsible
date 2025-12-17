@@ -6,6 +6,7 @@ providing a clean separation between file I/O operations and business logic.
 
 import logging
 from pathlib import Path
+from typing import cast
 
 from docsible.models.role import Role
 from docsible.utils.project_structure import ProjectStructure
@@ -84,7 +85,7 @@ class RoleRepository:
                 "meta": meta or {},
             }
 
-            return Role.model_validate(role_dict)
+            return cast(Role, Role.model_validate(role_dict))
 
         except Exception as e:
             logger.error(f"Failed to load role from {path}: {e}")
@@ -99,6 +100,7 @@ class RoleRepository:
         Returns:
             List of default variable dictionaries
         """
+        assert self.structure is not None, "ProjectStructure must be initialized"
         defaults_dir = self.structure.get_defaults_dir(role_path)
         if not defaults_dir.exists():
             logger.debug(f"No defaults directory found in {role_path}")
@@ -116,6 +118,7 @@ class RoleRepository:
         Returns:
             List of variable dictionaries
         """
+        assert self.structure is not None, "ProjectStructure must be initialized"
         vars_dir = self.structure.get_vars_dir(role_path)
         if not vars_dir.exists():
             logger.debug(f"No vars directory found in {role_path}")
@@ -140,6 +143,7 @@ class RoleRepository:
         Returns:
             List of task file dictionaries
         """
+        assert self.structure is not None, "ProjectStructure must be initialized"
         tasks_dir = self.structure.get_tasks_dir(role_path)
         if not tasks_dir.exists() or not tasks_dir.is_dir():
             logger.debug(f"No tasks directory found in {role_path}")
@@ -157,7 +161,8 @@ class RoleRepository:
 
                     if tasks_data:
                         relative_path = os.path.relpath(file_path, str(tasks_dir))
-                        task_info = {
+                        from typing import Any
+                        task_info: dict[str, Any] = {
                             "file": relative_path,
                             "tasks": [],
                             "mermaid": [],
@@ -192,6 +197,7 @@ class RoleRepository:
         Returns:
             List of handler dictionaries
         """
+        assert self.structure is not None, "ProjectStructure must be initialized"
         handlers_dir = role_path / "handlers"
         if not handlers_dir.exists() or not handlers_dir.is_dir():
             logger.debug(f"No handlers directory found in {role_path}")
@@ -247,6 +253,7 @@ class RoleRepository:
         Returns:
             Metadata dictionary or None if not found
         """
+        assert self.structure is not None, "ProjectStructure must be initialized"
         meta_path = self.structure.get_meta_file(role_path)
         if meta_path is None or not meta_path.exists():
             logger.debug(f"No meta file found in {role_path}")

@@ -78,7 +78,7 @@ def extract_playbook_role_dependencies(
                 if isinstance(role, str):
                     role_name = role
                 elif isinstance(role, dict):
-                    role_name = role.get("role") or role.get("name")
+                    role_name = str(role.get("role") or role.get("name") or "")
                 else:
                     continue
 
@@ -101,7 +101,7 @@ def extract_playbook_role_dependencies(
                             if isinstance(role_spec, str):
                                 role_name = role_spec
                             elif isinstance(role_spec, dict):
-                                role_name = role_spec.get("name")
+                                role_name = str(role_spec.get("name", ""))
                             else:
                                 continue
 
@@ -224,7 +224,8 @@ def build_role_info(
 
                     if tasks_data:
                         relative_path = file_path.relative_to(tasks_dir)
-                        task_info = {
+                        from typing import Any
+                        task_info: dict[str, Any] = {
                             "file": str(relative_path),
                             "tasks": [],
                             "mermaid": [],

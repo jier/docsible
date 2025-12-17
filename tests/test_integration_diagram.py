@@ -188,6 +188,7 @@ class TestIntegrationDiagram:
         ]
 
         diagram = generate_integration_boundary(integrations)
+        assert diagram is not None
 
         # Check basic Mermaid syntax
         assert diagram.startswith("graph LR")

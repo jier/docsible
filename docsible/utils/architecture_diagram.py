@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 def generate_component_architecture(
-    role_info: dict[str, Any], complexity_report: Any
+    role_info: dict[str, Any] | None, complexity_report: Any
 ) -> str | None:
     """
     Generate component architecture diagram for complex roles.
