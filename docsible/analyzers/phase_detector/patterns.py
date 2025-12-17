@@ -1,7 +1,7 @@
 """Phase pattern definitions and loading logic."""
 
-from pathlib import Path
 import logging
+from pathlib import Path
 
 from .models import Phase, PhasePattern
 

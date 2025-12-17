@@ -3,7 +3,7 @@
 from collections import defaultdict
 from pathlib import Path
 
-from .models import Phase, PhaseMatch, PhaseDetectionResult, PhasePattern
+from .models import Phase, PhaseDetectionResult, PhaseMatch
 from .patterns import PatternLoader
 
 

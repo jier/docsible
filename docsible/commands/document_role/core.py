@@ -22,11 +22,6 @@ from docsible.renderers.tag_manager import manage_docsible_file_keys
 from docsible.utils.git import get_repo_info
 from docsible.utils.mermaid import (
     generate_mermaid_playbook,
-    generate_mermaid_role_tasks_per_file,
-)
-from docsible.utils.mermaid_sequence import (
-    generate_mermaid_sequence_playbook_high_level,
-    generate_mermaid_sequence_role_detailed,
 )
 from docsible.utils.project_structure import ProjectStructure
 from docsible.utils.special_tasks_keys import process_special_task_keys
@@ -351,12 +346,12 @@ def _display_dry_run_summary(
     click.echo("=" * 70)
 
     # Role information
-    click.echo(f"\n📁 Analysis Complete:")
+    click.echo("\n📁 Analysis Complete:")
     click.echo(f"   Role: {role_info.get('name', 'unknown')}")
     click.echo(f"   Path: {role_path}")
 
     # Complexity analysis
-    click.echo(f"\n📊 Complexity Analysis:")
+    click.echo("\n📊 Complexity Analysis:")
     click.echo(f"   Category: {analysis_report.category.value.upper()}")
     click.echo(f"   Total Tasks: {analysis_report.metrics.total_tasks}")
     click.echo(f"   Task Files: {analysis_report.metrics.task_files}")
@@ -374,7 +369,7 @@ def _display_dry_run_summary(
         click.echo(f"   Handlers: {handlers_count}")
 
     # What would be generated
-    click.echo(f"\n📈 Would Generate:")
+    click.echo("\n📈 Would Generate:")
 
     if generate_graph:
         if mermaid_code_per_file:
@@ -400,7 +395,7 @@ def _display_dry_run_summary(
         click.echo("   (No diagrams or matrices - use --graph for visualizations)")
 
     # Files that would be created/modified
-    click.echo(f"\n📝 Files That Would Be Created/Modified:")
+    click.echo("\n📝 Files That Would Be Created/Modified:")
     readme_path = role_path / output
 
     if readme_path.exists():
@@ -422,13 +417,13 @@ def _display_dry_run_summary(
             click.echo("   → .docsible (metadata file - new)")
 
     # Active flags
-    click.echo(f"\n⚙️  Active Flags:")
+    click.echo("\n⚙️  Active Flags:")
     click.echo(f"   --graph: {'✓' if generate_graph else '✗'}")
     click.echo(f"   --hybrid: {'✓' if hybrid else '✗'}")
     click.echo(f"   --no-backup: {'✓' if no_backup else '✗'}")
     click.echo(f"   --minimal: {'✓' if minimal else '✗'}")
 
-    click.echo(f"\n💡 To generate documentation, run without --dry-run")
+    click.echo("\n💡 To generate documentation, run without --dry-run")
     click.echo("=" * 70 + "\n")
 
 
