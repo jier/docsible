@@ -7,11 +7,25 @@ to detect issues in Ansible roles and generate improvement suggestions.
 
 from pathlib import Path
 
-from docsible.parsers.role_parser import parse_role
-
-# from docsible.commands.document_role.core import build_role_info
+from docsible.repositories.role_repository import RoleRepository
 from docsible.analyzers.patterns import PatternAnalyzer, analyze_role_patterns
 from docsible.analyzers.patterns.detectors import DuplicationDetector, SecurityDetector
+
+
+def load_role_as_dict(role_path: Path) -> dict:
+    """Load role using RoleRepository and convert to dict format.
+
+    Args:
+        role_path: Path to the role directory
+
+    Returns:
+        Role data as dictionary for pattern analysis
+    """
+    repo = RoleRepository()
+    role = repo.load(role_path, include_comments=True, include_line_numbers=True)
+    if not role:
+        raise ValueError(f"Failed to load role from {role_path}")
+    return role.model_dump()
 
 
 def example_basic_analysis():
@@ -20,10 +34,9 @@ def example_basic_analysis():
     print("Example 1: Basic Pattern Analysis")
     print("=" * 70)
 
-    # Parse role (using test fixture)
+    # Load role (using test fixture)
     role_path = Path(__file__).parent.parent / "tests" / "fixtures" / "simple_role"
-    role_info = parse_role(str(role_path))
-    # role_info = build_role_info(role_path=role_path)
+    role_info = load_role_as_dict(role_path)
 
     # Analyze patterns
     report = analyze_role_patterns(role_info)
@@ -58,7 +71,7 @@ def example_filtered_analysis():
     print("=" * 70)
 
     role_path = Path(__file__).parent.parent / "tests" / "fixtures" / "simple_role"
-    role_info = parse_role(str(role_path))
+    role_info = load_role_as_dict(role_path)
 
     report = analyze_role_patterns(role_info)
 
@@ -92,7 +105,7 @@ def example_custom_detectors():
     print("=" * 70)
 
     role_path = Path(__file__).parent.parent / "tests" / "fixtures" / "simple_role"
-    role_info = parse_role(str(role_path))
+    role_info = load_role_as_dict(role_path)
 
     # Only run security and duplication checks
     print("\n🔍 Running security and duplication detectors only...")
@@ -116,7 +129,7 @@ def example_high_confidence_only():
     print("=" * 70)
 
     role_path = Path(__file__).parent.parent / "tests" / "fixtures" / "simple_role"
-    role_info = parse_role(str(role_path))
+    role_info = load_role_as_dict(role_path)
 
     # Only show high-confidence patterns
     analyzer = PatternAnalyzer(min_confidence=0.85)
@@ -142,7 +155,7 @@ def example_export_results():
     print("=" * 70)
 
     role_path = Path(__file__).parent.parent / "tests" / "fixtures" / "simple_role"
-    role_info = parse_role(str(role_path))
+    role_info = load_role_as_dict(role_path)
 
     report = analyze_role_patterns(role_info)
 

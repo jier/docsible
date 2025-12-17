@@ -11,10 +11,17 @@ def add_output_options(f):
     - --no-backup: Don't backup existing README
     - --append/-a: Append to existing README instead of replacing
     - --no-docsible: Don't generate .docsible file
+    - --dry-run: Preview changes without writing files
     - --validate/--no-validate: Enable/disable markdown formatting validation
     - --auto-fix: Automatically fix formatting issues
     - --strict-validation: Fail generation if validation errors found
     """
+    f = click.option(
+        "--dry-run",
+        "dry_run",
+        is_flag=True,
+        help="Preview what would be generated without writing any files.",
+    )(f)
     f = click.option(
         "--strict-validation",
         "strict_validation",

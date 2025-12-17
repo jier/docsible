@@ -308,6 +308,130 @@ def build_role_info(
     return role_info
 
 
+def _display_dry_run_summary(
+    role_info: dict,
+    role_path: Path,
+    output: str,
+    analysis_report,
+    mermaid_code_per_file: dict,
+    sequence_diagram_high_level: str | None,
+    sequence_diagram_detailed: str | None,
+    state_diagram: str | None,
+    integration_boundary_diagram: str | None,
+    architecture_diagram: str | None,
+    dependency_matrix: str | None,
+    no_backup: bool,
+    no_docsible: bool,
+    generate_graph: bool,
+    hybrid: bool,
+    minimal: bool,
+) -> None:
+    """Display dry-run summary without writing files.
+
+    Args:
+        role_info: Role information dictionary
+        role_path: Path to role directory
+        output: Output filename
+        analysis_report: Complexity analysis report
+        mermaid_code_per_file: Generated task flowcharts
+        sequence_diagram_high_level: High-level sequence diagram
+        sequence_diagram_detailed: Detailed sequence diagram
+        state_diagram: State transition diagram
+        integration_boundary_diagram: Integration boundary diagram
+        architecture_diagram: Component architecture diagram
+        dependency_matrix: Dependency matrix
+        no_backup: Whether backup is disabled
+        no_docsible: Whether .docsible file is disabled
+        generate_graph: Whether diagrams are generated
+        hybrid: Whether hybrid template is used
+        minimal: Whether minimal mode is enabled
+    """
+    click.echo("\n" + "=" * 70)
+    click.echo("🔍 DRY RUN MODE - No files will be modified")
+    click.echo("=" * 70)
+
+    # Role information
+    click.echo(f"\n📁 Analysis Complete:")
+    click.echo(f"   Role: {role_info.get('name', 'unknown')}")
+    click.echo(f"   Path: {role_path}")
+
+    # Complexity analysis
+    click.echo(f"\n📊 Complexity Analysis:")
+    click.echo(f"   Category: {analysis_report.category.value.upper()}")
+    click.echo(f"   Total Tasks: {analysis_report.metrics.total_tasks}")
+    click.echo(f"   Task Files: {analysis_report.metrics.task_files}")
+
+    # Variables
+    defaults_count = sum(len(df.get("data", {})) for df in role_info.get("defaults", []))
+    vars_count = sum(len(vf.get("data", {})) for vf in role_info.get("vars", []))
+    click.echo(
+        f"   Variables: {defaults_count + vars_count} ({defaults_count} defaults, {vars_count} vars)"
+    )
+
+    # Handlers
+    handlers_count = len(role_info.get("handlers", []))
+    if handlers_count > 0:
+        click.echo(f"   Handlers: {handlers_count}")
+
+    # What would be generated
+    click.echo(f"\n📈 Would Generate:")
+
+    if generate_graph:
+        if mermaid_code_per_file:
+            click.echo(f"   ✓ Task flowcharts ({len(mermaid_code_per_file)} files)")
+        if sequence_diagram_high_level:
+            click.echo("   ✓ Sequence diagram (high-level)")
+        if sequence_diagram_detailed:
+            click.echo("   ✓ Sequence diagram (detailed)")
+        if state_diagram:
+            click.echo("   ✓ State transition diagram")
+        if integration_boundary_diagram:
+            integration_count = len(analysis_report.integration_points)
+            click.echo(
+                f"   ✓ Integration boundary diagram ({integration_count} external systems)"
+            )
+        if architecture_diagram:
+            click.echo("   ✓ Component architecture diagram")
+
+    if dependency_matrix:
+        click.echo("   ✓ Dependency matrix")
+
+    if not generate_graph and not dependency_matrix:
+        click.echo("   (No diagrams or matrices - use --graph for visualizations)")
+
+    # Files that would be created/modified
+    click.echo(f"\n📝 Files That Would Be Created/Modified:")
+    readme_path = role_path / output
+
+    if readme_path.exists():
+        # Estimate new content size
+        click.echo(f"   → {output} (existing file would be updated)")
+        if not no_backup:
+            from datetime import datetime
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            backup_name = f"{output.rsplit('.', 1)[0]}_backup_{timestamp}.{output.rsplit('.', 1)[1] if '.' in output else 'md'}"
+            click.echo(f"   → {backup_name} (backup of existing)")
+    else:
+        click.echo(f"   → {output} (new file)")
+
+    if not no_docsible:
+        docsible_path = role_path / ".docsible"
+        if docsible_path.exists():
+            click.echo("   → .docsible (metadata file - would be updated)")
+        else:
+            click.echo("   → .docsible (metadata file - new)")
+
+    # Active flags
+    click.echo(f"\n⚙️  Active Flags:")
+    click.echo(f"   --graph: {'✓' if generate_graph else '✗'}")
+    click.echo(f"   --hybrid: {'✓' if hybrid else '✗'}")
+    click.echo(f"   --no-backup: {'✓' if no_backup else '✗'}")
+    click.echo(f"   --minimal: {'✓' if minimal else '✗'}")
+
+    click.echo(f"\n💡 To generate documentation, run without --dry-run")
+    click.echo("=" * 70 + "\n")
+
+
 def doc_the_role(
     role_path,
     collection_path,
@@ -315,6 +439,7 @@ def doc_the_role(
     generate_graph,
     no_backup,
     no_docsible,
+    dry_run,
     comments,
     task_line,
     md_collection_template,
@@ -484,6 +609,28 @@ def doc_the_role(
 
     if hybrid and not include_complexity:
         include_complexity = True
+
+    # Handle dry-run mode
+    if dry_run:
+        _display_dry_run_summary(
+            role_info=role_info,
+            role_path=role_path,
+            output=output,
+            analysis_report=analysis_report,
+            mermaid_code_per_file=mermaid_code_per_file,
+            sequence_diagram_high_level=sequence_diagram_high_level,
+            sequence_diagram_detailed=sequence_diagram_detailed,
+            state_diagram=state_diagram,
+            integration_boundary_diagram=integration_boundary_diagram,
+            architecture_diagram=architecture_diagram,
+            dependency_matrix=dependency_matrix,
+            no_backup=no_backup,
+            no_docsible=no_docsible,
+            generate_graph=generate_graph,
+            hybrid=hybrid,
+            minimal=minimal,
+        )
+        return
 
     # Render README
     renderer = ReadmeRenderer(

@@ -1401,6 +1401,9 @@ docsible role --role ./my-role
 # Document a collection
 docsible role --collection ./my-collection
 
+# Preview what would be generated (dry-run)
+docsible role --role ./my-role --graph --dry-run
+
 # With custom options
 docsible  role --role ./my-role --graph --comments --task-line
 
@@ -1424,6 +1427,7 @@ $ docsible role --help
   -o, --output TEXT      Output readme file name.
   -nob, --no-backup      Do not backup the readme before remove.
   -a, --append           Append to the existing README.md instead of replacing.
+  --dry-run              Preview what would be generated without writing any files.
   --validate/--no-validate  Validate markdown formatting before writing.
   --auto-fix             Automatically fix common markdown formatting issues.
   --strict-validation    Fail generation if markdown validation errors are found.
@@ -1480,6 +1484,7 @@ $ docsible role --help
 --no-backup, -nob: Don't create backup before overwriting
 --append, -a: Append to existing README instead of replacing
 --no-docsible, -nod: Do not generate .docsible file
+--dry-run: Preview what would be generated without writing any files (analysis still performed)
 --validate/--no-validate: Enable/disable markdown formatting validation (default: enabled)
 --auto-fix: Automatically fix common markdown formatting issues (whitespace, tables)
 --strict-validation: Fail generation if markdown validation errors are found (default: warn only)
