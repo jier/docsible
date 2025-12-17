@@ -8,9 +8,11 @@ Uses a conservative approach to minimize false positives.
 """
 
 from collections import defaultdict
-from dataclasses import dataclass
 from enum import Enum
+from pathlib import Path
 from typing import TypedDict
+
+from pydantic import BaseModel, Field
 
 
 class Phase(Enum):
@@ -26,37 +28,63 @@ class Phase(Enum):
     UNKNOWN = "unknown"
 
 
-@dataclass
-class PhaseMatch:
+class PhaseMatch(BaseModel):
     """Represents a detected phase in a task sequence."""
 
     phase: Phase
-    start_line: int
-    end_line: int
-    task_count: int
-    task_indices: list[int]
-    confidence: float  # 0.0-1.0
+    start_line: int = Field(ge=0, description="Starting line number in source file")
+    end_line: int = Field(ge=0, description="Ending line number in source file")
+    task_count: int = Field(gt=0, description="Number of tasks in this phase")
+    task_indices: list[int] = Field(description="Task indices belonging to this phase")
+    confidence: float = Field(ge=0.0, le=1.0, description="Confidence score 0.0-1.0")
 
 
-@dataclass
-class PhaseDetectionResult:
+class PhaseDetectionResult(BaseModel):
     """Result of phase detection analysis."""
 
-    detected_phases: list[PhaseMatch]
-    is_coherent_pipeline: bool
-    confidence: float  # Overall confidence that this is a pipeline
-    recommendation: str
-    reasoning: str
+    detected_phases: list[PhaseMatch] = Field(default_factory=list)
+    is_coherent_pipeline: bool = Field(
+        description="Whether tasks form a coherent pipeline"
+    )
+    confidence: float = Field(
+        ge=0.0, le=1.0, description="Overall pipeline confidence"
+    )
+    recommendation: str = Field(description="Human-readable recommendation")
+    reasoning: str = Field(description="Explanation of the analysis")
+
 
 class PhasePattern(TypedDict):
     modules: set[str]
     name_keywords: list[str]
     priority: int
-class PhaseDetector:
-    """Detects execution phases in Ansible task files."""
 
-    # Phase detection patterns
-    PHASE_PATTERNS: dict[Phase, PhasePattern] = {
+
+class PhaseDetector:
+    """Detects execution phases in Ansible task files.
+
+    Supports custom phase patterns via:
+    1. Configuration file (.docsible/phase_patterns.yml)
+    2. Programmatic API (add_custom_phase, extend_phase)
+
+    Example:
+        # Use defaults
+        detector = PhaseDetector()
+
+        # Load custom patterns from file
+        detector = PhaseDetector(patterns_file=".docsible/phase_patterns.yml")
+
+        # Add custom phase programmatically
+        detector = PhaseDetector()
+        detector.add_custom_phase(
+            phase_name="database_migration",
+            modules={"postgresql_query", "mysql_query"},
+            keywords=["migration", "migrate", "schema"],
+            priority=3
+        )
+    """
+
+    # Default phase detection patterns
+    _DEFAULT_PATTERNS: dict[Phase, PhasePattern] = {
         Phase.SETUP: {
             "modules": {
                 "assert",
@@ -161,13 +189,170 @@ class PhaseDetector:
         },
     }
 
-    def __init__(self, min_confidence: float = 0.8):
+    def __init__(
+        self, min_confidence: float = 0.8, patterns_file: str | Path | None = None
+    ):
         """Initialize phase detector.
 
         Args:
             min_confidence: Minimum confidence threshold for pipeline detection (default: 0.8)
+            patterns_file: Optional path to custom phase patterns YAML file
+
+        Example:
+            >>> detector = PhaseDetector()  # Use defaults
+            >>> detector = PhaseDetector(patterns_file=".docsible/phase_patterns.yml")
         """
         self.min_confidence = min_confidence
+        self.phase_patterns = self._load_patterns(patterns_file)
+
+    def _load_patterns(
+        self, patterns_file: str | Path | None
+    ) -> dict[Phase, PhasePattern]:
+        """Load phase patterns from file or use defaults.
+
+        Args:
+            patterns_file: Optional path to custom patterns YAML file
+
+        Returns:
+            Dictionary mapping Phase to PhasePattern
+        """
+        if patterns_file:
+            patterns_path = Path(patterns_file)
+            if patterns_path.exists():
+                try:
+                    return self._parse_patterns_file(patterns_path)
+                except Exception as e:
+                    import logging
+
+                    logger = logging.getLogger(__name__)
+                    logger.warning(
+                        f"Failed to load patterns from {patterns_file}: {e}. Using defaults."
+                    )
+
+        # Return a copy of defaults so they can be modified
+        return {phase: patterns.copy() for phase, patterns in self._DEFAULT_PATTERNS.items()}
+
+    def _parse_patterns_file(self, patterns_path: Path) -> dict[Phase, PhasePattern]:
+        """Parse custom patterns from YAML file.
+
+        Args:
+            patterns_path: Path to YAML patterns file
+
+        Returns:
+            Dictionary mapping Phase to PhasePattern
+
+        Expected YAML format:
+            phases:
+              setup:
+                modules: [assert, debug, set_fact]
+                name_keywords: [prerequisite, check, validate]
+                priority: 1
+              custom_phase:
+                modules: [custom_module]
+                name_keywords: [custom, special]
+                priority: 10
+        """
+        import yaml
+
+        with open(patterns_path, encoding="utf-8") as f:
+            config = yaml.safe_load(f)
+
+        patterns = {}
+        phases_config = config.get("phases", {})
+
+        for phase_name, pattern_config in phases_config.items():
+            # Try to match to existing Phase enum
+            phase = self._get_phase_by_name(phase_name)
+
+            patterns[phase] = {
+                "modules": set(pattern_config.get("modules", [])),
+                "name_keywords": pattern_config.get("name_keywords", []),
+                "priority": pattern_config.get("priority", 99),
+            }
+
+        return patterns
+
+    def _get_phase_by_name(self, name: str) -> Phase:
+        """Get Phase enum by name, case-insensitive.
+
+        Args:
+            name: Phase name
+
+        Returns:
+            Phase enum member
+
+        Note:
+            If phase name doesn't match any existing Phase, returns Phase.UNKNOWN
+        """
+        name_upper = name.upper()
+        for phase in Phase:
+            if phase.name == name_upper:
+                return phase
+        return Phase.UNKNOWN
+
+    def add_custom_phase(
+        self,
+        phase: Phase,
+        modules: set[str] | None = None,
+        keywords: list[str] | None = None,
+        priority: int | None = None,
+    ) -> None:
+        """Add or replace a phase pattern.
+
+        Args:
+            phase: Phase enum member
+            modules: Set of module names for this phase
+            keywords: List of name keywords for this phase
+            priority: Priority order (lower = earlier in pipeline)
+
+        Example:
+            >>> detector = PhaseDetector()
+            >>> detector.add_custom_phase(
+            ...     Phase.SETUP,
+            ...     modules={"custom_setup_module"},
+            ...     keywords=["initialize"],
+            ...     priority=1
+            ... )
+        """
+        self.phase_patterns[phase] = {
+            "modules": modules or set(),
+            "name_keywords": keywords or [],
+            "priority": priority if priority is not None else 99,
+        }
+
+    def extend_phase(
+        self,
+        phase: Phase,
+        additional_modules: set[str] | None = None,
+        additional_keywords: list[str] | None = None,
+    ) -> None:
+        """Extend an existing phase with additional patterns.
+
+        Args:
+            phase: Phase enum member to extend
+            additional_modules: Additional module names to add
+            additional_keywords: Additional keywords to add
+
+        Example:
+            >>> detector = PhaseDetector()
+            >>> detector.extend_phase(
+            ...     Phase.INSTALL,
+            ...     additional_modules={"brew", "chocolatey"},
+            ...     additional_keywords=["provision"]
+            ... )
+        """
+        if phase not in self.phase_patterns:
+            # Create new pattern if it doesn't exist
+            self.phase_patterns[phase] = {
+                "modules": set(),
+                "name_keywords": [],
+                "priority": 99,
+            }
+
+        if additional_modules:
+            self.phase_patterns[phase]["modules"].update(additional_modules)
+        if additional_keywords:
+            self.phase_patterns[phase]["name_keywords"].extend(additional_keywords)
 
     def detect_phases(
         self, tasks: list[dict], line_numbers: list[tuple[int, int]] | None = None
@@ -234,7 +419,7 @@ class PhaseDetector:
         # Score each phase
         phase_scores = defaultdict(float)
 
-        for phase, patterns in self.PHASE_PATTERNS.items():
+        for phase, patterns in self.phase_patterns.items():
             score = 0.0
 
             # Check module match (strong signal)
@@ -471,8 +656,8 @@ class PhaseDetector:
         total_transitions = len(phase_groups) - 1
 
         for i in range(total_transitions):
-            current_priority = self.PHASE_PATTERNS[phase_groups[i].phase]["priority"]
-            next_priority = self.PHASE_PATTERNS[phase_groups[i + 1].phase]["priority"]
+            current_priority = self.phase_patterns[phase_groups[i].phase]["priority"]
+            next_priority = self.phase_patterns[phase_groups[i + 1].phase]["priority"]
 
             if next_priority >= current_priority:
                 correct_transitions += 1
