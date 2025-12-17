@@ -1,5 +1,7 @@
 """Tests for Priority 4: Documentation Validation Framework."""
 
+from typing import Any
+
 from docsible.analyzers.complexity_analyzer import (
     ComplexityCategory,
     ComplexityMetrics,
@@ -149,7 +151,7 @@ No variables section here.
 
     def test_missing_example_playbook_warning(self):
         """Test that missing examples generate warnings."""
-        role_info = {
+        role_info: dict[str, Any] | None = {
             "defaults": [],
             "vars": [],
             "handlers": [],
@@ -643,7 +645,7 @@ Test Author
 
         # Even a small issue might cause failure with high min_score
         doc = "# Title\n\nSome content but no examples."
-        role_info = {
+        role_info: dict[str, Any] | None = {
             "defaults": [],
             "vars": [],
             "handlers": [],

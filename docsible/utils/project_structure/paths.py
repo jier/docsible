@@ -1,12 +1,12 @@
 """Path resolution utilities for Ansible project structures."""
 
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 
 def resolve_path(
     key: str,
-    config: dict[str, str| Path],
+    config: dict[str, str | Path],
     defaults: dict[str, Any],
     base_path: Path,
     default: str | None = None,
@@ -213,4 +213,5 @@ def get_yaml_extensions(config: dict[str, Any], defaults: dict[str, Any]) -> lis
     Returns:
         List of YAML extensions (e.g., ['.yml', '.yaml'])
     """
-    return config.get("yaml_extensions", defaults["yaml_extensions"])
+    
+    return cast(list[str], config.get("yaml_extensions", defaults["yaml_extensions"]))

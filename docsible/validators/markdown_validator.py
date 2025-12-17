@@ -9,6 +9,7 @@ Validates raw markdown formatting for human readability:
 
 import logging
 import re
+from typing import Any
 
 from .doc_validator import ValidationIssue, ValidationSeverity, ValidationType
 
@@ -116,8 +117,8 @@ class MarkdownValidator:
         lines = markdown.split("\n")
 
         in_table = False
-        table_start = None
-        table_lines = []
+        table_start: int| None = None
+        table_lines: list[Any] = []
         separator_line = None
         header_line = None
 
@@ -127,7 +128,7 @@ class MarkdownValidator:
                 if not in_table:
                     in_table = True
                     table_start = i
-                    table_lines = []
+                    table_lines: list[Any] = []
                     separator_line = None
                     header_line = None
 
@@ -141,20 +142,22 @@ class MarkdownValidator:
             else:
                 if in_table:
                     # End of table - validate it
-                    issues.extend(
-                        self._validate_single_table(
-                            table_lines, header_line, separator_line, table_start
+                    if isinstance(table_start, int):
+                        issues.extend(
+                            self._validate_single_table(
+                                table_lines, header_line, separator_line, table_start
+                            )
                         )
-                    )
-                    # in_table = False
+                        in_table = False
 
         # Validate last table if file ends with table
         if in_table:
-            issues.extend(
-                self._validate_single_table(
-                    table_lines, header_line, separator_line, table_start
+            if isinstance(table_start, int):
+                issues.extend(
+                    self._validate_single_table(
+                        table_lines, header_line, separator_line, table_start
+                    )
                 )
-            )
 
         return issues
 

@@ -225,7 +225,7 @@ def _add_task_details(
                 else:
                     continue
 
-                role_name_clean = sanitize_participant_name(role_name)
+                role_name_clean = sanitize_participant_name(str(role_name))
                 diagram += (
                     f"    {executor}->>+{role_name_clean}: {role_action}: {role_name}\n"
                 )

@@ -5,7 +5,7 @@ YAML file loading functions with metadata extraction.
 import logging
 import os
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import yaml
 
@@ -31,7 +31,7 @@ def load_yaml_generic(filepath: str | Path) -> dict[str, Any] | None:
     try:
         with open(filepath, encoding="utf-8") as f:
             data = yaml.safe_load(f)
-        return data
+        return cast(dict[str, Any] | None, data)
     except (FileNotFoundError, yaml.constructor.ConstructorError) as e:
         logger.error(f"Error loading {filepath}: {e}")
         return None

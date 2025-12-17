@@ -28,7 +28,7 @@ def extract_task_name_from_module(task: dict[str, Any], task_index: int = 0) -> 
     """
     # If task has a name, return it
     if "name" in task and task["name"]:
-        return task["name"]
+        return str(task["name"])
 
     # List of common task keys that aren't modules
     non_module_keys = {

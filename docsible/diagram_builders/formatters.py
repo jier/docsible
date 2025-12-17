@@ -60,8 +60,8 @@ def break_text(text: str, max_length: int = 50) -> str:
         return text
 
     words = text.split(" ")
-    lines = []
-    current_line = []
+    lines: list[str] = []
+    current_line: list[str] = []
     current_length = 0
 
     for word in words:
@@ -70,7 +70,7 @@ def break_text(text: str, max_length: int = 50) -> str:
         if current_length + word_length + len(current_line) > max_length:
             if current_line:  # Only add if line is not empty
                 lines.append(" ".join(current_line))
-                current_line = []
+                current_line: list[str] = []
                 current_length = 0
 
         current_line.append(word)

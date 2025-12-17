@@ -5,7 +5,7 @@ This follows the Template Method design pattern.
 """
 
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, cast
 
 from docsible.analyzers.patterns.models import PatternCategory, SimplificationSuggestion
 
@@ -73,7 +73,7 @@ class BasePatternDetector(ABC):
         Returns:
             List of task file dictionaries
         """
-        return role_info.get("tasks", [])
+        return cast(list[dict[str, Any]],role_info.get("tasks", []))
 
     def _show_task_snippet(self, tasks: list[dict[str, Any]], limit: int = 2) -> str:
         """Generate example snippet from tasks.

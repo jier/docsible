@@ -432,7 +432,7 @@ def _extract_conditional_variables(tasks: list[dict[str, Any]]) -> dict[str, int
     """
     import re
 
-    var_counter = {}
+    var_counter: dict[str, int] = {}
 
     # Common Ansible fact/variable patterns
     VAR_PATTERN = re.compile(r"([a-z_][a-z0-9_]*)")
@@ -905,7 +905,7 @@ def detect_integrations(role_info: dict[str, Any]) -> list[IntegrationPoint]:
         "ansible.builtin.import_tasks",
     ]
 
-    integration_map = {}  # type -> list of tasks
+    integration_map: dict[int, Any]= {}  # type -> list of tasks
 
     for task_file_info in role_info.get("tasks", []):
         for task in task_file_info.get("tasks", []):
@@ -1378,7 +1378,7 @@ def generate_recommendations(
 
     # 4. INTEGRATION ISOLATION RECOMMENDATIONS
     # Group integrations by type
-    integration_by_file = {}
+    integration_by_file: dict[str, Any] = {}
     for file_detail in file_details:
         if file_detail.has_integrations and file_detail.integration_types:
             for int_type in file_detail.integration_types:

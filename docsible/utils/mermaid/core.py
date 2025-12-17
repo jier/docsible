@@ -46,14 +46,14 @@ def break_text(text: str, max_length: int = 50) -> str:
         'This is a very long<br>text that needs<br>wrapping'
     """
     words = text.split(" ")
-    lines = []
-    current_line = []
+    lines: list[str] = []
+    current_line: list[str] = []
     current_length = 0
     for word in words:
         if current_length + len(word) + len(current_line) > max_length:
             lines.append(" ".join(current_line))
             current_length = 0
-            current_line = []
+            current_line: list[str] = []
         current_line.append(word)
         current_length += len(word)
     if current_line:

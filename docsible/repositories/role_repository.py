@@ -197,7 +197,7 @@ class RoleRepository:
             logger.debug(f"No handlers directory found in {role_path}")
             return []
 
-        handlers_list = []
+        handlers_list: list[dict] = []
         yaml_extensions = self.structure.get_yaml_extensions()
 
         import os

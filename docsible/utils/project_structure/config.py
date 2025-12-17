@@ -2,7 +2,7 @@
 
 import logging
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import yaml
 
@@ -29,7 +29,7 @@ def load_config(root_path: Path) -> dict[str, Any]:
                 with open(config_path, encoding="utf-8") as f:
                     loaded_config = yaml.safe_load(f) or {}
                 logger.info(f"Loaded configuration from {config_path}")
-                return loaded_config.get("structure", {})
+                return cast(dict[str, Any], loaded_config.get("structure", {}))
             except Exception as e:
                 logger.warning(f"Error loading config from {config_path}: {e}")
 
