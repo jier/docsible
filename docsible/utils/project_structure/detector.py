@@ -1,8 +1,12 @@
 """Project type detection for Ansible projects."""
 
+import logging
 import os
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
+
+logger = logging.getLogger(__name__)
 
 
 def detect_project_type(root_path: Path, defaults: dict[str, Any]) -> str:
@@ -143,54 +147,46 @@ def find_collection_markers(
 
     return markers
 
-# FIXME Hard to read this function, what is this ?
-def find_roles(root_path: Path, project_type: str, get_roles_dir_func) -> list[Path]:
+def _scan_roles_directory(roles_dir: Path) -> list[Path]:
+    """Scan a directory for valid role sub-directories"""
+
+    if not roles_dir.exists():
+        return []
+    return [
+        item for item in roles_dir.iterdir()
+        if item.is_dir() and is_valid_role(item)
+    ]
+
+def find_roles(root_path: Path, project_type: str, get_roles_dir_func: Callable[[], Path]) -> list[Path]:
     """Find all role directories in the project.
 
     Args:
         root_path: Root directory of the project
         project_type: Detected project type
-        get_roles_dir_func: Function to get roles directory
+        get_roles_dir_func: Function that returns the roles directory Path
 
     Returns:
         List of Path objects pointing to role directories
+    Examples:
+        >>> find_roles(Path("/project"), "collection", lambda: Path("/project/roles"))
+        [Path("/project/roles/role1"), Path("/project/roles/role2")]
     """
-    roles = []
 
-    if project_type == "collection":
+    strategies  = {
+        "role": lambda: [root_path], #single role = return root
         # For collections, roles are in the roles/ directory
-        roles_dir = get_roles_dir_func()
-        if roles_dir.exists():
-            for item in roles_dir.iterdir():
-                if item.is_dir() and is_valid_role(item):
-                    roles.append(item)
-
-    elif project_type == "monorepo":
+        "collection": lambda: _scan_roles_directory(get_roles_dir_func()),
         # For monorepos, scan for roles in the configured/detected roles directory
-        roles_dir = get_roles_dir_func()
-        if roles_dir.exists():
-            for item in roles_dir.iterdir():
-                if item.is_dir() and is_valid_role(item):
-                    roles.append(item)
-
-    elif project_type == "awx":
-        # For AWX, roles are typically in roles/ at root
-        roles_dir = root_path / "roles"
-        if roles_dir.exists():
-            for item in roles_dir.iterdir():
-                if item.is_dir() and is_valid_role(item):
-                    roles.append(item)
-
-    elif project_type == "multi-role":
+        "monorepo": lambda: _scan_roles_directory(get_roles_dir_func()),
+        "awx": lambda: _scan_roles_directory(root_path / "roles"),
         # For multi-role repos, roles are in roles/ at root (like collections, but no galaxy.yml)
-        roles_dir = root_path / "roles"
-        if roles_dir.exists():
-            for item in roles_dir.iterdir():
-                if item.is_dir() and is_valid_role(item):
-                    roles.append(item)
+        "multi-role": lambda: _scan_roles_directory(root_path / "roles")
+    }
 
-    elif project_type == "role":
-        # Single role - return the root path itself
-        roles.append(root_path)
+    # Execute the appropriate strategy
+    strategy = strategies.get(project_type)
+    if strategy is None:
+        logger.warning(f"Unknown project type: {project_type}")
+        return []
 
-    return roles
+    return strategy()

@@ -237,7 +237,7 @@ def generate_mermaid_diagrams(
 
 
 def generate_integration_and_architecture_diagrams(
-    generate_graph: bool, analysis_report: Any
+    generate_graph: bool, role_info: dict[str, Any], analysis_report: Any
 ) -> tuple[str | None, str | None]:
     """Generate integration boundary and component architecture diagrams.
 
@@ -278,11 +278,10 @@ def generate_integration_and_architecture_diagrams(
             generate_component_architecture,
             should_generate_architecture_diagram,
         )
-        #FIXME Wrong parameter passed, what happened?
         if should_generate_architecture_diagram(analysis_report):
             architecture_diagram = generate_component_architecture(
-                role_info=None,  # Will be passed in actual call
-                analysis_report=analysis_report,
+                role_info=role_info,
+                complexity_report=analysis_report,
             )
             logger.info(
                 f"Generated component architecture diagram for {analysis_report.category.value.upper()} role"
