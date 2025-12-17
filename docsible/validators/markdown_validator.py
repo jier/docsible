@@ -146,7 +146,7 @@ class MarkdownValidator:
                             table_lines, header_line, separator_line, table_start
                         )
                     )
-                    in_table = False
+                    # in_table = False
 
         # Validate last table if file ends with table
         if in_table:
@@ -218,7 +218,7 @@ class MarkdownValidator:
             if line_text.strip().startswith("|") and line_text.strip().endswith("|"):
                 data_cols = len(data_parts) - 2
 
-            if data_cols != header_cols and abs(data_cols - header_cols) > 1:
+            if data_cols != header_cols and abs(data_cols - header_cols) >= 1:
                 issues.append(
                     ValidationIssue(
                         type=ValidationType.CLARITY,

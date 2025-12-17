@@ -9,6 +9,7 @@ from pathlib import Path
 
 from docsible.parsers.role_parser import parse_role
 
+# from docsible.commands.document_role.core import build_role_info
 from docsible.analyzers.patterns import PatternAnalyzer, analyze_role_patterns
 from docsible.analyzers.patterns.detectors import DuplicationDetector, SecurityDetector
 
@@ -22,6 +23,7 @@ def example_basic_analysis():
     # Parse role (using test fixture)
     role_path = Path(__file__).parent.parent / "tests" / "fixtures" / "simple_role"
     role_info = parse_role(str(role_path))
+    # role_info = build_role_info(role_path=role_path)
 
     # Analyze patterns
     report = analyze_role_patterns(role_info)

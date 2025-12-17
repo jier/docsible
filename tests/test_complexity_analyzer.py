@@ -137,11 +137,11 @@ def create_complex_role_info():
                         "module": "include_tasks",
                         "file": "common.yml",
                     },
-                    {"name": "Import role", "module": "import_role", "name": "base"}, #FIXME duplicate value name
+                    {"name": "Import role", "module": "import_role", "role": "base"},
                     {
                         "name": "Include another role",
                         "module": "ansible.builtin.include_role",
-                        "name": "utils",
+                        "role": "utils",
                     },
                     {
                         "name": "Import more tasks",
@@ -384,9 +384,9 @@ def test_exclude_composition_modules():
                     {
                         "name": "Include role",
                         "module": "include_role",
-                        "name": "common",
+                        "role": "common",
                     },
-                    {"name": "Import role", "module": "import_role", "name": "base"},
+                    {"name": "Import role", "module": "import_role", "role": "base"},
                     {
                         "name": "Include tasks",
                         "module": "include_tasks",

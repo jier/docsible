@@ -149,8 +149,7 @@ class RoleRepository:
         yaml_extensions = self.structure.get_yaml_extensions()
 
         import os
-        #FIXME What happened on used variable
-        for dirpath, dirnames, filenames in os.walk(str(tasks_dir)):
+        for dirpath, _ , filenames in os.walk(str(tasks_dir)):
             for task_file in filenames:
                 if any(task_file.endswith(ext) for ext in yaml_extensions):
                     file_path = os.path.join(dirpath, task_file)
@@ -203,7 +202,7 @@ class RoleRepository:
 
         import os
 
-        for dirpath, dirnames, filenames in os.walk(str(handlers_dir)):
+        for dirpath, _ , filenames in os.walk(str(handlers_dir)):
             for handler_file in filenames:
                 if any(handler_file.endswith(ext) for ext in yaml_extensions):
                     file_path = os.path.join(dirpath, handler_file)

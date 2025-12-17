@@ -70,8 +70,8 @@ def get_task_comments(file_path: str) -> list[dict[str, str]]:
     output_task_comments = []
     # This list will hold comment lines gathered immediately before a potential task.
     candidate_comments = []
-    #FIXME Index i not used why?
-    for i, line_content in enumerate(lines):
+
+    for line_content in lines:
         stripped_line = line_content.strip()
 
         if stripped_line.startswith("#"):

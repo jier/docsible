@@ -48,4 +48,4 @@ def init_config(path: str, force: bool):
     except Exception as e:
         click.echo(f"❌ Failed to create configuration file: {e}")
         logger.error(f"Failed to create config: {e}")
-        raise click.ClickException(str(e))
+        raise click.ClickException(str(e)) from e

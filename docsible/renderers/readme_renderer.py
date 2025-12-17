@@ -311,7 +311,8 @@ class ReadmeRenderer:
         if self.auto_fix:
             original_markdown = markdown
             markdown = self.markdown_fixer.fix_all(markdown)
-            logger.info("🔧 Auto-fixed markdown formatting issues")
+            if original_markdown != markdown:
+                logger.info(f"🔧 Auto-fixed {len(original_markdown) - len(markdown)} formatting issues")
 
         # Validate if enabled
         if self.validate:
@@ -323,7 +324,6 @@ class ReadmeRenderer:
                 warnings = [
                     i for i in issues if i.severity == ValidationSeverity.WARNING
                 ]
-                #FIXME What happened here?
                 infos = [i for i in issues if i.severity == ValidationSeverity.INFO]
 
                 # Log errors
@@ -353,7 +353,11 @@ class ReadmeRenderer:
                         logger.warning(f"  {warning.message}{line_info}")
                     if len(warnings) > 3:
                         logger.warning(f"  ... and {len(warnings) - 3} more warnings")
-
+                if infos:
+                    logger.info(f"ℹ️ Markdown validation found {len(infos)} info message(s):")
+                    for info in infos[:3]:
+                        line_info = f" (line {info.line_number})" if info.line_number else ""
+                        logger.info(f" {info.message}{line_info}")
                 # Strict mode - fail on errors
                 if self.strict_validation and errors:
                     error_summary = "\n".join(

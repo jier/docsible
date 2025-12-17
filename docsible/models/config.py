@@ -190,7 +190,7 @@ class DocsibleConfig(BaseModel):
             return cls(**data)
         except Exception as e:
             logger.error(f"Failed to load config from {file_path}: {e}")
-            raise ValueError(f"Invalid config file: {e}")
+            raise ValueError(f"Invalid config file: {e}") from e
 
     def to_file(self, file_path: Path) -> None:
         """Save configuration to .docsible.yml file.

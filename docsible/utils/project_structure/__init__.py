@@ -5,7 +5,7 @@ Supports standard roles, collections, AWX projects, and monorepos.
 
 import logging
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from docsible import constants
 

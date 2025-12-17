@@ -194,8 +194,7 @@ class DocumentationValidator:
 
         # Check for overly long lines (readability)
         long_lines = 0
-        # FIXME Again not used here why?
-        for i, line in enumerate(lines, 1):
+        for line in lines:
             # Ignore code blocks and tables
             if line.strip().startswith("```") or line.strip().startswith("|"):
                 continue

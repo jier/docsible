@@ -386,7 +386,7 @@ def doc_the_role(
                 repo_branch=repo_branch,
             )
         except CollectionNotFoundError as e:
-            raise click.ClickException(str(e))
+            raise click.ClickException(str(e)) from e
         return
 
     if not role_path:

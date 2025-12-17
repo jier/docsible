@@ -462,12 +462,6 @@ class PhaseDetector:
         if len(phase_groups) < 2:
             return 1.0
 
-        # Get expected ordering from priorities
-        # FIXME unused, so commenting out for now
-        # expected_order = sorted(
-        #     phase_groups, key=lambda g: self.PHASE_PATTERNS[g.phase]["priority"]
-        # )
-
         # Count how many phase transitions are in correct order
         correct_transitions = 0
         total_transitions = len(phase_groups) - 1

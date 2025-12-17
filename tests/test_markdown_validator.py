@@ -163,13 +163,8 @@ class TestTableValidation:
 
         # Should detect inconsistent columns (tolerance of 1)
         # This case should trigger since we're missing 2 columns (3 expected, 1 provided)
-        # FIXME should this be used or not ?
-        inconsistent_issues = [
-            i for i in issues if "columns, expected" in i.message.lower()
-        ]
-        # The tolerance is > 1, so this might not trigger depending on implementation
-        # Let's check for issues in general
-        assert len(issues) >= 0  # May or may not have issues depending on tolerance
+        assert any("columns, expected" in i.message.lower() for i in issues), \
+        "Should detect table with inconsistent column count"
 
     def test_multiple_tables_validated(self):
         """Test that multiple tables in one document are all validated."""

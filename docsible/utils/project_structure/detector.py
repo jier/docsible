@@ -136,8 +136,7 @@ def find_collection_markers(
     """
     search = search_path or root_path
     markers = []
-    #FIXME what happened here
-    for root, dirs, files in os.walk(search):
+    for root, _ , files in os.walk(search):
         for marker_file in defaults["collection_marker_files"]:
             if marker_file in files:
                 markers.append(Path(root) / marker_file)

@@ -95,12 +95,11 @@ def generate_component_architecture(
 
     # External integrations node
     if complexity_report and complexity_report.integration_points:
-        #FIXME Unused variable, what happened here ?
         integration_count = len(complexity_report.integration_points)
         integration_names = [
             ip.system_name for ip in complexity_report.integration_points[:2]
         ]
-        if len(complexity_report.integration_points) > 2:
+        if integration_count > 2:
             integration_names.append("...")
         integration_label = "<br/>".join(integration_names)
         lines.append(f'    external["🌐 External Systems<br/>{integration_label}"]')
