@@ -1,5 +1,11 @@
+"""Phase pattern definitions and loading logic."""
+
 from pathlib import Path
+import logging
+
 from .models import Phase, PhasePattern
+
+logger = logging.getLogger(__name__)
 
 DEFAULT_PATTERNS: dict[Phase, PhasePattern] = {
     Phase.SETUP: {
@@ -106,16 +112,69 @@ DEFAULT_PATTERNS: dict[Phase, PhasePattern] = {
         },
 }
 
+
 class PatternLoader:
     """Loads phase patterns from files or defaults."""
-    
+
     @staticmethod
-    def load_from_file(path: Path) -> dict[Phase, PhasePattern]:
-        """Parse YAML patterns file."""
-        # Pattern loading logic
-        pass
-    
+    def load_from_file(path: Path | str) -> dict[Phase, PhasePattern]:
+        """Parse YAML patterns file.
+
+        Args:
+            path: Path to YAML patterns file
+
+        Returns:
+            Dictionary mapping Phase to PhasePattern
+
+        Raises:
+            FileNotFoundError: If file doesn't exist
+            yaml.YAMLError: If YAML is invalid
+        """
+        import yaml
+
+        patterns_path = Path(path)
+        with open(patterns_path, encoding="utf-8") as f:
+            config = yaml.safe_load(f)
+
+        patterns = {}
+        phases_config = config.get("phases", {})
+
+        for phase_name, pattern_config in phases_config.items():
+            # Try to match to existing Phase enum
+            phase = PatternLoader._get_phase_by_name(phase_name)
+
+            patterns[phase] = {
+                "modules": set(pattern_config.get("modules", [])),
+                "name_keywords": pattern_config.get("name_keywords", []),
+                "priority": pattern_config.get("priority", 99),
+            }
+
+        return patterns
+
+    @staticmethod
+    def _get_phase_by_name(name: str) -> Phase:
+        """Get Phase enum by name, case-insensitive.
+
+        Args:
+            name: Phase name
+
+        Returns:
+            Phase enum member
+
+        Note:
+            If phase name doesn't match any existing Phase, returns Phase.UNKNOWN
+        """
+        name_upper = name.upper()
+        for phase in Phase:
+            if phase.name == name_upper:
+                return phase
+        return Phase.UNKNOWN
+
     @staticmethod
     def get_defaults() -> dict[Phase, PhasePattern]:
-        """Get default patterns."""
-        return DEFAULT_PATTERNS.copy()
+        """Get default patterns (as a copy).
+
+        Returns:
+            Copy of DEFAULT_PATTERNS dictionary
+        """
+        return {phase: patterns.copy() for phase, patterns in DEFAULT_PATTERNS.items()}
