@@ -14,7 +14,6 @@ logger = logging.getLogger(__name__)
 
 # Import pattern analysis (optional dependency)
 try:
-    #FIXME Not used  PatternAnalysisReport and analyze_role_patterns unbound warning
     from docsible.analyzers.patterns import (
         PatternAnalysisReport,
         analyze_role_patterns,
@@ -281,10 +280,36 @@ def analyze_role_complexity(
         pattern_analysis=pattern_report,
     )
 
-#FIXME What happened here?
+
 def _file_has_integrations(
     task_file: dict[str, Any], integration_points: list[IntegrationPoint]
 ) -> int:
-    """Count how many integration points a task file touches."""
-    # Simple count for now - can be enhanced
-    return 0
+    """Count how many integration points a task file touches.
+
+    Args:
+        task_file: Task file dict with "file" and "tasks" keys
+        integration_points: List of all detected integration points in the role
+
+    Returns:
+        Number of different integration types this file uses
+    """
+    if not integration_points:
+        return 0
+
+    # Get all modules used in this file's tasks
+    tasks = task_file.get("tasks", [])
+    file_modules = set()
+    for task in tasks:
+        if isinstance(task, dict):
+            module = task.get("module", "")
+            if module:
+                file_modules.add(module)
+
+    # Count how many integration points are touched by this file
+    integration_count = 0
+    for integration in integration_points:
+        # Check if any module from this file matches this integration
+        if any(module in integration.modules_used for module in file_modules):
+            integration_count += 1
+
+    return integration_count

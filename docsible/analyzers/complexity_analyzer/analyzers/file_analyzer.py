@@ -107,7 +107,7 @@ def analyze_file_complexity(
     # Sort by task count (largest first)
     return sorted(file_details, key=lambda f: f.task_count, reverse=True)
 
-#FIXME Unused function
+
 def _detect_file_concerns(
     tasks: list[dict[str, Any]],
 ) -> tuple[str | None, list[tuple[str, str, int]]]:
