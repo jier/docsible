@@ -166,13 +166,13 @@ def build_role_info(
     argument_specs_path = project_structure.get_argument_specs_file(role_path)
     argument_specs = None
     if argument_specs_path and argument_specs_path.exists():
-        argument_specs = load_yaml_generic(str(argument_specs_path))
+        argument_specs = load_yaml_generic(argument_specs_path)
 
     # Get defaults and vars
     defaults_dir = project_structure.get_defaults_dir(role_path)
     vars_dir = project_structure.get_vars_dir(role_path)
-    defaults_data = load_yaml_files_from_dir_custom(str(defaults_dir)) or []
-    vars_data = load_yaml_files_from_dir_custom(str(vars_dir)) or []
+    defaults_data = load_yaml_files_from_dir_custom(defaults_dir) or []
+    vars_data = load_yaml_files_from_dir_custom(vars_dir) or []
 
     # Detect repository info if requested
     if repository_url == "detect":
@@ -197,7 +197,7 @@ def build_role_info(
         "vars": vars_data,
         "tasks": [],
         "handlers": [],
-        "meta": load_yaml_generic(str(meta_path)) if meta_path.exists() else {},
+        "meta": load_yaml_generic(meta_path) if meta_path.exists() else {},
         "playbook": {
             "content": playbook_content,
             "graph": (
@@ -207,7 +207,7 @@ def build_role_info(
             ),
             "dependencies": playbook_dependencies,
         },
-        "docsible": load_yaml_generic(str(docsible_path)) if not no_docsible else None,
+        "docsible": load_yaml_generic(docsible_path) if not no_docsible else None,
         "belongs_to_collection": belongs_to_collection,
         "repository": repository_url,
         "repository_type": repo_type,
@@ -224,7 +224,7 @@ def build_role_info(
             for task_file in filenames:
                 if any(task_file.endswith(ext) for ext in yaml_extensions):
                     file_path = Path(dirpath) / task_file
-                    tasks_data = load_yaml_generic(str(file_path))
+                    tasks_data = load_yaml_generic(file_path)
 
                     if tasks_data:
                         relative_path = file_path.relative_to(tasks_dir)
@@ -271,7 +271,7 @@ def build_role_info(
             for handler_file in filenames:
                 if any(handler_file.endswith(ext) for ext in yaml_extensions):
                     file_path = Path(dirpath) / handler_file
-                    handlers_data = load_yaml_generic(str(file_path))
+                    handlers_data = load_yaml_generic(file_path)
 
                     if handlers_data and isinstance(handlers_data, list):
                         for handler in handlers_data:

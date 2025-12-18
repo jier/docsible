@@ -93,7 +93,7 @@ def analyze_role_complexity_cached(
         repo_type=repo_type,
         repo_branch=repo_branch,
     )
-
+    
     # Analyze complexity (expensive operation)
     return analyze_role_complexity(
         role_info=role_info,

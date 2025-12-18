@@ -1,12 +1,14 @@
 from pathlib import Path
+from typing import Any
 
 from docsible.utils.yaml import load_yaml_file_custom
 
 
 def test_type_detection():
     basepath = Path(__file__).parent / "fixtures"
-    result = load_yaml_file_custom(str(basepath / "type_fixture.yml"))
+    result: dict[str, dict[str, Any]] | None = load_yaml_file_custom(basepath / "type_fixture.yml")
     # Type is overriden in the fixture to str
+    assert result is not None, "Expected not None"
     assert result["test"]["type"] == "str"
     # Type is overriden in the fixture to int
     assert result["test2"]["type"] == "int"

@@ -48,7 +48,7 @@ def _load_yaml_file_with_metadata_cached(path: Path) -> dict | None:
     """
     from docsible.utils.yaml.loader import load_yaml_file_custom
 
-    return load_yaml_file_custom(str(path))
+    return cast(dict|None, load_yaml_file_custom(path))
 
 
 def _load_yaml_dir_with_metadata_cached(dir_path: Path) -> list[dict]:
