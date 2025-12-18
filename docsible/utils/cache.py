@@ -114,6 +114,10 @@ def cache_by_file_mtime(func: Callable[[Path], T]) -> Callable[[Path], T]:
     @wraps(func)
     def wrapper(path: Path) -> T:
         """Wrapper function that implements caching logic."""
+        # Convert string to Path if needed (for compatibility)
+        if isinstance(path, str):
+            path = Path(path)
+
         # If caching is disabled, bypass cache
         if not CacheConfig.CACHING_ENABLED:
             return func(path)
