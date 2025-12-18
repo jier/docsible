@@ -88,7 +88,7 @@ def analyze_file_complexity(
                 }
         except Exception as e:
             logger.debug(f"Phase detection failed for {file_path}: {e}")
-
+        #FIXME Missing detailed concern
         file_details.append(
             FileComplexityDetail(
                 file_path=file_path,

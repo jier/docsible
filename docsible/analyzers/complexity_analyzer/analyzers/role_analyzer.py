@@ -22,7 +22,8 @@ except ImportError:
     PATTERN_ANALYSIS_AVAILABLE = False
     PatternAnalysisReport = None  # type: ignore
 
-
+#FIXME type mismatch and where to add LRU cache?
+# @cache_by_file_mtime
 def analyze_role_complexity(
     role_info: dict[str, Any],
     include_patterns: bool = False,
@@ -202,7 +203,7 @@ def analyze_role_complexity(
         pattern_analysis=pattern_report,
     )
 
-
+#FIXME What happened here?
 def _file_has_integrations(
     task_file: dict[str, Any], integration_points: list[IntegrationPoint]
 ) -> int:

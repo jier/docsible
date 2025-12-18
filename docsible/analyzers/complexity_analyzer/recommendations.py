@@ -12,6 +12,7 @@ from .models import (
 )
 
 
+#FIXME Too long, need helper functions to be more readable
 def generate_recommendations(
     metrics: ComplexityMetrics,
     category: ComplexityCategory,

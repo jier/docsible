@@ -9,11 +9,13 @@ from typing import Any, cast
 
 import yaml
 
+from docsible.utils.cache import cache_by_file_mtime
+
 from .parser import get_multiline_indicator
 
 logger = logging.getLogger(__name__)
 
-
+@cache_by_file_mtime
 def load_yaml_generic(filepath: str | Path) -> dict[str, Any] | None:
     """Load YAML file and return parsed data.
 
@@ -36,7 +38,8 @@ def load_yaml_generic(filepath: str | Path) -> dict[str, Any] | None:
         logger.error(f"Error loading {filepath}: {e}")
         return None
 
-
+#FIXME too long function not readable nor maintainable.
+@cache_by_file_mtime
 def load_yaml_file_custom(file_path):
     """
     Load a YAML file and extract both its data and associated metadata from comments,
@@ -317,7 +320,7 @@ def load_yaml_file_custom(file_path):
         print(f"Error loading {file_path}: {e}")
         return None
 
-
+@cache_by_file_mtime
 def load_yaml_files_from_dir_custom(dir_path):
     """Function to load all YAML files from a given directory and include file names"""
     collected_data = []
