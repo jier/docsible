@@ -174,6 +174,157 @@ def cache_by_file_mtime(func: Callable[[Path], T]) -> Callable[[Path], T]:
     return wrapper
 
 
+def cache_by_dir_mtime(func: Callable[..., T]) -> Callable[..., T]:
+    """Cache function results by directory modification times.
+
+    This decorator caches the results of functions that analyze entire directories,
+    using the directory path and a hash of all file modification times as the cache key.
+    If any file in the directory has been modified, the cache is invalidated.
+
+    Respects CacheConfig.CACHING_ENABLED flag - can be disabled globally.
+
+    Args:
+        func: Function that takes a directory Path as first argument and returns analysis results
+
+    Returns:
+        Cached version of the function
+
+    Example:
+        @cache_by_dir_mtime
+        def analyze_role_complexity_cached(role_path: Path, include_patterns: bool = False) -> ComplexityReport:
+            # ... expensive analysis ...
+            return report
+
+        # First call analyzes from disk
+        report1 = analyze_role_complexity_cached(Path("./roles/webserver"))
+
+        # Second call returns cached result (if no files changed)
+        report2 = analyze_role_complexity_cached(Path("./roles/webserver"))
+    """
+    cache: dict[tuple[str, str, str], T] = {}  # (path, args_hash, files_hash) -> result
+
+    @wraps(func)
+    def wrapper(path: Path, *args: Any, **kwargs: Any) -> T:
+        """Wrapper function that implements caching logic."""
+        # If caching is disabled, bypass cache
+        if not CacheConfig.CACHING_ENABLED:
+            return func(path, *args, **kwargs)
+
+        try:
+            import hashlib
+
+            # Create hash of function arguments (excluding path)
+            args_str = f"{args}:{sorted(kwargs.items())}"
+            args_hash = hashlib.md5(args_str.encode()).hexdigest()[:8]
+
+            # Compute hash of all file mtimes in directory
+            files_hash = _compute_dir_mtime_hash(path)
+            cache_key = (str(path), args_hash, files_hash)
+
+            # Return cached result if available
+            if cache_key in cache:
+                logger.debug(f"Cache hit for directory {path}")
+                return cache[cache_key]
+
+            # Call function and cache result
+            logger.debug(f"Cache miss for directory {path}, analyzing...")
+            result = func(path, *args, **kwargs)
+            cache[cache_key] = result
+
+            # Clean old cache entries for this path
+            _clean_old_dir_entries(cache, str(path))
+
+            return result
+
+        except FileNotFoundError:
+            logger.warning(f"Directory not found: {path}")
+            return func(path, *args, **kwargs)
+        except Exception as e:
+            logger.error(f"Error accessing directory {path}: {e}")
+            return func(path, *args, **kwargs)
+
+    def _compute_dir_mtime_hash(dir_path: Path) -> str:
+        """Compute hash of all file modification times in directory.
+
+        Args:
+            dir_path: Directory to hash
+
+        Returns:
+            MD5 hash of all file mtimes (first 16 chars)
+        """
+        import hashlib
+        import os
+
+        if not dir_path.exists() or not dir_path.is_dir():
+            return "nonexistent"
+
+        # Collect all file paths and mtimes
+        file_mtimes: list[tuple[str, float]] = []
+
+        # Walk through directory
+        for root, _, files in os.walk(dir_path):
+            root_path = Path(root)
+            for file in files:
+                file_path = root_path / file
+                try:
+                    mtime = file_path.stat().st_mtime
+                    # Use relative path for consistency
+                    rel_path = file_path.relative_to(dir_path)
+                    file_mtimes.append((str(rel_path), mtime))
+                except (OSError, ValueError):
+                    continue
+
+        # Sort for consistency
+        file_mtimes.sort()
+
+        # Create hash
+        hash_str = "|".join(f"{path}:{mtime}" for path, mtime in file_mtimes)
+        return hashlib.md5(hash_str.encode()).hexdigest()[:16]
+
+    def _clean_old_dir_entries(
+        cache_dict: dict[tuple[str, str, str], T], dir_path: str
+    ) -> None:
+        """Remove old cache entries for the same directory path.
+
+        Keeps only the most recent entry for each (path, args) combination.
+
+        Args:
+            cache_dict: Cache dictionary to clean
+            dir_path: Directory path to clean entries for
+        """
+        # Group by (path, args_hash)
+        path_args_to_files_hash: dict[tuple[str, str], list[str]] = {}
+        for key in cache_dict.keys():
+            if key[0] == dir_path:
+                path_args = (key[0], key[1])
+                files_hash = key[2]
+                if path_args not in path_args_to_files_hash:
+                    path_args_to_files_hash[path_args] = []
+                path_args_to_files_hash[path_args].append(files_hash)
+
+        # Remove all but the most recent files_hash for each (path, args)
+        keys_to_remove = []
+        for (path, args_hash), files_hashes in path_args_to_files_hash.items():
+            if len(files_hashes) > 1:
+                # Keep the first one we just added, remove others
+                for files_hash in files_hashes[:-1]:
+                    keys_to_remove.append((path, args_hash, files_hash))
+
+        for key in keys_to_remove:
+            if key in cache_dict:
+                del cache_dict[key]
+                logger.debug(f"Removed stale cache entry: {key}")
+
+    # Add cache inspection methods
+    wrapper.cache_info = lambda: {"size": len(cache), "entries": list(cache.keys())}  # type: ignore[attr-defined]
+    wrapper.cache_clear = lambda: cache.clear()  # type: ignore[attr-defined]
+
+    # Register this cache for global management
+    _register_yaml_cache(wrapper)
+
+    return wrapper
+
+
 def cache_by_content_hash(func: Callable[[str], T]) -> Callable[[str], T]:
     """Cache function results by content hash.
 

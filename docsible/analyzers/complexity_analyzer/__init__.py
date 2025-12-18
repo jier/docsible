@@ -19,6 +19,7 @@ All previous public APIs are maintained via re-exports below.
 from .analyzers import (
     analyze_file_complexity,
     analyze_role_complexity,
+    analyze_role_complexity_cached,
     classify_complexity,
 )
 from .hotspots import detect_conditional_hotspots
@@ -52,6 +53,7 @@ __all__ = [
     # Analysis functions
     "analyze_file_complexity",
     "analyze_role_complexity",
+    "analyze_role_complexity_cached",
     "classify_complexity",
     "detect_conditional_hotspots",
     "detect_inflection_points",
