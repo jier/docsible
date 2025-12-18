@@ -11,6 +11,7 @@ logger = logging.getLogger(__name__)
 
 # Import pattern analysis (optional dependency)
 try:
+    #FIXME Not used  PatternAnalysisReport and analyze_role_patterns unbound warning
     from docsible.analyzers.patterns import (
         PatternAnalysisReport,
         analyze_role_patterns,
