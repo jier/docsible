@@ -16,7 +16,7 @@ from docsible.analyzers.patterns.models import (
 
 class SecurityDetector(BasePatternDetector):
     """Detects security anti-patterns."""
-
+    #FIXME Should secret indicators not be pluggable?
     # Variable names that often contain secrets
     SECRET_INDICATORS = [
         "password",

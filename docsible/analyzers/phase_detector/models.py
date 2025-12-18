@@ -43,6 +43,7 @@ class PhaseDetectionResult(BaseModel):
     reasoning: str = Field(description="Explanation of the analysis")
 
 
+#FIXME Should below model not be based on BaseModel why TypeDict
 class PhasePattern(TypedDict):
     modules: set[str]
     name_keywords: list[str]
