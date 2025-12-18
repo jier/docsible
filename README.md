@@ -29,6 +29,8 @@ Docsible is a command-line interface (CLI) written in Python that automates the 
 - **NEW**: Auto-detection of various Ansible project layouts
 - **NEW**: Optional `.docsible.yml` configuration for custom structures
 - **NEW**: Comment tag flexibility (supports both `-` and `_` separators)
+- **NEW**: Intelligent caching system (4-100x faster on repeated runs)
+- **NEW**: Modular codebase with improved maintainability
 
 ## Installation
 
