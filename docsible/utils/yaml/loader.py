@@ -1,5 +1,8 @@
 """
 YAML file loading functions with metadata extraction.
+
+This module has been refactored from a single 280-line function into focused
+helper functions for better maintainability and testability.
 """
 
 import logging
@@ -38,287 +41,42 @@ def load_yaml_generic(filepath: str | Path) -> dict[str, Any] | None:
         logger.error(f"Error loading {filepath}: {e}")
         return None
 
-#FIXME too long function not readable nor maintainable.
+
 @cache_by_file_mtime
 def load_yaml_file_custom(file_path):
-    """
-    Load a YAML file and extract both its data and associated metadata from comments,
-    while also tracking the line number for each key and nested item.
-    The function parses the YAML file, collects metadata (title, required, choices, description)
-    from preceding comments for each key, and tracks the line number where each key appears.
-    It supports nested dictionaries and lists, and can handle multi-line values and
-    extended descriptions via special comment blocks.
+    """Load a YAML file and extract both its data and associated metadata from comments.
+
+    This is now a clean coordinator that delegates to focused helper functions.
+
     Args:
         file_path (str): Path to the YAML file.
+
     Returns:
         dict or None: A dictionary mapping each key path to its value, metadata, and line number,
         or None if the file is empty or an error occurs.
     """
     try:
-        with open(file_path, encoding="utf-8") as file:
-            lines = file.readlines()
-
-        with open(file_path, encoding="utf-8") as file:
-            data = yaml.safe_load(file)
+        # Read file lines and parse YAML
+        lines, data = _read_and_parse_yaml(file_path)
 
         if not data:
             return None
 
+        # Process YAML data with metadata extraction
         result: dict[str, dict[str, Any]] = {}
-        parent_line = 0
-
-        def is_multiline_value(line):
-            """
-            Determine if a line in the YAML file indicates the start of a multi-line value.
-            Args:
-                line (str): A line from the YAML file.
-            Returns:
-                bool: True if the line ends with '|', indicating a multi-line value.
-            """
-            return line.strip().endswith("|")
-
-        def extract_metadata(idx):
-            """
-            Extract metadata (title, required, choices, description) from comments preceding a given line index.
-            Args:
-                idx (int or None): The line index in the file for the current key.
-            Returns:
-                dict: Metadata dictionary with keys 'title', 'required', 'choices', and 'description'.
-            """
-            if idx is None:
-                return {
-                    "title": None,
-                    "required": None,
-                    "choices": None,
-                    "description": None,
-                }
-
-            comments = []
-            for comment_index in range(idx - 1, -1, -1):
-                line = lines[comment_index].strip()
-                if line.startswith("#"):
-                    comments.append(line[1:].strip())
-                else:
-                    break
-            comments.reverse()
-
-            meta: dict[str, str | None] = {
-                "title": None,
-                "required": None,
-                "choices": None,
-                "description": None,
-                "type": None,
-            }
-
-            for comment in comments:
-                lc = comment.lower()
-                # Normalize tags: convert both '-' and '_' to a standard separator for comparison
-                # This allows tags like 'title:', 'required:', 'description-lines:', 'description_lines:' to all work
-                normalized_lc = lc.replace("_", "-")
-
-                if normalized_lc.startswith("title:"):
-                    meta["title"] = comment.split(":", 1)[1].strip()
-                elif normalized_lc.startswith("required:"):
-                    meta["required"] = comment.split(":", 1)[1].strip()
-                elif normalized_lc.startswith("choices:"):
-                    meta["choices"] = comment.split(":", 1)[1].strip()
-                elif normalized_lc.startswith("description:"):
-                    meta["description"] = comment.split(":", 1)[1].strip()
-                elif normalized_lc.startswith("type:"):
-                    meta["type"] = comment.split(":", 1)[1].strip()
-                elif (
-                    normalized_lc.startswith("description-lines:")
-                    or "description-lines:" in normalized_lc
-                    or "description_lines:" in lc
-                ):
-                    description_lines = []
-                    start_collecting = False  # Flag to start collecting lines
-
-                    # Process all subsequent lines to collect description content
-                    for subsequent_line in lines[comment_index:]:
-                        line_content = subsequent_line.strip()
-                        normalized_line = line_content.lower().replace("_", "-")
-
-                        # Start collecting after `description-lines:` or `description_lines:`
-                        if line_content.startswith("#") and (
-                            "description-lines:" in normalized_line
-                            or "description_lines:" in line_content.lower()
-                        ):
-                            start_collecting = True
-                            continue
-
-                        # Stop collecting when encountering `# end`
-                        if line_content.startswith("# end"):
-                            break
-
-                        if start_collecting:
-                            if line_content.startswith("#"):
-                                # Collect the line content
-                                description_lines.append(
-                                    f"{line_content[1:].strip()}<br>"
-                                )
-                            else:
-                                break  # Stop if a non-comment line is encountered
-
-                    # Join all collected lines into a single description string
-                    if description_lines:
-                        meta["description"] = "\n".join(description_lines)
-            return meta
-
-        def process_line(k, v):
-            """
-            Process a single key-value pair, determine its line number, extract metadata,
-            and store the result in the output dictionary.
-            Args:
-                k (str): The full key path (dot-separated for nested keys).
-                v (Any): The value associated with the key.
-            """
-            nonlocal parent_line
-
-            line_idx = None
-            dictkey = k.split(".")[-1]
-            vtype = type(v)
-
-            for idx in range(parent_line, len(lines)):
-                line_stripped = lines[idx].strip()
-
-                if line_stripped.startswith("#"):
-                    continue
-
-                if isinstance(v, dict):
-                    dictvalue = None
-                    if dictkey.isnumeric():
-                        prev_path = ".".join(k.split(".")[:-1])
-                        if result.get(prev_path, {}).get("type") == "list":
-                            dictkey = list(v.keys())[0]
-                            dictvalue = str(list(v.values())[0])
-                    if dictvalue is None:
-                        # dict
-                        if line_stripped.startswith(
-                            f"{dictkey}:"
-                        ) or line_stripped.startswith(f"- {dictkey}:"):
-                            line_idx = idx
-                            break
-                    else:
-                        # inline dict
-                        if (
-                            f"{dictkey}:" in line_stripped
-                            and dictvalue in line_stripped
-                        ):
-                            line_idx = idx
-                            break
-
-                elif isinstance(v, list):
-                    # list
-                    if line_stripped.startswith(
-                        f"{dictkey}:"
-                    ) or line_stripped.startswith(f"- {v}"):
-                        line_idx = idx
-                        break
-
-                else:
-                    # key match
-                    if (
-                        line_stripped.startswith(f"{dictkey}:")
-                        or f"{dictkey}:" in line_stripped
-                    ):
-                        line_idx = idx
-                        break
-                    # bool in list
-                    if vtype is bool and f"- {str(v).lower()}" in line_stripped.lower():
-                        line_idx = idx
-                        break
-                    # none / null in list
-                    if v is None and any(
-                        null_str in line_stripped.lower()
-                        for null_str in ["- none", "- null"]
-                    ):
-                        line_idx = idx
-                        break
-                    # list item part 1
-                    if f"- {str(v).lower()}" in line_stripped.lower():
-                        line_idx = idx
-                        break
-                    # list item part 2
-                    if dictkey.isnumeric():
-                        prev_path = ".".join(k.split(".")[:-1])
-                        if result.get(prev_path, {}).get("type") == "list":
-                            if str(v).lower() in line_stripped.lower():
-                                line_idx = idx
-                                break
-
-            current_line = line_idx if line_idx is not None else parent_line
-            parent_line = current_line
-
-            meta = extract_metadata(current_line)
-            indicator_name = get_multiline_indicator(lines[current_line])
-            result[k] = {
-                "value": f"<multiline value: {indicator_name}>"
-                if indicator_name
-                else []
-                if isinstance(v, list)
-                else {}
-                if isinstance(v, dict)
-                else v.strip()
-                if isinstance(v, str)
-                else v,
-                "multiline_indicator": indicator_name,
-                "title": meta["title"],
-                "required": meta["required"],
-                "choices": meta["choices"],
-                "description": meta["description"],
-                "line": current_line + 1,
-                "type": meta["type"]
-                if meta["type"]
-                else "dict"
-                if isinstance(v, dict)
-                else "list"
-                if isinstance(v, list)
-                else type(v).__name__,
-            }
-
-        def process_dict(base_key, value):
-            """
-            Recursively process a dictionary, handling each key-value pair and their nested structures.
-            Args:
-                base_key (str): The base key path for the current dictionary.
-                value (dict): The dictionary to process.
-            """
-            for k, v in value.items():
-                full_key = f"{base_key}.{k}"
-                process_line(full_key, v)
-                if isinstance(v, dict):
-                    process_dict(full_key, v)
-                elif isinstance(v, list):
-                    process_list(full_key, v)
-
-        def process_list(base_key, value):
-            """
-            Recursively process a list, handling each item and their nested structures.
-            Args:
-                base_key (str): The base key path for the current list.
-                value (list): The list to process.
-            """
-            for idx, item in enumerate(value):
-                full_key = f"{base_key}.{idx}"
-                process_line(full_key, item)
-                if isinstance(item, dict):
-                    process_dict(full_key, item)
-                elif isinstance(item, list):
-                    process_list(full_key, item)
+        parent_line_tracker = {"line": 0}
 
         for key, value in data.items():
-            process_line(key, value)
-            if isinstance(value, dict):
-                process_dict(key, value)
-            elif isinstance(value, list):
-                process_list(key, value)
+            _process_yaml_value(
+                key, value, lines, result, parent_line_tracker
+            )
 
         return result
 
     except (FileNotFoundError, yaml.constructor.ConstructorError, yaml.YAMLError) as e:
         print(f"Error loading {file_path}: {e}")
         return None
+
 
 @cache_by_file_mtime
 def load_yaml_files_from_dir_custom(dir_path):
@@ -352,3 +110,307 @@ def load_yaml_files_from_dir_custom(dir_path):
                         collected_data.append(item)
 
     return collected_data
+
+
+# ============================================================================
+# Helper Functions - Each focused on one aspect of YAML processing
+# ============================================================================
+
+def _read_and_parse_yaml(file_path: str) -> tuple[list[str], dict[str, Any] | None]:
+    """Read file lines and parse YAML content.
+
+    Args:
+        file_path: Path to YAML file
+
+    Returns:
+        Tuple of (file lines, parsed YAML data)
+    """
+    with open(file_path, encoding="utf-8") as file:
+        lines = file.readlines()
+
+    with open(file_path, encoding="utf-8") as file:
+        data = yaml.safe_load(file)
+
+    return lines, data
+
+
+def _extract_metadata_from_comments(lines: list[str], line_idx: int | None) -> dict[str, str | None]:
+    """Extract metadata from comments preceding a given line.
+
+    Supports: title, required, choices, description, type, description-lines
+
+    Args:
+        lines: File lines
+        line_idx: Line index to extract metadata for
+
+    Returns:
+        Metadata dictionary
+    """
+    if line_idx is None:
+        return {
+            "title": None,
+            "required": None,
+            "choices": None,
+            "description": None,
+            "type": None,
+        }
+
+    # Collect preceding comment lines
+    comments = []
+    for comment_index in range(line_idx - 1, -1, -1):
+        line = lines[comment_index].strip()
+        if line.startswith("#"):
+            comments.append(line[1:].strip())
+        else:
+            break
+    comments.reverse()
+
+    # Parse metadata from comments
+    meta: dict[str, str | None] = {
+        "title": None,
+        "required": None,
+        "choices": None,
+        "description": None,
+        "type": None,
+    }
+
+    for comment_idx, comment in enumerate(comments):
+        lc = comment.lower()
+        normalized_lc = lc.replace("_", "-")
+
+        if normalized_lc.startswith("title:"):
+            meta["title"] = comment.split(":", 1)[1].strip()
+        elif normalized_lc.startswith("required:"):
+            meta["required"] = comment.split(":", 1)[1].strip()
+        elif normalized_lc.startswith("choices:"):
+            meta["choices"] = comment.split(":", 1)[1].strip()
+        elif normalized_lc.startswith("description:"):
+            meta["description"] = comment.split(":", 1)[1].strip()
+        elif normalized_lc.startswith("type:"):
+            meta["type"] = comment.split(":", 1)[1].strip()
+        elif (
+            normalized_lc.startswith("description-lines:")
+            or "description-lines:" in normalized_lc
+            or "description_lines:" in lc
+        ):
+            # Extract multi-line description
+            meta["description"] = _extract_multiline_description(
+                lines, line_idx - len(comments) + comment_idx
+            )
+
+    return meta
+
+
+def _extract_multiline_description(lines: list[str], start_idx: int) -> str:
+    """Extract multi-line description from comment block.
+
+    Args:
+        lines: File lines
+        start_idx: Index where description-lines tag appears
+
+    Returns:
+        Combined description string
+    """
+    description_lines = []
+    start_collecting = False
+
+    for subsequent_line in lines[start_idx:]:
+        line_content = subsequent_line.strip()
+        normalized_line = line_content.lower().replace("_", "-")
+
+        # Start collecting after description-lines tag
+        if line_content.startswith("#") and (
+            "description-lines:" in normalized_line
+            or "description_lines:" in line_content.lower()
+        ):
+            start_collecting = True
+            continue
+
+        # Stop at end marker
+        if line_content.startswith("# end"):
+            break
+
+        if start_collecting:
+            if line_content.startswith("#"):
+                description_lines.append(f"{line_content[1:].strip()}<br>")
+            else:
+                break
+
+    return "\n".join(description_lines) if description_lines else ""
+
+
+def _find_key_line_number(
+    key: str,
+    value: Any,
+    lines: list[str],
+    parent_line: int,
+    result: dict[str, dict[str, Any]],
+) -> int | None:
+    """Find the line number where a key appears in the YAML file.
+
+    Handles dicts, lists, and scalar values.
+
+    Args:
+        key: Full key path (dot-separated)
+        value: Value associated with the key
+        lines: File lines
+        parent_line: Starting line for search
+        result: Accumulated result dict (for context)
+
+    Returns:
+        Line index or None
+    """
+    dictkey = key.split(".")[-1]
+    vtype = type(value)
+
+    for idx in range(parent_line, len(lines)):
+        line_stripped = lines[idx].strip()
+
+        # Skip comments
+        if line_stripped.startswith("#"):
+            continue
+
+        # Handle dict values
+        if isinstance(value, dict):
+            dictvalue = None
+            if dictkey.isnumeric():
+                prev_path = ".".join(key.split(".")[:-1])
+                if result.get(prev_path, {}).get("type") == "list":
+                    dictkey = list(value.keys())[0]
+                    dictvalue = str(list(value.values())[0])
+
+            if dictvalue is None:
+                # Regular dict
+                if line_stripped.startswith(f"{dictkey}:") or line_stripped.startswith(f"- {dictkey}:"):
+                    return idx
+            else:
+                # Inline dict
+                if f"{dictkey}:" in line_stripped and dictvalue in line_stripped:
+                    return idx
+
+        # Handle list values
+        elif isinstance(value, list):
+            if line_stripped.startswith(f"{dictkey}:") or line_stripped.startswith(f"- {value}"):
+                return idx
+
+        # Handle scalar values
+        else:
+            # Key match
+            if line_stripped.startswith(f"{dictkey}:") or f"{dictkey}:" in line_stripped:
+                return idx
+            # Bool in list
+            if vtype is bool and f"- {str(value).lower()}" in line_stripped.lower():
+                return idx
+            # None/null in list
+            if value is None and any(
+                null_str in line_stripped.lower() for null_str in ["- none", "- null"]
+            ):
+                return idx
+            # List item
+            if f"- {str(value).lower()}" in line_stripped.lower():
+                return idx
+            # List item (numeric key)
+            if dictkey.isnumeric():
+                prev_path = ".".join(key.split(".")[:-1])
+                if result.get(prev_path, {}).get("type") == "list":
+                    if str(value).lower() in line_stripped.lower():
+                        return idx
+
+    return None
+
+
+def _infer_value_type(value: Any, meta_type: str | None) -> str:
+    """Infer the type of a YAML value.
+
+    Args:
+        value: The value to inspect
+        meta_type: Type from metadata comment (if any)
+
+    Returns:
+        Type string
+    """
+    if meta_type:
+        return meta_type
+    elif isinstance(value, dict):
+        return "dict"
+    elif isinstance(value, list):
+        return "list"
+    else:
+        return type(value).__name__
+
+
+def _format_value_for_display(value: Any, multiline_indicator: str | None) -> Any:
+    """Format a value for display in the result dict.
+
+    Args:
+        value: The raw value
+        multiline_indicator: Multiline indicator if any
+
+    Returns:
+        Formatted value
+    """
+    if multiline_indicator:
+        return f"<multiline value: {multiline_indicator}>"
+    elif isinstance(value, list):
+        return []
+    elif isinstance(value, dict):
+        return {}
+    elif isinstance(value, str):
+        return value.strip()
+    else:
+        return value
+
+
+def _process_yaml_value(
+    key: str,
+    value: Any,
+    lines: list[str],
+    result: dict[str, dict[str, Any]],
+    parent_line_tracker: dict[str, int],
+) -> None:
+    """Process a single YAML key-value pair and its children.
+
+    Recursively processes nested dicts and lists.
+
+    Args:
+        key: Full key path
+        value: Value associated with key
+        lines: File lines
+        result: Result dict to populate
+        parent_line_tracker: Mutable dict tracking current line
+    """
+    # Find line number
+    line_idx = _find_key_line_number(
+        key, value, lines, parent_line_tracker["line"], result
+    )
+
+    current_line = line_idx if line_idx is not None else parent_line_tracker["line"]
+    parent_line_tracker["line"] = current_line
+
+    # Extract metadata
+    meta = _extract_metadata_from_comments(lines, current_line)
+
+    # Get multiline indicator
+    indicator_name = get_multiline_indicator(lines[current_line])
+
+    # Store result
+    result[key] = {
+        "value": _format_value_for_display(value, indicator_name),
+        "multiline_indicator": indicator_name,
+        "title": meta["title"],
+        "required": meta["required"],
+        "choices": meta["choices"],
+        "description": meta["description"],
+        "line": current_line + 1,
+        "type": _infer_value_type(value, meta["type"]),
+    }
+
+    # Recursively process nested structures
+    if isinstance(value, dict):
+        for k, v in value.items():
+            full_key = f"{key}.{k}"
+            _process_yaml_value(full_key, v, lines, result, parent_line_tracker)
+    elif isinstance(value, list):
+        for idx, item in enumerate(value):
+            full_key = f"{key}.{idx}"
+            _process_yaml_value(full_key, item, lines, result, parent_line_tracker)
