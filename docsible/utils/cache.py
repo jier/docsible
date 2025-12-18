@@ -17,12 +17,79 @@ logger = logging.getLogger(__name__)
 T = TypeVar("T")
 
 
+# ============================================================================
+# Cache Configuration
+# ============================================================================
+
+class CacheConfig:
+    """Global cache configuration.
+
+    Controls cache sizes, TTL, and enable/disable state.
+    Can be configured via environment variables or programmatically.
+    """
+
+    # Maximum cache sizes
+    YAML_CACHE_SIZE = 1000      # ~100MB for 1000 average YAML files
+    ANALYSIS_CACHE_SIZE = 200   # ~50MB for 200 role analyses
+    PATH_CACHE_SIZE = 512       # ~1MB for path operations
+
+    # Enable/disable caching globally
+    CACHING_ENABLED = True      # Can be disabled for debugging
+
+    @classmethod
+    def from_env(cls) -> None:
+        """Load configuration from environment variables."""
+        import os
+
+        # Check if caching is disabled
+        if os.getenv("DOCSIBLE_DISABLE_CACHE") == "1":
+            cls.CACHING_ENABLED = False
+            logger.info("Caching disabled via DOCSIBLE_DISABLE_CACHE")
+
+        # Custom cache sizes
+        if yaml_size := os.getenv("DOCSIBLE_YAML_CACHE_SIZE"):
+            cls.YAML_CACHE_SIZE = int(yaml_size)
+
+        if analysis_size := os.getenv("DOCSIBLE_ANALYSIS_CACHE_SIZE"):
+            cls.ANALYSIS_CACHE_SIZE = int(analysis_size)
+
+
+def configure_caches(*,
+                     yaml_size: int | None = None,
+                     analysis_size: int | None = None,
+                     enabled: bool | None = None) -> None:
+    """Configure all caches globally.
+
+    Args:
+        yaml_size: Maximum YAML cache entries
+        analysis_size: Maximum analysis cache entries
+        enabled: Enable/disable caching
+
+    Example:
+        >>> configure_caches(enabled=False)  # Disable for debugging
+        >>> configure_caches(yaml_size=500)  # Reduce memory usage
+    """
+    if yaml_size is not None:
+        CacheConfig.YAML_CACHE_SIZE = yaml_size
+    if analysis_size is not None:
+        CacheConfig.ANALYSIS_CACHE_SIZE = analysis_size
+    if enabled is not None:
+        CacheConfig.CACHING_ENABLED = enabled
+        logger.info(f"Caching {'enabled' if enabled else 'disabled'}")
+
+
+# Initialize from environment on import
+CacheConfig.from_env()
+
+
 def cache_by_file_mtime(func: Callable[[Path], T]) -> Callable[[Path], T]:
     """Cache function results by file modification time.
 
     This decorator caches the results of functions that load data from files,
     using the file path and modification time as the cache key. If the file
     hasn't been modified since the last call, the cached result is returned.
+
+    Respects CacheConfig.CACHING_ENABLED flag - can be disabled globally.
 
     Args:
         func: Function that takes a Path and returns data
@@ -47,6 +114,10 @@ def cache_by_file_mtime(func: Callable[[Path], T]) -> Callable[[Path], T]:
     @wraps(func)
     def wrapper(path: Path) -> T:
         """Wrapper function that implements caching logic."""
+        # If caching is disabled, bypass cache
+        if not CacheConfig.CACHING_ENABLED:
+            return func(path)
+
         try:
             # Get file modification time
             mtime = path.stat().st_mtime
@@ -96,6 +167,9 @@ def cache_by_file_mtime(func: Callable[[Path], T]) -> Callable[[Path], T]:
     # Add cache inspection methods
     wrapper.cache_info = lambda: {"size": len(cache), "entries": list(cache.keys())}  # type: ignore[attr-defined]
     wrapper.cache_clear = lambda: cache.clear()  # type: ignore[attr-defined]
+
+    # Register this cache for global management
+    _register_yaml_cache(wrapper)
 
     return wrapper
 
@@ -169,16 +243,34 @@ def cached_resolve_path(path_str: str) -> Path:
     return Path(path_str).resolve()
 
 
-def clear_all_caches() -> None:
-    """Clear all LRU caches used by docsible.
+# Track all caches for management
+_YAML_CACHES: list[Any] = []  # Store references to YAML cache wrappers
 
-    This function clears the cached_resolve_path cache and can be extended
-    to clear other caches as needed.
+
+def _register_yaml_cache(wrapper: Any) -> None:
+    """Register a YAML cache wrapper for management."""
+    _YAML_CACHES.append(wrapper)
+
+
+def clear_all_caches() -> None:
+    """Clear all caches used by docsible.
+
+    Clears:
+    - Path resolution cache
+    - YAML file caches (registered via @cache_by_file_mtime)
 
     Example:
         >>> clear_all_caches()  # Clear all caches
+        >>> # Useful for testing or troubleshooting
     """
+    # Clear LRU caches
     cached_resolve_path.cache_clear()
+
+    # Clear YAML caches
+    for cache_wrapper in _YAML_CACHES:
+        if hasattr(cache_wrapper, 'cache_clear'):
+            cache_wrapper.cache_clear()
+
     logger.info("All caches cleared")
 
 
@@ -186,18 +278,40 @@ def get_cache_stats() -> dict[str, Any]:
     """Get statistics about all caches.
 
     Returns:
-        Dictionary with cache statistics
+        Dictionary with cache statistics including:
+        - path_cache: Path resolution cache stats
+        - yaml_caches: List of YAML cache stats
+        - total_entries: Total cached entries across all caches
 
     Example:
         >>> stats = get_cache_stats()
         >>> print(f"Path cache: {stats['path_cache']['hits']} hits")
+        >>> print(f"Total YAML caches: {len(stats['yaml_caches'])}")
     """
+    path_info = cached_resolve_path.cache_info()
+
+    yaml_cache_stats = []
+    total_yaml_entries = 0
+
+    for cache_wrapper in _YAML_CACHES:
+        if hasattr(cache_wrapper, 'cache_info'):
+            info = cache_wrapper.cache_info()
+            yaml_cache_stats.append(info)
+            total_yaml_entries += info.get('size', 0)
+
     return {
+        "caching_enabled": CacheConfig.CACHING_ENABLED,
         "path_cache": {
-            "info": cached_resolve_path.cache_info(),
-            "size": cached_resolve_path.cache_info().currsize,
-            "maxsize": cached_resolve_path.cache_info().maxsize,
-            "hits": cached_resolve_path.cache_info().hits,
-            "misses": cached_resolve_path.cache_info().misses,
-        }
+            "info": path_info,
+            "size": path_info.currsize,
+            "maxsize": path_info.maxsize,
+            "hits": path_info.hits,
+            "misses": path_info.misses,
+            "hit_rate": path_info.hits / (path_info.hits + path_info.misses)
+            if (path_info.hits + path_info.misses) > 0
+            else 0.0,
+        },
+        "yaml_caches": yaml_cache_stats,
+        "total_yaml_entries": total_yaml_entries,
+        "total_entries": path_info.currsize + total_yaml_entries,
     }

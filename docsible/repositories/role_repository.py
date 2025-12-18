@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import cast
 
 from docsible.models.role import Role
+from docsible.utils.cache import cache_by_file_mtime
 from docsible.utils.project_structure import ProjectStructure
 from docsible.utils.special_tasks_keys import process_special_task_keys
 from docsible.utils.yaml import (
@@ -19,6 +20,54 @@ from docsible.utils.yaml import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+# ============================================================================
+# Cached YAML Loading Functions
+# ============================================================================
+
+@cache_by_file_mtime
+def _load_yaml_file_cached(path: Path) -> dict | list | None:
+    """Load and parse a single YAML file with caching.
+
+    Caches results by file path + modification time. Automatically invalidates
+    when file changes.
+
+    Args:
+        path: Path to YAML file
+
+    Returns:
+        Parsed YAML content (dict, list, or None)
+    """
+    return load_yaml_generic(path)
+
+
+def _load_yaml_dir_cached(dir_path: Path) -> list[dict]:
+    """Load all YAML files from directory with per-file caching.
+
+    Uses cached loading for each individual file in the directory.
+
+    Args:
+        dir_path: Path to directory containing YAML files
+
+    Returns:
+        List of parsed YAML dictionaries
+    """
+    if not dir_path.exists() or not dir_path.is_dir():
+        return []
+
+    yaml_files = [
+        f for f in dir_path.iterdir()
+        if f.is_file() and f.suffix in ('.yml', '.yaml')
+    ]
+
+    results: list[dict] = []
+    for yaml_file in yaml_files:
+        content = _load_yaml_file_cached(yaml_file)
+        if content and isinstance(content, dict):
+            results.append(content)
+
+    return results
 
 
 class RoleRepository:
@@ -92,7 +141,9 @@ class RoleRepository:
             return None
 
     def _load_defaults(self, role_path: Path) -> list[dict]:
-        """Load role defaults directory.
+        """Load role defaults directory with caching.
+
+        Uses per-file caching to avoid re-parsing unchanged YAML files.
 
         Args:
             role_path: Path to role directory
@@ -106,11 +157,14 @@ class RoleRepository:
             logger.debug(f"No defaults directory found in {role_path}")
             return []
 
-        defaults_data = load_yaml_files_from_dir_custom(str(defaults_dir))
+        # Use cached loading
+        defaults_data = _load_yaml_dir_cached(defaults_dir)
         return defaults_data or []
 
     def _load_vars(self, role_path: Path) -> list[dict]:
-        """Load role vars directory.
+        """Load role vars directory with caching.
+
+        Uses per-file caching to avoid re-parsing unchanged YAML files.
 
         Args:
             role_path: Path to role directory
@@ -124,7 +178,8 @@ class RoleRepository:
             logger.debug(f"No vars directory found in {role_path}")
             return []
 
-        vars_data = load_yaml_files_from_dir_custom(str(vars_dir))
+        # Use cached loading
+        vars_data = _load_yaml_dir_cached(vars_dir)
         return vars_data or []
 
     def _load_tasks(
@@ -133,7 +188,10 @@ class RoleRepository:
         include_comments: bool = False,
         include_line_numbers: bool = False,
     ) -> list[dict]:
-        """Load role tasks directory.
+        """Load role tasks directory with caching.
+
+        Uses per-file caching to avoid re-parsing unchanged YAML files.
+        This is the most critical caching point as roles can have 10-50+ task files.
 
         Args:
             role_path: Path to role directory
@@ -157,7 +215,8 @@ class RoleRepository:
             for task_file in filenames:
                 if any(task_file.endswith(ext) for ext in yaml_extensions):
                     file_path = os.path.join(dirpath, task_file)
-                    tasks_data = load_yaml_generic(file_path)
+                    # Use cached loading for each task file
+                    tasks_data = _load_yaml_file_cached(Path(file_path))
 
                     if tasks_data:
                         relative_path = os.path.relpath(file_path, str(tasks_dir))
@@ -189,7 +248,9 @@ class RoleRepository:
         return tasks_list
 
     def _load_handlers(self, role_path: Path) -> list[dict]:
-        """Load role handlers directory.
+        """Load role handlers directory with caching.
+
+        Uses per-file caching to avoid re-parsing unchanged YAML files.
 
         Args:
             role_path: Path to role directory
@@ -212,7 +273,8 @@ class RoleRepository:
             for handler_file in filenames:
                 if any(handler_file.endswith(ext) for ext in yaml_extensions):
                     file_path = os.path.join(dirpath, handler_file)
-                    handlers_data = load_yaml_generic(file_path)
+                    # Use cached loading for each handler file
+                    handlers_data = _load_yaml_file_cached(Path(file_path))
 
                     if handlers_data and isinstance(handlers_data, list):
                         for handler in handlers_data:
@@ -245,7 +307,9 @@ class RoleRepository:
         return handlers_list
 
     def _load_meta(self, role_path: Path) -> dict | None:
-        """Load role metadata from meta/main.yml.
+        """Load role metadata from meta/main.yml with caching.
+
+        Uses file-based caching to avoid re-parsing unchanged metadata files.
 
         Args:
             role_path: Path to role directory
@@ -259,8 +323,11 @@ class RoleRepository:
             logger.debug(f"No meta file found in {role_path}")
             return None
 
-        meta_data = load_yaml_generic(str(meta_path))
-        return meta_data if meta_data else None
+        # Use cached loading
+        meta_data = _load_yaml_file_cached(meta_path)
+        if meta_data and isinstance(meta_data, dict):
+            return meta_data
+        return None
 
     def exists(self, path: Path) -> bool:
         """Check if a role exists at the given path.
