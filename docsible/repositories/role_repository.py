@@ -26,9 +26,16 @@ logger = logging.getLogger(__name__)
 # Cached YAML Loading Functions
 # ============================================================================
 
+# IMPORTANT: We need to preserve the structure from load_yaml_files_from_dir_custom
+# which returns: [{"file": "main.yml", "data": {...with metadata...}}]
+# This preserves file names and metadata (line numbers, types, descriptions from comments).
+
 @cache_by_file_mtime
-def _load_yaml_file_cached(path: Path) -> dict | list | None:
-    """Load and parse a single YAML file with caching.
+def _load_yaml_file_with_metadata_cached(path: Path) -> dict | None:
+    """Load and parse a YAML file WITH metadata extraction (cached).
+
+    Uses load_yaml_file_custom which extracts metadata from comments
+    (line numbers, types, descriptions, etc.).
 
     Caches results by file path + modification time. Automatically invalidates
     when file changes.
@@ -37,37 +44,79 @@ def _load_yaml_file_cached(path: Path) -> dict | list | None:
         path: Path to YAML file
 
     Returns:
-        Parsed YAML content (dict, list, or None)
+        Dict with metadata-rich structure or None
     """
-    return load_yaml_generic(path)
+    from docsible.utils.yaml.loader import load_yaml_file_custom
+
+    return load_yaml_file_custom(str(path))
 
 
-def _load_yaml_dir_cached(dir_path: Path) -> list[dict]:
-    """Load all YAML files from directory with per-file caching.
+def _load_yaml_dir_with_metadata_cached(dir_path: Path) -> list[dict]:
+    """Load all YAML files from directory WITH metadata (cached per-file).
 
-    Uses cached loading for each individual file in the directory.
+    This matches the behavior of load_yaml_files_from_dir_custom, returning:
+    [{"file": "main.yml", "data": {...}}, ...]
+
+    Where "data" contains metadata-rich structure with line numbers, types,
+    descriptions extracted from comments.
 
     Args:
         dir_path: Path to directory containing YAML files
 
     Returns:
-        List of parsed YAML dictionaries
+        List of dicts with structure: {"file": relative_path, "data": {...}}
     """
+    import os
+
     if not dir_path.exists() or not dir_path.is_dir():
         return []
 
-    yaml_files = [
-        f for f in dir_path.iterdir()
-        if f.is_file() and f.suffix in ('.yml', '.yaml')
-    ]
+    collected_data = []
 
-    results: list[dict] = []
-    for yaml_file in yaml_files:
-        content = _load_yaml_file_cached(yaml_file)
-        if content and isinstance(content, dict):
-            results.append(content)
+    def process_yaml_file(full_path: Path, base_dir: Path) -> dict | None:
+        """Process a single YAML file and return with file metadata."""
+        if full_path.suffix in ('.yml', '.yaml'):
+            file_data = _load_yaml_file_with_metadata_cached(full_path)
+            if file_data:
+                relative_path = full_path.relative_to(base_dir)
+                return {"file": str(relative_path), "data": file_data}
+        return None
 
-    return results
+    # Process files in root directory
+    for file in dir_path.iterdir():
+        if file.is_file():
+            item = process_yaml_file(file, dir_path)
+            if item:
+                collected_data.append(item)
+
+    # Process files in "main" subdirectory (Ansible convention)
+    main_dir = dir_path / "main"
+    if main_dir.exists() and main_dir.is_dir():
+        for root, _, files in os.walk(main_dir):
+            root_path = Path(root)
+            for yaml_file in files:
+                full_path = root_path / yaml_file
+                item = process_yaml_file(full_path, dir_path)
+                if item:
+                    collected_data.append(item)
+
+    return collected_data
+
+
+# Simpler cached loaders for tasks/handlers/meta (no metadata needed)
+@cache_by_file_mtime
+def _load_yaml_file_cached(path: Path) -> dict | list | None:
+    """Load and parse a single YAML file with caching (simple, no metadata).
+
+    Uses load_yaml_generic for simple YAML parsing without metadata extraction.
+
+    Args:
+        path: Path to YAML file
+
+    Returns:
+        Parsed YAML content (dict, list, or None)
+    """
+    return load_yaml_generic(path)
 
 
 class RoleRepository:
@@ -144,12 +193,13 @@ class RoleRepository:
         """Load role defaults directory with caching.
 
         Uses per-file caching to avoid re-parsing unchanged YAML files.
+        Preserves metadata structure: [{"file": "main.yml", "data": {...}}]
 
         Args:
             role_path: Path to role directory
 
         Returns:
-            List of default variable dictionaries
+            List of dicts with structure: {"file": relative_path, "data": {...metadata...}}
         """
         assert self.structure is not None, "ProjectStructure must be initialized"
         defaults_dir = self.structure.get_defaults_dir(role_path)
@@ -157,20 +207,21 @@ class RoleRepository:
             logger.debug(f"No defaults directory found in {role_path}")
             return []
 
-        # Use cached loading
-        defaults_data = _load_yaml_dir_cached(defaults_dir)
+        # Use cached loading WITH metadata preservation
+        defaults_data = _load_yaml_dir_with_metadata_cached(defaults_dir)
         return defaults_data or []
 
     def _load_vars(self, role_path: Path) -> list[dict]:
         """Load role vars directory with caching.
 
         Uses per-file caching to avoid re-parsing unchanged YAML files.
+        Preserves metadata structure: [{"file": "main.yml", "data": {...}}]
 
         Args:
             role_path: Path to role directory
 
         Returns:
-            List of variable dictionaries
+            List of dicts with structure: {"file": relative_path, "data": {...metadata...}}
         """
         assert self.structure is not None, "ProjectStructure must be initialized"
         vars_dir = self.structure.get_vars_dir(role_path)
@@ -178,8 +229,8 @@ class RoleRepository:
             logger.debug(f"No vars directory found in {role_path}")
             return []
 
-        # Use cached loading
-        vars_data = _load_yaml_dir_cached(vars_dir)
+        # Use cached loading WITH metadata preservation
+        vars_data = _load_yaml_dir_with_metadata_cached(vars_dir)
         return vars_data or []
 
     def _load_tasks(
