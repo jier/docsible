@@ -8,8 +8,8 @@ from .models import Phase, PhasePattern
 logger = logging.getLogger(__name__)
 
 DEFAULT_PATTERNS: dict[Phase, PhasePattern] = {
-    Phase.SETUP: {
-            "modules": {
+    Phase.SETUP: PhasePattern(
+            modules={
                 "assert",
                 "debug",
                 "set_fact",
@@ -18,7 +18,7 @@ DEFAULT_PATTERNS: dict[Phase, PhasePattern] = {
                 "fail",
                 "when",
             },
-            "name_keywords": [
+            name_keywords=[
                 "prerequisite",
                 "pre-requisite",
                 "check",
@@ -26,10 +26,10 @@ DEFAULT_PATTERNS: dict[Phase, PhasePattern] = {
                 "ensure",
                 "verify prerequisite",
             ],
-            "priority": 1,  # Typically first
-        },
-        Phase.INSTALL: {
-            "modules": {
+            priority=1,  # Typically first
+        ),
+        Phase.INSTALL: PhasePattern(
+            modules={
                 "apt",
                 "yum",
                 "dnf",
@@ -43,7 +43,7 @@ DEFAULT_PATTERNS: dict[Phase, PhasePattern] = {
                 "unarchive",
                 "maven_artifact",
             },
-            "name_keywords": [
+            name_keywords=[
                 "install",
                 "download",
                 "fetch",
@@ -51,10 +51,10 @@ DEFAULT_PATTERNS: dict[Phase, PhasePattern] = {
                 "clone",
                 "acquire",
             ],
-            "priority": 2,
-        },
-        Phase.CONFIGURE: {
-            "modules": {
+            priority=2,
+        ),
+        Phase.CONFIGURE: PhasePattern(
+            modules={
                 "template",
                 "copy",
                 "lineinfile",
@@ -64,7 +64,7 @@ DEFAULT_PATTERNS: dict[Phase, PhasePattern] = {
                 "ini_file",
                 "xml",
             },
-            "name_keywords": [
+            name_keywords=[
                 "configure",
                 "config",
                 "setup",
@@ -72,21 +72,21 @@ DEFAULT_PATTERNS: dict[Phase, PhasePattern] = {
                 "create config",
                 "apply config",
             ],
-            "priority": 3,
-        },
-        Phase.DEPLOY: {
-            "modules": {"command", "shell", "docker_container", "kubernetes", "k8s"},
-            "name_keywords": ["deploy", "run", "execute", "launch", "apply"],
-            "priority": 4,
-        },
-        Phase.ACTIVATE: {
-            "modules": {"service", "systemd", "supervisorctl", "docker_container"},
-            "name_keywords": ["start", "enable", "activate", "restart", "reload"],
-            "priority": 5,
-        },
-        Phase.VERIFY: {
-            "modules": {"uri", "wait_for", "assert", "ping", "command", "shell"},
-            "name_keywords": [
+            priority=3,
+        ),
+        Phase.DEPLOY: PhasePattern(
+            modules={"command", "shell", "docker_container", "kubernetes", "k8s"},
+            name_keywords=["deploy", "run", "execute", "launch", "apply"],
+            priority=4,
+        ),
+        Phase.ACTIVATE: PhasePattern(
+            modules={"service", "systemd", "supervisorctl", "docker_container"},
+            name_keywords=["start", "enable", "activate", "restart", "reload"],
+            priority=5,
+        ),
+        Phase.VERIFY: PhasePattern(
+            modules={"uri", "wait_for", "assert", "ping", "command", "shell"},
+            name_keywords=[
                 "verify",
                 "test",
                 "check",
@@ -96,11 +96,11 @@ DEFAULT_PATTERNS: dict[Phase, PhasePattern] = {
                 "wait for",
                 "ensure running",
             ],
-            "priority": 6,
-        },
-        Phase.CLEANUP: {
-            "modules": {"file", "command", "shell"},
-            "name_keywords": [
+            priority=6,
+        ),
+        Phase.CLEANUP: PhasePattern(
+            modules={"file", "command", "shell"},
+            name_keywords=[
                 "cleanup",
                 "clean up",
                 "remove",
@@ -108,8 +108,8 @@ DEFAULT_PATTERNS: dict[Phase, PhasePattern] = {
                 "purge",
                 "temporary",
             ],
-            "priority": 7,  # Typically last
-        },
+            priority=7,  # Typically last
+        ),
 }
 
 
@@ -143,11 +143,11 @@ class PatternLoader:
             # Try to match to existing Phase enum
             phase = PatternLoader._get_phase_by_name(phase_name)
 
-            patterns[phase] = {
-                "modules": set(pattern_config.get("modules", [])),
-                "name_keywords": pattern_config.get("name_keywords", []),
-                "priority": pattern_config.get("priority", 99),
-            }
+            patterns[phase] = PhasePattern(
+                modules=set(pattern_config.get("modules", [])),
+                name_keywords=pattern_config.get("name_keywords", []),
+                priority=pattern_config.get("priority", 99),
+            )
 
         return patterns
 

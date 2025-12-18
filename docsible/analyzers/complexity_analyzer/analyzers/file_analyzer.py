@@ -88,7 +88,18 @@ def analyze_file_complexity(
                 }
         except Exception as e:
             logger.debug(f"Phase detection failed for {file_path}: {e}")
-        #FIXME Missing detailed concern
+
+        # Generate detailed concern message
+        detailed_concern = _generate_detailed_concern(
+            primary_concern=primary_concern,
+            task_count=len(tasks),
+            conditional_count=conditional_count,
+            conditional_percentage=conditional_percentage,
+            has_integrations=has_integrations,
+            integration_types=integration_types,
+            unique_modules=unique_modules,
+        )
+
         file_details.append(
             FileComplexityDetail(
                 file_path=file_path,
@@ -98,7 +109,7 @@ def analyze_file_complexity(
                 has_integrations=has_integrations,
                 integration_types=list(set(integration_types)),
                 module_diversity=unique_modules,
-                primary_concern=primary_concern,
+                primary_concern=detailed_concern,
                 phase_detection=phase_detection_result,
                 line_ranges=line_ranges,
             )
@@ -160,3 +171,106 @@ def _detect_file_concern(tasks: list[dict[str, Any]]) -> str | None:
     # Use pluggable concern registry
     primary = ConcernRegistry.detect_primary_concern(tasks, min_confidence=0.6)
     return primary.concern_name if primary else None
+
+
+def _generate_detailed_concern(
+    primary_concern: str | None,
+    task_count: int,
+    conditional_count: int,
+    conditional_percentage: float,
+    has_integrations: bool,
+    integration_types: list[str],
+    unique_modules: int,
+) -> str | None:
+    """Generate detailed concern message with specific complexity metrics.
+
+    Instead of returning just a concern category, this provides actionable
+    details about what makes the file complex.
+
+    Args:
+        primary_concern: Primary concern category (e.g., 'package_installation')
+        task_count: Total number of tasks in file
+        conditional_count: Number of conditional tasks
+        conditional_percentage: Percentage of tasks with conditionals
+        has_integrations: Whether file uses external integrations
+        integration_types: List of integration types used
+        unique_modules: Number of unique modules used
+
+    Returns:
+        Detailed concern message or None if no concerns
+
+    Example:
+        >>> _generate_detailed_concern("package_installation", 25, 10, 40.0, True, ["api"], 8)
+        'package_installation (25 tasks, 40% conditional, 8 modules, API integration)'
+    """
+    if not primary_concern:
+        # No specific concern, check if file is complex
+        if task_count > 30:
+            return _build_complexity_message(
+                task_count, conditional_count, conditional_percentage,
+                has_integrations, integration_types, unique_modules
+            )
+        return None
+
+    # Build detailed message for primary concern
+    details = []
+
+    # Add task count if significant
+    if task_count > 15:
+        details.append(f"{task_count} tasks")
+
+    # Add conditional percentage if high
+    if conditional_percentage > 30:
+        details.append(f"{conditional_percentage:.0f}% conditional")
+
+    # Add module diversity if high
+    if unique_modules > 8:
+        details.append(f"{unique_modules} modules")
+
+    # Add integration info
+    if has_integrations and integration_types:
+        integration_str = ", ".join(set(integration_types))
+        details.append(f"{integration_str} integration")
+
+    # Format final message
+    if details:
+        return f"{primary_concern} ({', '.join(details)})"
+    return primary_concern
+
+
+def _build_complexity_message(
+    task_count: int,
+    conditional_count: int,
+    conditional_percentage: float,
+    has_integrations: bool,
+    integration_types: list[str],
+    unique_modules: int,
+) -> str:
+    """Build complexity message for files without clear primary concern.
+
+    Args:
+        task_count: Total number of tasks
+        conditional_count: Number of conditional tasks
+        conditional_percentage: Percentage with conditionals
+        has_integrations: Whether file uses integrations
+        integration_types: Types of integrations
+        unique_modules: Number of unique modules
+
+    Returns:
+        Detailed complexity message
+
+    Example:
+        'High complexity: 35 tasks, 15 conditionals (43%), 12 modules'
+    """
+    parts = [f"{task_count} tasks"]
+
+    if conditional_count > 5:
+        parts.append(f"{conditional_count} conditionals ({conditional_percentage:.0f}%)")
+
+    if unique_modules > 10:
+        parts.append(f"{unique_modules} modules")
+
+    if has_integrations and integration_types:
+        parts.append(f"{len(set(integration_types))} integrations")
+
+    return f"High complexity: {', '.join(parts)}"

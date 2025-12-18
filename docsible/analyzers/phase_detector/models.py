@@ -1,6 +1,5 @@
 
 from enum import Enum
-from typing import TypedDict
 
 from pydantic import BaseModel, Field
 
@@ -43,8 +42,17 @@ class PhaseDetectionResult(BaseModel):
     reasoning: str = Field(description="Explanation of the analysis")
 
 
-#FIXME Should below model not be based on BaseModel why TypeDict
-class PhasePattern(TypedDict):
-    modules: set[str]
-    name_keywords: list[str]
-    priority: int
+class PhasePattern(BaseModel):
+    """Pattern for detecting a specific phase.
+
+    Converted from TypedDict to BaseModel for consistency with other models
+    and to get validation, serialization, and better IDE support.
+    """
+
+    modules: set[str] = Field(
+        default_factory=set, description="Ansible modules associated with this phase"
+    )
+    name_keywords: list[str] = Field(
+        default_factory=list, description="Keywords in task names indicating this phase"
+    )
+    priority: int = Field(default=99, description="Priority for phase detection (lower = higher priority)")
