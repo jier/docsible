@@ -245,7 +245,7 @@ class MaintainabilityDetector(BasePatternDetector):
                     category=self.pattern_category,
                     severity=SeverityLevel.INFO,
                     description=f"Found {len(magic_values)} repeated literal values across tasks",
-                    example=f"```\n{example}\n```",
+                    example=f"\n{example}\n",
                     suggestion=(
                         "Replace magic values with variables:\n\n"
                         "**Instead of hardcoding:**\n"
