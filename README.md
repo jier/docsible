@@ -100,7 +100,7 @@ docsible role --role /path/to/custom/role
 
 **For detailed configuration options, see [CONFIGURATION.md](CONFIGURATION.md)**
 
-### Hybrid Template (NEW in 0.8.0)
+### Hybrid Template
 
 Use the `--hybrid` flag to generate a README with a mix of **manual sections** (for high-level docs) and **auto-generated sections** (for technical details):
 
@@ -120,49 +120,110 @@ The hybrid template includes:
 This approach lets you maintain high-level narrative documentation while ensuring technical details stay accurate and up-to-date!
 
 ```bash
-$ docsible --help
-Usage: docsible [OPTIONS]
+$ docsible role --help
 
-Options:
-  -r, --role TEXT                 Path to the Ansible role directory.
-  -c, --collection TEXT           Path to the Ansible collection directory.
-  -p, --playbook TEXT             Path to the playbook file.
-  -g, --graph                     Generate Mermaid graph for tasks.
-  -nob, --no-backup               Do not backup the readme before remove.
-  -nod, --no-docsible             Do not generate .docsible file and do not include it in README.md.
-  -com, --comments                Read comments from tasks files
-  -ctpl, --md-collection-template TEXT Path to the collection markdown template file.
-  -rtpl, -tpl, --md-role-template, --md-template TEXT
-                                  Path to the role markdown template file.
-  -a, --append                    Append to the existing README.md instead of
-                                  replacing it.
-  -o, --output TEXT               Output readme file name.
-  -ru, --repository-url TEXT      Repository base URL (used for standalone roles)
-  -rt, --repo-type TEXT           Repository type: github, gitlab, gitea, etc.
-  -rb, --repo-branch TEXT         Repository branch name (e.g., main or master)
-  --version                       Show the module version. Actual is 0.7.17
-  --help                          Show this message and exit.
+📂 Input Paths:
+  -r, --role TEXT        Path to the Ansible role directory.
+  -c, --collection TEXT  Path to the Ansible collection directory.
+  -p, --playbook TEXT    Path to the playbook file.
+
+💾 Output Control:
+  -o, --output TEXT      Output readme file name.
+  -nob, --no-backup      Do not backup the readme before remove.
+  -a, --append           Append to the existing README.md instead of replacing.
+  --dry-run              Preview what would be generated without writing any files.
+  --validate/--no-validate  Validate markdown formatting before writing.
+  --auto-fix             Automatically fix common markdown formatting issues.
+  --strict-validation    Fail generation if markdown validation errors are found.
+
+📄 Content Sections:
+  --no-vars             Hide variable documentation
+  --no-tasks            Hide task lists and task details
+  --no-diagrams         Hide all Mermaid diagrams
+  --no-examples         Hide example playbook sections
+  --no-metadata         Hide role metadata, author, and license
+  --no-handlers         Hide handlers section
+  --include-complexity  Include complexity analysis section in README
+  --minimal             Generate minimal documentation (enables all --no-* flags)
+
+🎨 Templates:
+  --md-role-template    Path to the role markdown template file
+  --md-collection-template  Path to the collection markdown template file
+  --hybrid              Use hybrid template (manual + auto-generated sections)
+
+📊 Visualization:
+  -g, --graph           Generate Mermaid diagrams for role visualization
+  -com, --comments      Extract and include inline comments from task files
+  -tl, --task-line      Include source file line numbers for each task
+  --simplify-diagrams   Show only high-level diagrams, hide detailed flowcharts
+
+🔍 Analysis & Complexity:
+  --complexity-report      Include role complexity analysis in documentation
+  --simplification-report  Include detailed pattern analysis with simplification suggestions
+  --show-dependencies      Generate task dependency matrix table
+  --analyze-only           Analyze role complexity without generating documentation
+
+🔗 Repository Integration:
+  -ru, --repository-url TEXT  Repository base URL (used for standalone roles)
+  -rt, --repo-type TEXT       Repository type: github, gitlab, gitea, etc.
+  -rb, --repo-branch TEXT     Repository branch name (e.g., main or master)
 ```
 
 ### Flags
 
-- `--role`: Specifies the directory path to the Ansible role.
-- `--collection`: Specifies the directory path to the Ansible collection.
-- `--playbook`: Specifies the path to the Ansible playbook (Optional). (Works only with roles)
-- `--graph`: Generate mermaid for role and playbook.
-- `--no-backup`: Ignore existent README.md and remove before generate a new one. (Optional).
-- `--no-docsible`: Do not generate `.docsible` metadata file and exclude it from the README.md. (Optional).
-- `--comments`: Read comments from tasks files. (Optional).
-- `--md-template`: Specifies the path to the markdown template file (Optional). (Works only with roles)
-- `--md-collection-template`: Specifies the path to the markdown template file for documenting collections. (Optional).
-- `--hybrid`: Use hybrid template that combines manual sections with auto-generated content. (Optional).
-- `--append`: Append existing readme.md if needed.
-- `--output`: Output readme file name. Defaults to `README.md`.
-- `--repository-url`: Repository base URL (used for standalone roles). Use `detect` to auto-detect using Git, or provide a full URL.
-- `--repo-type`: Repository type: github, gitlab, gitea, etc. (Optional but needed if `detect` is not used with `--repository-url`).
-- `--repo-branch`: Repository branch name (e.g., main or master). (Optional but needed if `detect` is not used with `--repository-url`).
-- `--version`: Show the current module version and exit.
-- `--help`: Show this message and exit.
+```yaml
+📂 Input Paths:
+--role, -r: Path to Ansible role directory
+--collection, -c: Path to Ansible collection directory
+--playbook, -p: Path to playbook file
+
+💾 Output Control:
+--output, -o: Output filename (default: README.md)
+--no-backup, -nob: Don't create backup before overwriting
+--append, -a: Append to existing README instead of replacing
+--no-docsible, -nod: Do not generate .docsible file
+--dry-run: Preview what would be generated without writing any files (analysis still performed)
+--validate/--no-validate: Enable/disable markdown formatting validation (default: enabled)
+--auto-fix: Automatically fix common markdown formatting issues (whitespace, tables)
+--strict-validation: Fail generation if markdown validation errors are found (default: warn only)
+
+📄 Content Sections:
+--no-vars: Skip variable documentation (defaults, vars, argument_specs)
+--no-tasks: Skip task lists and task details
+--no-diagrams: Skip all Mermaid diagrams (flowcharts, sequence diagrams)
+--simplify-diagrams: Show only high-level diagrams, hide detailed task flowcharts
+--no-examples: Skip example playbook sections
+--no-metadata: Skip role metadata, author, and license information
+--no-handlers: Skip handlers section
+--include-complexity: Include complexity analysis section in README
+--minimal: Generate minimal documentation (enables all --no-* flags)
+
+🎨 Templates:
+--md-role-template, -rtpl, -tpl: Path to the role markdown template file
+--md-collection-template, -ctpl: Path to the collection markdown template file
+--hybrid: Use hybrid template (manual + auto-generated sections)
+
+📊 Visualization:
+--graph, -g: Generate Mermaid diagrams for role visualization
+--comments, -com: Extract and include inline comments from task files in documentation
+--task-line, -tl: Include source file line numbers for each task in generated documentation
+
+🔍 Analysis & Complexity:
+--complexity-report: Include role complexity analysis in generated documentation
+--simplification-report: Include detailed pattern analysis with simplification suggestions in documentation
+--show-dependencies: Generate task dependency matrix table in documentation
+--analyze-only: Analyze role complexity and display detailed metrics without generating documentation
+
+🔗 Repository Integration:
+--repository-url, -ru: Repository base URL (used for standalone roles)
+--repo-type, -rt: Repository type (github, gitlab, gitea, etc.)
+--repo-branch, -rb: Repository branch name (e.g., main or master)
+
+⚙️ Global Options:
+--verbose, -v: Enable debug logging
+--version: Show version
+--help: Show help message
+```
 
 ## Data Sources
 
@@ -183,11 +244,7 @@ Docsible works with Python 3.x and requires the following libraries:
 - Click
 - Jinja2
 - PyYAML
-
-## TODO
-- Clean the code
-- Add more features
-- Multiple playbooks handle into mermaid for collection and role
+- Pydantic
 
 ## About comments
 
