@@ -1,0 +1,164 @@
+# Example Phase Patterns Configuration
+#
+# This file demonstrates how to customize phase detection patterns.
+# Copy this file to .docsible/phase_patterns.yml and modify as needed.
+#
+# Phase detection helps identify whether tasks follow a chronological pipeline
+# (setup → install → configure → deploy → activate → verify → cleanup)
+# or represent mixed functional concerns that should be split.
+#
+# Usage:
+#   detector = PhaseDetector(patterns_file=".docsible/phase_patterns.yml")
+
+phases:
+  # Override built-in setup phase
+  setup:
+    modules:
+      - assert
+      - debug
+      - set_fact
+      - include_vars
+      - stat
+      - fail
+    name_keywords:
+      - prerequisite
+      - pre-requisite
+      - check
+      - validate
+      - ensure
+      - verify prerequisite
+    priority: 1  # Lower priority = earlier in pipeline
+
+  # Override built-in install phase
+  install:
+    modules:
+      - apt
+      - yum
+      - dnf
+      - pip
+      - npm
+      - package
+      - gem
+      - docker_image
+      - get_url
+      - git
+      - unarchive
+      - maven_artifact
+      # Add custom package managers
+      - brew
+      - chocolatey
+      - pacman
+    name_keywords:
+      - install
+      - download
+      - fetch
+      - pull
+      - clone
+      - acquire
+      - provision
+    priority: 2
+
+  # Override built-in configure phase
+  configure:
+    modules:
+      - template
+      - copy
+      - lineinfile
+      - blockinfile
+      - file
+      - replace
+      - ini_file
+      - xml
+    name_keywords:
+      - configure
+      - config
+      - setup
+      - set up
+      - create config
+      - apply config
+    priority: 3
+
+  # Override built-in deploy phase
+  deploy:
+    modules:
+      - command
+      - shell
+      - docker_container
+      - kubernetes
+      - k8s
+    name_keywords:
+      - deploy
+      - run
+      - execute
+      - launch
+      - apply
+    priority: 4
+
+  # Override built-in activate phase
+  activate:
+    modules:
+      - service
+      - systemd
+      - supervisorctl
+      - docker_container
+    name_keywords:
+      - start
+      - enable
+      - activate
+      - restart
+      - reload
+    priority: 5
+
+  # Override built-in verify phase
+  verify:
+    modules:
+      - uri
+      - wait_for
+      - assert
+      - ping
+      - command
+      - shell
+    name_keywords:
+      - verify
+      - test
+      - check
+      - validate
+      - health check
+      - smoke test
+      - wait for
+      - ensure running
+    priority: 6
+
+  # Override built-in cleanup phase
+  cleanup:
+    modules:
+      - file
+      - command
+      - shell
+    name_keywords:
+      - cleanup
+      - clean up
+      - remove
+      - delete
+      - purge
+      - temporary
+    priority: 7
+
+  # Example: Add custom phase for database migrations
+  # Note: Custom phase names that don't match built-in phases will be treated as UNKNOWN
+  # To properly support custom phases, you would need to extend the Phase enum
+  # For now, you can extend existing phases instead
+
+  # Example: Extend install phase for database-specific installation
+  # (This would override the install phase above)
+  # install:
+  #   modules:
+  #     - apt
+  #     - postgresql
+  #     - mysql_db
+  #     - mongodb_user
+  #   name_keywords:
+  #     - install
+  #     - database setup
+  #     - db provision
+  #   priority: 2
