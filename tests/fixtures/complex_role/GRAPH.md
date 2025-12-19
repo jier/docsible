@@ -1,5 +1,5 @@
 <!-- DOCSIBLE METADATA
-generated_at: 2025-12-19T10:13:04.735956+00:00Z
+generated_at: 2025-12-19T10:25:45.520250+00:00Z
 docsible_version: 0.8.0
 role_hash: 9f5db66940d046875aea45c86aa4d2051bdc813d4035e3e95df1278db8f8758a
 -->
@@ -30,26 +30,26 @@ Description: A complex test role with state management
 
 | Var | Type | Value |
 |-----|------|-------|
-| [title](https://github.com/jier/docsible/blob/claude/modularize-ansible-codebase-01JY3Hhe3hMvzeaTb9dbyMVY/defaults/main.yml#L2) | str | `Complex Role Variables` |
-| [description](https://github.com/jier/docsible/blob/claude/modularize-ansible-codebase-01JY3Hhe3hMvzeaTb9dbyMVY/defaults/main.yml#L3) | str | `Variables with present/absent state support` |
-| [state](https://github.com/jier/docsible/blob/claude/modularize-ansible-codebase-01JY3Hhe3hMvzeaTb9dbyMVY/defaults/main.yml#L5) | dict | `{}` |
-| [state.**default**](https://github.com/jier/docsible/blob/claude/modularize-ansible-codebase-01JY3Hhe3hMvzeaTb9dbyMVY/defaults/main.yml#L6) | str | `present` |
-| [state.**choices**](https://github.com/jier/docsible/blob/claude/modularize-ansible-codebase-01JY3Hhe3hMvzeaTb9dbyMVY/defaults/main.yml#L7) | list | `[]` |
-| [state.choices.**0**](https://github.com/jier/docsible/blob/claude/modularize-ansible-codebase-01JY3Hhe3hMvzeaTb9dbyMVY/defaults/main.yml#L7) | str | `present` |
-| [state.choices.**1**](https://github.com/jier/docsible/blob/claude/modularize-ansible-codebase-01JY3Hhe3hMvzeaTb9dbyMVY/defaults/main.yml#L7) | str | `absent` |
-| [state.**description**](https://github.com/jier/docsible/blob/claude/modularize-ansible-codebase-01JY3Hhe3hMvzeaTb9dbyMVY/defaults/main.yml#L8) | str | `Whether to install or remove the application` |
-| [app_name](https://github.com/jier/docsible/blob/claude/modularize-ansible-codebase-01JY3Hhe3hMvzeaTb9dbyMVY/defaults/main.yml#L10) | str | `myapp` |
-| [app_version](https://github.com/jier/docsible/blob/claude/modularize-ansible-codebase-01JY3Hhe3hMvzeaTb9dbyMVY/defaults/main.yml#L11) | str | `1.0.0` |
-| [app_port](https://github.com/jier/docsible/blob/claude/modularize-ansible-codebase-01JY3Hhe3hMvzeaTb9dbyMVY/defaults/main.yml#L12) | int | `3000` |
-| [database_config](https://github.com/jier/docsible/blob/claude/modularize-ansible-codebase-01JY3Hhe3hMvzeaTb9dbyMVY/defaults/main.yml#L14) | dict | `{}` |
-| [database_config.**host**](https://github.com/jier/docsible/blob/claude/modularize-ansible-codebase-01JY3Hhe3hMvzeaTb9dbyMVY/defaults/main.yml#L15) | str | `localhost` |
-| [database_config.**port**](https://github.com/jier/docsible/blob/claude/modularize-ansible-codebase-01JY3Hhe3hMvzeaTb9dbyMVY/defaults/main.yml#L16) | int | `5432` |
-| [database_config.**name**](https://github.com/jier/docsible/blob/claude/modularize-ansible-codebase-01JY3Hhe3hMvzeaTb9dbyMVY/defaults/main.yml#L17) | str | `appdb` |
-| [database_config.**user**](https://github.com/jier/docsible/blob/claude/modularize-ansible-codebase-01JY3Hhe3hMvzeaTb9dbyMVY/defaults/main.yml#L18) | str | `appuser` |
-| [feature_flags](https://github.com/jier/docsible/blob/claude/modularize-ansible-codebase-01JY3Hhe3hMvzeaTb9dbyMVY/defaults/main.yml#L20) | dict | `{}` |
-| [feature_flags.**enable_cache**](https://github.com/jier/docsible/blob/claude/modularize-ansible-codebase-01JY3Hhe3hMvzeaTb9dbyMVY/defaults/main.yml#L21) | bool | `True` |
-| [feature_flags.**enable_monitoring**](https://github.com/jier/docsible/blob/claude/modularize-ansible-codebase-01JY3Hhe3hMvzeaTb9dbyMVY/defaults/main.yml#L22) | bool | `False` |
-| [feature_flags.**debug_mode**](https://github.com/jier/docsible/blob/claude/modularize-ansible-codebase-01JY3Hhe3hMvzeaTb9dbyMVY/defaults/main.yml#L23) | bool | `False` |
+| [title](https://127.0.0.1:35176/git/jier/docsible/defaults/main.yml#L2) | str | `Complex Role Variables` |
+| [description](https://127.0.0.1:35176/git/jier/docsible/defaults/main.yml#L3) | str | `Variables with present/absent state support` |
+| [state](https://127.0.0.1:35176/git/jier/docsible/defaults/main.yml#L5) | dict | `{}` |
+| [state.**default**](https://127.0.0.1:35176/git/jier/docsible/defaults/main.yml#L6) | str | `present` |
+| [state.**choices**](https://127.0.0.1:35176/git/jier/docsible/defaults/main.yml#L7) | list | `[]` |
+| [state.choices.**0**](https://127.0.0.1:35176/git/jier/docsible/defaults/main.yml#L7) | str | `present` |
+| [state.choices.**1**](https://127.0.0.1:35176/git/jier/docsible/defaults/main.yml#L7) | str | `absent` |
+| [state.**description**](https://127.0.0.1:35176/git/jier/docsible/defaults/main.yml#L8) | str | `Whether to install or remove the application` |
+| [app_name](https://127.0.0.1:35176/git/jier/docsible/defaults/main.yml#L10) | str | `myapp` |
+| [app_version](https://127.0.0.1:35176/git/jier/docsible/defaults/main.yml#L11) | str | `1.0.0` |
+| [app_port](https://127.0.0.1:35176/git/jier/docsible/defaults/main.yml#L12) | int | `3000` |
+| [database_config](https://127.0.0.1:35176/git/jier/docsible/defaults/main.yml#L14) | dict | `{}` |
+| [database_config.**host**](https://127.0.0.1:35176/git/jier/docsible/defaults/main.yml#L15) | str | `localhost` |
+| [database_config.**port**](https://127.0.0.1:35176/git/jier/docsible/defaults/main.yml#L16) | int | `5432` |
+| [database_config.**name**](https://127.0.0.1:35176/git/jier/docsible/defaults/main.yml#L17) | str | `appdb` |
+| [database_config.**user**](https://127.0.0.1:35176/git/jier/docsible/defaults/main.yml#L18) | str | `appuser` |
+| [feature_flags](https://127.0.0.1:35176/git/jier/docsible/defaults/main.yml#L20) | dict | `{}` |
+| [feature_flags.**enable_cache**](https://127.0.0.1:35176/git/jier/docsible/defaults/main.yml#L21) | bool | `True` |
+| [feature_flags.**enable_monitoring**](https://127.0.0.1:35176/git/jier/docsible/defaults/main.yml#L22) | bool | `False` |
+| [feature_flags.**debug_mode**](https://127.0.0.1:35176/git/jier/docsible/defaults/main.yml#L23) | bool | `False` |
 
 
 #### File: tasks/uninstall.yml
@@ -62,15 +62,6 @@ Description: A complex test role with state management
 | Remove configuration | ansible.builtin.file | False |
 
 
-#### File: tasks/prerequisites.yml
-
-
-| Name | Module | Has Conditions |
-|------|--------|----------------|
-| Install required packages | ansible.builtin.apt | False |
-| Create application directory | ansible.builtin.file | False |
-
-
 #### File: tasks/install.yml
 
 
@@ -79,6 +70,15 @@ Description: A complex test role with state management
 | Download application | ansible.builtin.get_url | False |
 | Extract application | ansible.builtin.unarchive | False |
 | Install Python dependencies | ansible.builtin.pip | False |
+
+
+#### File: tasks/prerequisites.yml
+
+
+| Name | Module | Has Conditions |
+|------|--------|----------------|
+| Install required packages | ansible.builtin.apt | False |
+| Create application directory | ansible.builtin.file | False |
 
 
 #### File: tasks/main.yml
@@ -174,7 +174,7 @@ app_config_file: "{{ app_install_dir }}/config.yml"
 - Better for multi-environment deployments
 
 **Expected benefit:** Improves flexibility and reduces change burden
-**Files:** `prerequisites.yml`, `uninstall.yml`, `main.yml`
+**Files:** `main.yml`, `uninstall.yml`, `prerequisites.yml`
 
 </details>
 
@@ -236,18 +236,6 @@ sequenceDiagram
 
     Tasks_uninstall_yml-->>-complex_role: Tasks complete
 
-    participant Tasks_prerequisites_yml
-    Note over complex_role,Tasks_prerequisites_yml: File: prerequisites.yml
-    complex_role->>+Tasks_prerequisites_yml: Load tasks
-
-    Tasks_prerequisites_yml->>Tasks_prerequisites_yml: Install required packages
-    Note right of Tasks_prerequisites_yml: ansible.builtin.apt
-
-    Tasks_prerequisites_yml->>Tasks_prerequisites_yml: Create application directory
-    Note right of Tasks_prerequisites_yml: ansible.builtin.file
-
-    Tasks_prerequisites_yml-->>-complex_role: Tasks complete
-
     participant Tasks_install_yml
     Note over complex_role,Tasks_install_yml: File: install.yml
     complex_role->>+Tasks_install_yml: Load tasks
@@ -262,6 +250,18 @@ sequenceDiagram
     Note right of Tasks_install_yml: ansible.builtin.pip
 
     Tasks_install_yml-->>-complex_role: Tasks complete
+
+    participant Tasks_prerequisites_yml
+    Note over complex_role,Tasks_prerequisites_yml: File: prerequisites.yml
+    complex_role->>+Tasks_prerequisites_yml: Load tasks
+
+    Tasks_prerequisites_yml->>Tasks_prerequisites_yml: Install required packages
+    Note right of Tasks_prerequisites_yml: ansible.builtin.apt
+
+    Tasks_prerequisites_yml->>Tasks_prerequisites_yml: Create application directory
+    Note right of Tasks_prerequisites_yml: ansible.builtin.file
+
+    Tasks_prerequisites_yml-->>-complex_role: Tasks complete
 
     participant Tasks_main_yml
     Note over complex_role,Tasks_main_yml: File: main.yml
@@ -311,22 +311,75 @@ sequenceDiagram
 
 ### uninstall.yml
 ```mermaid
-{'paginated': False, 'diagram': 'flowchart TD\nStart\nclassDef block stroke:#3498db,stroke-width:2px;\nclassDef task stroke:#4b76bb,stroke-width:2px;\nclassDef includeTasks stroke:#16a085,stroke-width:2px;\nclassDef importTasks stroke:#34495e,stroke-width:2px;\nclassDef includeRole stroke:#2980b9,stroke-width:2px;\nclassDef importRole stroke:#699ba7,stroke-width:2px;\nclassDef includeVars stroke:#8e44ad,stroke-width:2px;\nclassDef rescue stroke:#665352,stroke-width:2px;\n  Start-->|Task| Stop_application_service0[stop application service]:::task\n  Stop_application_service0-->|Task| Remove_application_directory1[remove application directory]:::task\n  Remove_application_directory1-->|Task| Remove_configuration2[remove configuration]:::task\n  Remove_configuration2-->End'}
-```
-
-### prerequisites.yml
-```mermaid
-{'paginated': False, 'diagram': 'flowchart TD\nStart\nclassDef block stroke:#3498db,stroke-width:2px;\nclassDef task stroke:#4b76bb,stroke-width:2px;\nclassDef includeTasks stroke:#16a085,stroke-width:2px;\nclassDef importTasks stroke:#34495e,stroke-width:2px;\nclassDef includeRole stroke:#2980b9,stroke-width:2px;\nclassDef importRole stroke:#699ba7,stroke-width:2px;\nclassDef includeVars stroke:#8e44ad,stroke-width:2px;\nclassDef rescue stroke:#665352,stroke-width:2px;\n  Start-->|Task| Install_required_packages0[install required packages]:::task\n  Install_required_packages0-->|Task| Create_application_directory1[create application directory]:::task\n  Create_application_directory1-->End'}
+flowchart TD
+Start
+classDef block stroke:#3498db,stroke-width:2px;
+classDef task stroke:#4b76bb,stroke-width:2px;
+classDef includeTasks stroke:#16a085,stroke-width:2px;
+classDef importTasks stroke:#34495e,stroke-width:2px;
+classDef includeRole stroke:#2980b9,stroke-width:2px;
+classDef importRole stroke:#699ba7,stroke-width:2px;
+classDef includeVars stroke:#8e44ad,stroke-width:2px;
+classDef rescue stroke:#665352,stroke-width:2px;
+  Start-->|Task| Stop_application_service0[stop application service]:::task
+  Stop_application_service0-->|Task| Remove_application_directory1[remove application directory]:::task
+  Remove_application_directory1-->|Task| Remove_configuration2[remove configuration]:::task
+  Remove_configuration2-->End
 ```
 
 ### install.yml
 ```mermaid
-{'paginated': False, 'diagram': 'flowchart TD\nStart\nclassDef block stroke:#3498db,stroke-width:2px;\nclassDef task stroke:#4b76bb,stroke-width:2px;\nclassDef includeTasks stroke:#16a085,stroke-width:2px;\nclassDef importTasks stroke:#34495e,stroke-width:2px;\nclassDef includeRole stroke:#2980b9,stroke-width:2px;\nclassDef importRole stroke:#699ba7,stroke-width:2px;\nclassDef includeVars stroke:#8e44ad,stroke-width:2px;\nclassDef rescue stroke:#665352,stroke-width:2px;\n  Start-->|Task| Download_application0[download application]:::task\n  Download_application0-->|Task| Extract_application1[extract application]:::task\n  Extract_application1-->|Task| Install_Python_dependencies2[install python dependencies]:::task\n  Install_Python_dependencies2-->End'}
+flowchart TD
+Start
+classDef block stroke:#3498db,stroke-width:2px;
+classDef task stroke:#4b76bb,stroke-width:2px;
+classDef includeTasks stroke:#16a085,stroke-width:2px;
+classDef importTasks stroke:#34495e,stroke-width:2px;
+classDef includeRole stroke:#2980b9,stroke-width:2px;
+classDef importRole stroke:#699ba7,stroke-width:2px;
+classDef includeVars stroke:#8e44ad,stroke-width:2px;
+classDef rescue stroke:#665352,stroke-width:2px;
+  Start-->|Task| Download_application0[download application]:::task
+  Download_application0-->|Task| Extract_application1[extract application]:::task
+  Extract_application1-->|Task| Install_Python_dependencies2[install python dependencies]:::task
+  Install_Python_dependencies2-->End
+```
+
+### prerequisites.yml
+```mermaid
+flowchart TD
+Start
+classDef block stroke:#3498db,stroke-width:2px;
+classDef task stroke:#4b76bb,stroke-width:2px;
+classDef includeTasks stroke:#16a085,stroke-width:2px;
+classDef importTasks stroke:#34495e,stroke-width:2px;
+classDef includeRole stroke:#2980b9,stroke-width:2px;
+classDef importRole stroke:#699ba7,stroke-width:2px;
+classDef includeVars stroke:#8e44ad,stroke-width:2px;
+classDef rescue stroke:#665352,stroke-width:2px;
+  Start-->|Task| Install_required_packages0[install required packages]:::task
+  Install_required_packages0-->|Task| Create_application_directory1[create application directory]:::task
+  Create_application_directory1-->End
 ```
 
 ### main.yml
 ```mermaid
-{'paginated': False, 'diagram': 'flowchart TD\nStart\nclassDef block stroke:#3498db,stroke-width:2px;\nclassDef task stroke:#4b76bb,stroke-width:2px;\nclassDef includeTasks stroke:#16a085,stroke-width:2px;\nclassDef importTasks stroke:#34495e,stroke-width:2px;\nclassDef includeRole stroke:#2980b9,stroke-width:2px;\nclassDef importRole stroke:#699ba7,stroke-width:2px;\nclassDef includeVars stroke:#8e44ad,stroke-width:2px;\nclassDef rescue stroke:#665352,stroke-width:2px;\n  Start-->|Include task| Include_prerequisites_prerequisites_yml_0[include prerequisites<br>include_task: prerequisites yml]:::includeTasks\n  Include_prerequisites_prerequisites_yml_0-->|Include task| Install_application_install_yml_1[install application<br>When: **state     present**<br>include_task: install yml]:::includeTasks\n  Install_application_install_yml_1-->|Include task| Remove_application_uninstall_yml_2[remove application<br>When: **state     absent**<br>include_task: uninstall yml]:::includeTasks\n  Remove_application_uninstall_yml_2-->|Task| Configure_application3[configure application<br>When: **state     present**]:::task\n  Configure_application3-->|Task| Ensure_service_state4[ensure service state]:::task\n  Ensure_service_state4-->End'}
+flowchart TD
+Start
+classDef block stroke:#3498db,stroke-width:2px;
+classDef task stroke:#4b76bb,stroke-width:2px;
+classDef includeTasks stroke:#16a085,stroke-width:2px;
+classDef importTasks stroke:#34495e,stroke-width:2px;
+classDef includeRole stroke:#2980b9,stroke-width:2px;
+classDef importRole stroke:#699ba7,stroke-width:2px;
+classDef includeVars stroke:#8e44ad,stroke-width:2px;
+classDef rescue stroke:#665352,stroke-width:2px;
+  Start-->|Include task| Include_prerequisites_prerequisites_yml_0[include prerequisites<br>include_task: prerequisites yml]:::includeTasks
+  Include_prerequisites_prerequisites_yml_0-->|Include task| Install_application_install_yml_1[install application<br>When: **state     present**<br>include_task: install yml]:::includeTasks
+  Install_application_install_yml_1-->|Include task| Remove_application_uninstall_yml_2[remove application<br>When: **state     absent**<br>include_task: uninstall yml]:::includeTasks
+  Remove_application_uninstall_yml_2-->|Task| Configure_application3[configure application<br>When: **state     present**]:::task
+  Configure_application3-->|Task| Ensure_service_state4[ensure service state]:::task
+  Ensure_service_state4-->End
 ```
 
 

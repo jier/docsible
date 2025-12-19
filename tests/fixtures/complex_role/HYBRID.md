@@ -1,5 +1,5 @@
 <!-- DOCSIBLE METADATA
-generated_at: 2025-12-19T10:12:26.494799+00:00Z
+generated_at: 2025-12-19T10:28:19.220630+00:00Z
 docsible_version: 0.8.0
 role_hash: 9f5db66940d046875aea45c86aa4d2051bdc813d4035e3e95df1278db8f8758a
 -->
@@ -169,11 +169,11 @@ app_config_file: "{{ app_install_dir }}/config.yml"
 | Stop application service | `uninstall.yml` | `ansible.builtin.service` | - | - | None | - |
 | Remove application directory | `uninstall.yml` | `ansible.builtin.file` | - | - | None | - |
 | Remove configuration | `uninstall.yml` | `ansible.builtin.file` | - | - | None | - |
-| Install required packages | `prerequisites.yml` | `ansible.builtin.apt` | - | - | None | - |
-| Create application directory | `prerequisites.yml` | `ansible.builtin.file` | - | - | None | - |
 | Download application | `install.yml` | `ansible.builtin.get_url` | - | - | None | - |
 | Extract application | `install.yml` | `ansible.builtin.unarchive` | - | - | None | - |
 | Install Python dependencies | `install.yml` | `ansible.builtin.pip` | - | - | None | - |
+| Install required packages | `prerequisites.yml` | `ansible.builtin.apt` | - | - | None | - |
+| Create application directory | `prerequisites.yml` | `ansible.builtin.file` | - | - | None | - |
 | Include prerequisites | `main.yml` | `ansible.builtin.include_tasks` | - | - | None | - |
 | Install application | `main.yml` | `ansible.builtin.include_tasks` | - | - | None | - |
 | Remove application | `main.yml` | `ansible.builtin.include_tasks` | - | - | None | - |
@@ -230,6 +230,251 @@ app_config_file: "{{ app_install_dir }}/config.yml"
 ## Task Execution Flow
 <!-- DOCSIBLE GENERATED -->
 > Generated via: `docsible --role . --graph --comments --no-backup`
+
+
+### Detailed Execution Sequence
+This sequence diagram shows the detailed interaction between the role, tasks, includes, and handlers:
+```mermaid
+sequenceDiagram
+    autonumber
+    participant Playbook
+    participant complex_role
+    participant Handlers
+
+    Playbook->>+complex_role: Execute role
+    activate complex_role
+
+    participant Tasks_uninstall_yml
+    Note over complex_role,Tasks_uninstall_yml: File: uninstall.yml
+    complex_role->>+Tasks_uninstall_yml: Load tasks
+
+    Tasks_uninstall_yml->>Tasks_uninstall_yml: Stop application service
+    Note right of Tasks_uninstall_yml: ansible.builtin.service
+
+    Tasks_uninstall_yml->>Tasks_uninstall_yml: Remove application directory
+    Note right of Tasks_uninstall_yml: ansible.builtin.file
+
+    Tasks_uninstall_yml->>Tasks_uninstall_yml: Remove configuration
+    Note right of Tasks_uninstall_yml: ansible.builtin.file
+
+    Tasks_uninstall_yml-->>-complex_role: Tasks complete
+
+    participant Tasks_install_yml
+    Note over complex_role,Tasks_install_yml: File: install.yml
+    complex_role->>+Tasks_install_yml: Load tasks
+
+    Tasks_install_yml->>Tasks_install_yml: Download application
+    Note right of Tasks_install_yml: ansible.builtin.get_url
+
+    Tasks_install_yml->>Tasks_install_yml: Extract application
+    Note right of Tasks_install_yml: ansible.builtin.unarchive
+
+    Tasks_install_yml->>Tasks_install_yml: Install Python dependencies
+    Note right of Tasks_install_yml: ansible.builtin.pip
+
+    Tasks_install_yml-->>-complex_role: Tasks complete
+
+    participant Tasks_prerequisites_yml
+    Note over complex_role,Tasks_prerequisites_yml: File: prerequisites.yml
+    complex_role->>+Tasks_prerequisites_yml: Load tasks
+
+    Tasks_prerequisites_yml->>Tasks_prerequisites_yml: Install required packages
+    Note right of Tasks_prerequisites_yml: ansible.builtin.apt
+
+    Tasks_prerequisites_yml->>Tasks_prerequisites_yml: Create application directory
+    Note right of Tasks_prerequisites_yml: ansible.builtin.file
+
+    Tasks_prerequisites_yml-->>-complex_role: Tasks complete
+
+    participant Tasks_main_yml
+    Note over complex_role,Tasks_main_yml: File: main.yml
+    complex_role->>+Tasks_main_yml: Load tasks
+
+    participant Include_unknown
+    Tasks_main_yml->>Include_unknown: ansible.builtin.include_tasks: unknown
+    activate Include_unknown
+    Note over Include_unknown: Include prerequisites
+    Include_unknown-->>Tasks_main_yml: Complete
+    deactivate Include_unknown
+
+    Tasks_main_yml->>Include_unknown: ansible.builtin.include_tasks: unknown
+    activate Include_unknown
+    Note over Include_unknown: Install application
+    Include_unknown-->>Tasks_main_yml: Complete
+    deactivate Include_unknown
+
+    Tasks_main_yml->>Include_unknown: ansible.builtin.include_tasks: unknown
+    activate Include_unknown
+    Note over Include_unknown: Remove application
+    Include_unknown-->>Tasks_main_yml: Complete
+    deactivate Include_unknown
+
+    Tasks_main_yml->>Tasks_main_yml: Configure application
+    Note right of Tasks_main_yml: ansible.builtin.template
+
+    Tasks_main_yml->>Tasks_main_yml: Ensure service state
+    Note right of Tasks_main_yml: ansible.builtin.service
+
+    Tasks_main_yml-->>-complex_role: Tasks complete
+
+    Note over complex_role,Handlers: Execute notified handlers
+    complex_role->>+Handlers: Flush handlers
+    Handlers->>Handlers: Restart application
+    Handlers->>Handlers: Reload application
+    Handlers->>Handlers: Clear cache
+    Handlers-->>-complex_role: Handlers complete
+
+    deactivate complex_role
+    complex_role-->>-Playbook: Role complete
+
+```
+---
+
+
+### State Transition Diagram
+This diagram shows the workflow phases and state transitions of the role.
+```mermaid
+---
+title: complex_role - State Transitions
+---
+stateDiagram-v2
+    [*] --> Install
+    Install --> Configure: when packages installed
+    Configure --> Validate
+    Stop --> Cleanup: when stopped
+    Validate --> Execute
+    note right of Stop: 1 tasks with state management
+    note right of Cleanup: 2 tasks with state management
+    note right of Configure: 2 tasks with state management
+    note right of Install: 5 tasks with state management
+    note right of Validate: 1 tasks with state management
+    Cleanup --> [*]
+```
+
+
+### Component Architecture (COMPLEX Complexity)
+
+*Generated for COMPLEX roles to show internal structure and data flow.*
+
+```mermaid
+graph TB
+    subgraph Variables
+        defaults["📋 Defaults<br/>20 variables"]
+    end
+
+    subgraph Tasks
+        tasks_uninstall_yml["⚙️ uninstall.yml<br/>3 tasks"]
+        tasks_install_yml["⚙️ install.yml<br/>3 tasks"]
+        tasks_prerequisites_yml["⚙️ prerequisites.yml<br/>2 tasks"]
+        tasks_main_yml["⚙️ main.yml<br/>5 tasks"]
+    end
+
+    handlers["🔔 Handlers<br/>3 handlers"]
+
+    external["🌐 External Systems<br/>REST APIs"]
+
+    %% Data Flow
+    defaults --> tasks_uninstall_yml
+    tasks_uninstall_yml --> tasks_main_yml
+    tasks_main_yml -."notify".-> handlers
+
+    %% Styling
+    classDef varStyle fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
+    classDef taskStyle fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    classDef handlerStyle fill:#fff3e0,stroke:#f57c00,stroke-width:2px
+    classDef externalStyle fill:#ffebee,stroke:#c62828,stroke-width:2px
+
+    class defaults varStyle
+    class handlers handlerStyle
+    class external externalStyle
+    class tasks_uninstall_yml taskStyle
+    class tasks_install_yml taskStyle
+    class tasks_prerequisites_yml taskStyle
+    class tasks_main_yml taskStyle
+```
+
+**Legend:**
+- 📋 Variables: Default values and configuration
+- ⚙️ Tasks: Execution units organized by file
+- 🔔 Handlers: Triggered by task notifications
+- 🌐 External Systems: Third-party integrations
+
+
+### Tasks in `uninstall.yml` (Flowchart)
+```mermaid
+flowchart TD
+Start
+classDef block stroke:#3498db,stroke-width:2px;
+classDef task stroke:#4b76bb,stroke-width:2px;
+classDef includeTasks stroke:#16a085,stroke-width:2px;
+classDef importTasks stroke:#34495e,stroke-width:2px;
+classDef includeRole stroke:#2980b9,stroke-width:2px;
+classDef importRole stroke:#699ba7,stroke-width:2px;
+classDef includeVars stroke:#8e44ad,stroke-width:2px;
+classDef rescue stroke:#665352,stroke-width:2px;
+  Start-->|Task| Stop_application_service0[stop application service]:::task
+  Stop_application_service0-->|Task| Remove_application_directory1[remove application directory]:::task
+  Remove_application_directory1-->|Task| Remove_configuration2[remove configuration]:::task
+  Remove_configuration2-->End
+```
+
+
+### Tasks in `install.yml` (Flowchart)
+```mermaid
+flowchart TD
+Start
+classDef block stroke:#3498db,stroke-width:2px;
+classDef task stroke:#4b76bb,stroke-width:2px;
+classDef includeTasks stroke:#16a085,stroke-width:2px;
+classDef importTasks stroke:#34495e,stroke-width:2px;
+classDef includeRole stroke:#2980b9,stroke-width:2px;
+classDef importRole stroke:#699ba7,stroke-width:2px;
+classDef includeVars stroke:#8e44ad,stroke-width:2px;
+classDef rescue stroke:#665352,stroke-width:2px;
+  Start-->|Task| Download_application0[download application]:::task
+  Download_application0-->|Task| Extract_application1[extract application]:::task
+  Extract_application1-->|Task| Install_Python_dependencies2[install python dependencies]:::task
+  Install_Python_dependencies2-->End
+```
+
+
+### Tasks in `prerequisites.yml` (Flowchart)
+```mermaid
+flowchart TD
+Start
+classDef block stroke:#3498db,stroke-width:2px;
+classDef task stroke:#4b76bb,stroke-width:2px;
+classDef includeTasks stroke:#16a085,stroke-width:2px;
+classDef importTasks stroke:#34495e,stroke-width:2px;
+classDef includeRole stroke:#2980b9,stroke-width:2px;
+classDef importRole stroke:#699ba7,stroke-width:2px;
+classDef includeVars stroke:#8e44ad,stroke-width:2px;
+classDef rescue stroke:#665352,stroke-width:2px;
+  Start-->|Task| Install_required_packages0[install required packages]:::task
+  Install_required_packages0-->|Task| Create_application_directory1[create application directory]:::task
+  Create_application_directory1-->End
+```
+
+
+### Tasks in `main.yml` (Flowchart)
+```mermaid
+flowchart TD
+Start
+classDef block stroke:#3498db,stroke-width:2px;
+classDef task stroke:#4b76bb,stroke-width:2px;
+classDef includeTasks stroke:#16a085,stroke-width:2px;
+classDef importTasks stroke:#34495e,stroke-width:2px;
+classDef includeRole stroke:#2980b9,stroke-width:2px;
+classDef importRole stroke:#699ba7,stroke-width:2px;
+classDef includeVars stroke:#8e44ad,stroke-width:2px;
+classDef rescue stroke:#665352,stroke-width:2px;
+  Start-->|Include task| Include_prerequisites_prerequisites_yml_0[include prerequisites<br>include_task: prerequisites yml]:::includeTasks
+  Include_prerequisites_prerequisites_yml_0-->|Include task| Install_application_install_yml_1[install application<br>When: **state     present**<br>include_task: install yml]:::includeTasks
+  Install_application_install_yml_1-->|Include task| Remove_application_uninstall_yml_2[remove application<br>When: **state     absent**<br>include_task: uninstall yml]:::includeTasks
+  Remove_application_uninstall_yml_2-->|Task| Configure_application3[configure application<br>When: **state     present**]:::task
+  Configure_application3-->|Task| Ensure_service_state4[ensure service state]:::task
+  Ensure_service_state4-->End
+```
 
 
 ---
@@ -355,14 +600,6 @@ The following variables are defined in `defaults/` with their default values:
 | Remove configuration | ansible.builtin.file | |
 
 
-### File: `tasks/prerequisites.yml`
-
-| Task Name | Module | Description |
-|-----------|--------|-------------|
-| Install required packages | ansible.builtin.apt | |
-| Create application directory | ansible.builtin.file | |
-
-
 ### File: `tasks/install.yml`
 
 | Task Name | Module | Description |
@@ -370,6 +607,14 @@ The following variables are defined in `defaults/` with their default values:
 | Download application | ansible.builtin.get_url | |
 | Extract application | ansible.builtin.unarchive | |
 | Install Python dependencies | ansible.builtin.pip | |
+
+
+### File: `tasks/prerequisites.yml`
+
+| Task Name | Module | Description |
+|-----------|--------|-------------|
+| Install required packages | ansible.builtin.apt | |
+| Create application directory | ansible.builtin.file | |
 
 
 ### File: `tasks/main.yml`
