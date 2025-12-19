@@ -1,5 +1,5 @@
 <!-- DOCSIBLE METADATA
-generated_at: 2025-12-19T10:44:17.010632+00:00Z
+generated_at: 2025-12-19T10:46:57.264237+00:00Z
 docsible_version: 0.8.0
 role_hash: 9f5db66940d046875aea45c86aa4d2051bdc813d4035e3e95df1278db8f8758a
 -->
@@ -37,8 +37,8 @@ graph TB
 
     subgraph Tasks
         tasks_uninstall_yml["⚙️ uninstall.yml<br/>3 tasks"]
-        tasks_install_yml["⚙️ install.yml<br/>3 tasks"]
         tasks_prerequisites_yml["⚙️ prerequisites.yml<br/>2 tasks"]
+        tasks_install_yml["⚙️ install.yml<br/>3 tasks"]
         tasks_main_yml["⚙️ main.yml<br/>5 tasks"]
     end
 
@@ -61,8 +61,8 @@ graph TB
     class handlers handlerStyle
     class external externalStyle
     class tasks_uninstall_yml taskStyle
-    class tasks_install_yml taskStyle
     class tasks_prerequisites_yml taskStyle
+    class tasks_install_yml taskStyle
     class tasks_main_yml taskStyle
 ```
 
@@ -180,7 +180,7 @@ app_config_file: "{{ app_install_dir }}/config.yml"
 - Better for multi-environment deployments
 
 **Expected benefit:** Improves flexibility and reduces change burden
-**Files:** `uninstall.yml`, `main.yml`, `prerequisites.yml`
+**Files:** `prerequisites.yml`, `main.yml`, `uninstall.yml`
 
 </details>
 
@@ -204,11 +204,11 @@ app_config_file: "{{ app_install_dir }}/config.yml"
 | Stop application service | `uninstall.yml` | `ansible.builtin.service` | - | - | None | - |
 | Remove application directory | `uninstall.yml` | `ansible.builtin.file` | - | - | None | - |
 | Remove configuration | `uninstall.yml` | `ansible.builtin.file` | - | - | None | - |
+| Install required packages | `prerequisites.yml` | `ansible.builtin.apt` | - | - | None | - |
+| Create application directory | `prerequisites.yml` | `ansible.builtin.file` | - | - | None | - |
 | Download application | `install.yml` | `ansible.builtin.get_url` | - | - | None | - |
 | Extract application | `install.yml` | `ansible.builtin.unarchive` | - | - | None | - |
 | Install Python dependencies | `install.yml` | `ansible.builtin.pip` | - | - | None | - |
-| Install required packages | `prerequisites.yml` | `ansible.builtin.apt` | - | - | None | - |
-| Create application directory | `prerequisites.yml` | `ansible.builtin.file` | - | - | None | - |
 | Include prerequisites | `main.yml` | `ansible.builtin.include_tasks` | - | - | None | - |
 | Install application | `main.yml` | `ansible.builtin.include_tasks` | - | - | None | - |
 | Remove application | `main.yml` | `ansible.builtin.include_tasks` | - | - | None | - |
@@ -294,6 +294,18 @@ sequenceDiagram
 
     Tasks_uninstall_yml-->>-complex_role: Tasks complete
 
+    participant Tasks_prerequisites_yml
+    Note over complex_role,Tasks_prerequisites_yml: File: prerequisites.yml
+    complex_role->>+Tasks_prerequisites_yml: Load tasks
+
+    Tasks_prerequisites_yml->>Tasks_prerequisites_yml: Install required packages
+    Note right of Tasks_prerequisites_yml: ansible.builtin.apt
+
+    Tasks_prerequisites_yml->>Tasks_prerequisites_yml: Create application directory
+    Note right of Tasks_prerequisites_yml: ansible.builtin.file
+
+    Tasks_prerequisites_yml-->>-complex_role: Tasks complete
+
     participant Tasks_install_yml
     Note over complex_role,Tasks_install_yml: File: install.yml
     complex_role->>+Tasks_install_yml: Load tasks
@@ -308,18 +320,6 @@ sequenceDiagram
     Note right of Tasks_install_yml: ansible.builtin.pip
 
     Tasks_install_yml-->>-complex_role: Tasks complete
-
-    participant Tasks_prerequisites_yml
-    Note over complex_role,Tasks_prerequisites_yml: File: prerequisites.yml
-    complex_role->>+Tasks_prerequisites_yml: Load tasks
-
-    Tasks_prerequisites_yml->>Tasks_prerequisites_yml: Install required packages
-    Note right of Tasks_prerequisites_yml: ansible.builtin.apt
-
-    Tasks_prerequisites_yml->>Tasks_prerequisites_yml: Create application directory
-    Note right of Tasks_prerequisites_yml: ansible.builtin.file
-
-    Tasks_prerequisites_yml-->>-complex_role: Tasks complete
 
     participant Tasks_main_yml
     Note over complex_role,Tasks_main_yml: File: main.yml
@@ -399,8 +399,8 @@ graph TB
 
     subgraph Tasks
         tasks_uninstall_yml["⚙️ uninstall.yml<br/>3 tasks"]
-        tasks_install_yml["⚙️ install.yml<br/>3 tasks"]
         tasks_prerequisites_yml["⚙️ prerequisites.yml<br/>2 tasks"]
+        tasks_install_yml["⚙️ install.yml<br/>3 tasks"]
         tasks_main_yml["⚙️ main.yml<br/>5 tasks"]
     end
 
@@ -423,8 +423,8 @@ graph TB
     class handlers handlerStyle
     class external externalStyle
     class tasks_uninstall_yml taskStyle
-    class tasks_install_yml taskStyle
     class tasks_prerequisites_yml taskStyle
+    class tasks_install_yml taskStyle
     class tasks_main_yml taskStyle
 ```
 
@@ -454,6 +454,24 @@ classDef rescue stroke:#665352,stroke-width:2px;
 ```
 
 
+### Tasks in `prerequisites.yml` (Flowchart)
+```mermaid
+flowchart TD
+Start
+classDef block stroke:#3498db,stroke-width:2px;
+classDef task stroke:#4b76bb,stroke-width:2px;
+classDef includeTasks stroke:#16a085,stroke-width:2px;
+classDef importTasks stroke:#34495e,stroke-width:2px;
+classDef includeRole stroke:#2980b9,stroke-width:2px;
+classDef importRole stroke:#699ba7,stroke-width:2px;
+classDef includeVars stroke:#8e44ad,stroke-width:2px;
+classDef rescue stroke:#665352,stroke-width:2px;
+  Start-->|Task| Install_required_packages0[install required packages]:::task
+  Install_required_packages0-->|Task| Create_application_directory1[create application directory]:::task
+  Create_application_directory1-->End
+```
+
+
 ### Tasks in `install.yml` (Flowchart)
 ```mermaid
 flowchart TD
@@ -470,24 +488,6 @@ classDef rescue stroke:#665352,stroke-width:2px;
   Download_application0-->|Task| Extract_application1[extract application]:::task
   Extract_application1-->|Task| Install_Python_dependencies2[install python dependencies]:::task
   Install_Python_dependencies2-->End
-```
-
-
-### Tasks in `prerequisites.yml` (Flowchart)
-```mermaid
-flowchart TD
-Start
-classDef block stroke:#3498db,stroke-width:2px;
-classDef task stroke:#4b76bb,stroke-width:2px;
-classDef includeTasks stroke:#16a085,stroke-width:2px;
-classDef importTasks stroke:#34495e,stroke-width:2px;
-classDef includeRole stroke:#2980b9,stroke-width:2px;
-classDef importRole stroke:#699ba7,stroke-width:2px;
-classDef includeVars stroke:#8e44ad,stroke-width:2px;
-classDef rescue stroke:#665352,stroke-width:2px;
-  Start-->|Task| Install_required_packages0[install required packages]:::task
-  Install_required_packages0-->|Task| Create_application_directory1[create application directory]:::task
-  Create_application_directory1-->End
 ```
 
 
@@ -635,6 +635,14 @@ The following variables are defined in `defaults/` with their default values:
 | Remove configuration | ansible.builtin.file | |
 
 
+### File: `tasks/prerequisites.yml`
+
+| Task Name | Module | Description |
+|-----------|--------|-------------|
+| Install required packages | ansible.builtin.apt | |
+| Create application directory | ansible.builtin.file | |
+
+
 ### File: `tasks/install.yml`
 
 | Task Name | Module | Description |
@@ -642,14 +650,6 @@ The following variables are defined in `defaults/` with their default values:
 | Download application | ansible.builtin.get_url | |
 | Extract application | ansible.builtin.unarchive | |
 | Install Python dependencies | ansible.builtin.pip | |
-
-
-### File: `tasks/prerequisites.yml`
-
-| Task Name | Module | Description |
-|-----------|--------|-------------|
-| Install required packages | ansible.builtin.apt | |
-| Create application directory | ansible.builtin.file | |
 
 
 ### File: `tasks/main.yml`
