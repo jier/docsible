@@ -19,7 +19,18 @@ logger = logging.getLogger(__name__)
 class MarkdownValidator:
     """Validates raw markdown formatting for human readability."""
 
-    def __init__(self, max_consecutive_blanks: int = 2, max_line_length: int = 120):
+    _TABLE_SEPARATOR_PATTERN = re.compile(r"^\s*\|[\s\-|:]+\|\s*$")
+    _HEADING_PATTERN = re.compile(r"^(#{1,6})\s+")
+
+    _DEFAULT_MAX_BLANKS = 2
+    _DEFAULT_MAX_LINE_LENGTH = 120
+    _TRAILING_SPACE_THRESHOLD = 10
+
+    def __init__(
+        self,
+        max_consecutive_blanks: int = _DEFAULT_MAX_BLANKS,
+        max_line_length: int = _DEFAULT_MAX_LINE_LENGTH,
+    ):
         """
         Initialize markdown validator.
 
@@ -72,7 +83,7 @@ class MarkdownValidator:
 
         # Check for trailing whitespace
         trailing_lines = [i for i, line in enumerate(lines, 1) if line != line.rstrip()]
-        if len(trailing_lines) > 10:
+        if len(trailing_lines) > self._TRAILING_SPACE_THRESHOLD:
             issues.append(
                 ValidationIssue(
                     type=ValidationType.CLARITY,
@@ -117,7 +128,7 @@ class MarkdownValidator:
         lines = markdown.split("\n")
 
         in_table = False
-        table_start: int| None = None
+        table_start: int | None = None
         table_lines: list[Any] = []
         separator_line = None
         header_line = None
@@ -135,7 +146,7 @@ class MarkdownValidator:
                 table_lines.append((i, line))
 
                 # Detect separator row (contains only |, -, :, and spaces)
-                if re.match(r"^\s*\|[\s\-|:]+\|\s*$", line):
+                if self._TABLE_SEPARATOR_PATTERN.match(line):
                     separator_line = (i, line)
                     if table_lines and len(table_lines) >= 2:
                         header_line = table_lines[-2]
@@ -211,7 +222,7 @@ class MarkdownValidator:
             # Skip header, separator, and other separator lines
             if line_num == header_line[0] or line_num == separator_line[0]:
                 continue
-            if re.match(r"^\s*\|[\s\-|:]+\|\s*$", line_text):
+            if self._TABLE_SEPARATOR_PATTERN.match(line_text):
                 continue
 
             # Count columns in data row

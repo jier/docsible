@@ -7,6 +7,7 @@ that make roles hard to understand and maintain.
 from typing import Any
 
 from docsible.analyzers.patterns.base import BasePatternDetector
+from docsible.analyzers.patterns.detectors.suggestions.complexity_suggestion import Suggestion
 from docsible.analyzers.patterns.models import (
     PatternCategory,
     SeverityLevel,
@@ -16,6 +17,13 @@ from docsible.analyzers.patterns.models import (
 
 class ComplexityDetector(BasePatternDetector):
     """Detects complexity anti-patterns."""
+
+    _CONFIDENCE_LEVEL_INCLUDE_CHAINS = 0.9
+    _CONFIDENCE_LEVEL_COMPLEX_CONDITIONALS = 0.85
+    _CONFIDENCE_LEVEL_EXCESSIVE_SET_FACTS = 0.75
+    _THRESHOLD_LOW = 2
+    _THRESHOLD_MEDIUM = 3
+    _THRESHOLD_HIGH = 5
 
     @property
     def pattern_category(self) -> PatternCategory:
@@ -63,11 +71,7 @@ class ComplexityDetector(BasePatternDetector):
                     continue
 
                 # Convert to string for analysis
-                when_str = (
-                    str(when)
-                    if not isinstance(when, list)
-                    else " and ".join(map(str, when))
-                )
+                when_str = str(when) if not isinstance(when, list) else " and ".join(map(str, when))
 
                 # Count boolean operators
                 or_count = when_str.lower().count(" or ")
@@ -75,8 +79,12 @@ class ComplexityDetector(BasePatternDetector):
                 total_operators = or_count + and_count
 
                 # Detect complex conditionals
-                # Threshold: More than 2 ORs or more than 3 ANDs
-                is_complex = or_count > 2 or and_count > 3 or total_operators > 5
+                # Threshold: More than _THRESHOLD_LOW ORs or more than _THRESHOLD_MEDIUM AND _THRESHOLD_HIGH
+                is_complex = (
+                    or_count > self._THRESHOLD_LOW
+                    or and_count > self._THRESHOLD_MEDIUM
+                    or total_operators > self._THRESHOLD_HIGH
+                )
 
                 if is_complex:
                     suggestions.append(
@@ -88,38 +96,10 @@ class ComplexityDetector(BasePatternDetector):
                             example=f"when: {when_str[:150]}..."
                             if len(when_str) > 150
                             else f"when: {when_str}",
-                            suggestion=(
-                                "Simplify complex conditionals:\n\n"
-                                "**Option 1: Use intermediate facts**\n"
-                                "```yaml\n"
-                                "- name: Determine if action needed\n"
-                                "  set_fact:\n"
-                                '    should_run: "{{ (condition1) or (condition2) }}"\n'
-                                "\n"
-                                "- name: Your task\n"
-                                "  ...\n"
-                                "  when: should_run | bool\n"
-                                "```\n\n"
-                                "**Option 2: Split into separate files**\n"
-                                "```yaml\n"
-                                "# main.yml\n"
-                                "- include_tasks: debian_setup.yml\n"
-                                "  when: ansible_os_family == 'Debian'\n"
-                                "\n"
-                                "- include_tasks: redhat_setup.yml\n"
-                                "  when: ansible_os_family == 'RedHat'\n"
-                                "```\n\n"
-                                "**Option 3: Use block conditionals**\n"
-                                "```yaml\n"
-                                "- block:\n"
-                                "    - name: Task 1\n"
-                                "    - name: Task 2\n"
-                                "  when: complex_condition\n"
-                                "```"
-                            ),
+                            suggestion=Suggestion.complex_conditionals(),
                             affected_files=[file_name],
                             impact="Improves readability and testability",
-                            confidence=0.85,
+                            confidence=self._CONFIDENCE_LEVEL_COMPLEX_CONDITIONALS,
                         )
                     )
 
@@ -158,26 +138,9 @@ class ComplexityDetector(BasePatternDetector):
 
             include_graph[file_name] = includes
 
-        # Calculate max depth using DFS
-        def calculate_depth(file_name: str, visited: set) -> int:
-            """Calculate maximum include depth from this file."""
-            if file_name in visited:
-                return 0  # Cycle detected, stop
-            if file_name not in include_graph:
-                return 1
-
-            visited.add(file_name)
-            max_child_depth = 0
-
-            for included in include_graph[file_name]:
-                depth = calculate_depth(included, visited.copy())
-                max_child_depth = max(max_child_depth, depth)
-
-            return 1 + max_child_depth
-
         # Check depth starting from main.yml
         if "main.yml" in include_graph:
-            depth = calculate_depth("main.yml", set())
+            depth = self._calculate_max_include_depth(include_graph, "main.yml", set())
 
             if depth > 3:
                 # Build chain representation
@@ -190,28 +153,41 @@ class ComplexityDetector(BasePatternDetector):
                         severity=SeverityLevel.WARNING,
                         description=f"Include chain depth is {depth} levels (recommended: ≤3)",
                         example=f"Chain example: {chain_example}",
-                        suggestion=(
-                            "Reduce include nesting:\n\n"
-                            "**Current structure:**\n"
-                            "```\n"
-                            "main.yml → file1.yml → file2.yml → file3.yml\n"
-                            "```\n\n"
-                            "**Flattened structure:**\n"
-                            "```yaml\n"
-                            "# main.yml\n"
-                            "- import_tasks: install.yml\n"
-                            "- import_tasks: configure.yml\n"
-                            "- import_tasks: services.yml\n"
-                            "```\n\n"
-                            "Keep hierarchy shallow (2-3 levels max) for easier debugging."
-                        ),
+                        suggestion=Suggestion.deep_include_chains(),
                         affected_files=list(include_graph.keys()),
                         impact="Easier debugging and flow understanding",
-                        confidence=0.9,
+                        confidence=self._CONFIDENCE_LEVEL_INCLUDE_CHAINS,
                     )
                 )
 
         return suggestions
+
+    def _calculate_max_include_depth(
+        self, include_graph: dict[str, list[str]], file_name: str, visited: set
+    ) -> int:
+        """Calculate maximum include depth from a file using DFS.
+
+        Args:
+            include_graph: Map of file names to their included files
+            file_name: Starting file to calculate depth from
+            visited: Set of already-visited files (for cycle detection)
+
+        Returns:
+            Maximum depth of include chain from this file
+        """
+        if file_name in visited:
+            return 0  # Cycle detected, stop
+        if file_name not in include_graph:
+            return 1
+
+        visited.add(file_name)
+        max_child_depth = 0
+
+        for included in include_graph[file_name]:
+            depth = self._calculate_max_include_depth(include_graph, included, visited.copy())
+            max_child_depth = max(max_child_depth, depth)
+
+        return 1 + max_child_depth
 
     def _detect_excessive_set_fact(
         self, role_info: dict[str, Any]
@@ -247,35 +223,10 @@ class ComplexityDetector(BasePatternDetector):
                         severity=SeverityLevel.INFO,
                         description=f"{set_fact_count} set_fact tasks ({percentage:.1f}% of all tasks)",
                         example=self._show_task_snippet(set_fact_tasks[:3]),
-                        suggestion=(
-                            "Reduce set_fact usage:\n\n"
-                            "**1. Use role defaults/vars instead:**\n"
-                            "```yaml\n"
-                            "# defaults/main.yml\n"
-                            "computed_value: \"{{ base_value | default('default') }}\"\n"
-                            "```\n\n"
-                            "**2. Use vars at task level:**\n"
-                            "```yaml\n"
-                            "- name: Task that needs variable\n"
-                            "  debug:\n"
-                            '    msg: "{{ my_var }}"\n'
-                            "  vars:\n"
-                            '    my_var: "{{ complex_expression }}"\n'
-                            "```\n\n"
-                            "**3. Use Jinja2 filters directly:**\n"
-                            "```yaml\n"
-                            "# Instead of:\n"
-                            '- set_fact: upper_name="{{ name | upper }}"\n'
-                            '- debug: msg="{{ upper_name }}"\n'
-                            "\n"
-                            "# Just use:\n"
-                            '- debug: msg="{{ name | upper }}"\n'
-                            "```\n\n"
-                            "Reserve set_fact for truly dynamic values that change during playbook execution."
-                        ),
+                        suggestion=Suggestion.excessive_set_fact(),
                         affected_files=self._get_unique_files(set_fact_tasks),
                         impact="Reduces cognitive load and improves performance (fewer task executions)",
-                        confidence=0.75,
+                        confidence=self._CONFIDENCE_LEVEL_EXCESSIVE_SET_FACTS,
                     )
                 )
 
