@@ -190,9 +190,31 @@ def generate_mermaid_diagrams(
         return result
 
     # Generate per-file task flowcharts
-    result["mermaid_code_per_file"] = generate_mermaid_role_tasks_per_file(
-        role_info["tasks"]
-    )
+    raw_diagrams = generate_mermaid_role_tasks_per_file(role_info["tasks"])
+
+    # Extract diagram strings from the dictionary structure
+    # The function returns {'paginated': bool, 'diagram': str} or {'paginated': True, 'pages': [...]}
+    extracted_diagrams = {}
+    for file_name, diagram_data in raw_diagrams.items():
+        if isinstance(diagram_data, dict):
+            if diagram_data.get("paginated"):
+                # For paginated diagrams, include all pages
+                if "pages" in diagram_data:
+                    # Create separate entries for each page
+                    for idx, page in enumerate(diagram_data["pages"]):
+                        page_key = f"{file_name} (Page {idx + 1}/{len(diagram_data['pages'])})"
+                        extracted_diagrams[page_key] = page["diagram"]
+                elif "diagram" in diagram_data:
+                    # Non-paginated, extract the diagram
+                    extracted_diagrams[file_name] = diagram_data["diagram"]
+            else:
+                # Non-paginated, extract the diagram
+                extracted_diagrams[file_name] = diagram_data.get("diagram", diagram_data)
+        else:
+            # Already a string
+            extracted_diagrams[file_name] = diagram_data
+
+    result["mermaid_code_per_file"] = extracted_diagrams
 
     # High-level sequence diagram (playbook → roles)
     if playbook_content:
