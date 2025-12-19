@@ -15,7 +15,6 @@ from docsible.utils.special_tasks_keys import process_special_task_keys
 from docsible.utils.yaml import (
     get_task_comments,
     get_task_line_numbers,
-    load_yaml_files_from_dir_custom,
     load_yaml_generic,
 )
 
