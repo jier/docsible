@@ -22,6 +22,26 @@ roles:
   {{ sequence_diagram_high_level }}
   ```
   *This diagram shows how the playbook interacts with roles, dependencies, and handlers.*
+{% elif architecture_diagram %}
+  ### Component Architecture
+  <!-- DOCSIBLE GENERATED -->
+  *This diagram shows the internal structure and data flow of the role.*
+  ```mermaid
+  {{ architecture_diagram }}
+  ```
+
+  **Legend:**
+  - 📋 Variables: Default values and configuration
+  - ⚙️ Tasks: Execution units organized by file
+  - 🔔 Handlers: Triggered by task notifications
+  - 🌐 External Systems: Third-party integrations
+{% elif state_diagram %}
+  ### Workflow Phases
+  <!-- DOCSIBLE GENERATED -->
+  *This diagram shows the workflow phases and state transitions of the role.*
+  ```mermaid
+  {{ state_diagram }}
+  ```
 {% else %}
   > **Note**: Add a high-level architecture diagram below. Use `--graph` flag with a playbook to auto-generate sequence diagram.
   ```mermaid

@@ -1,5 +1,5 @@
 <!-- DOCSIBLE METADATA
-generated_at: 2025-12-19T10:28:19.220630+00:00Z
+generated_at: 2025-12-19T10:44:17.010632+00:00Z
 docsible_version: 0.8.0
 role_hash: 9f5db66940d046875aea45c86aa4d2051bdc813d4035e3e95df1278db8f8758a
 -->
@@ -26,16 +26,51 @@ Minimal example for immediate usage:
 <!-- MANUALLY MAINTAINED -->
 > **Note**: Add high-level explanation of what the role does and how components interact
 
-> **Note**: Add a high-level architecture diagram below. Use `--graph` flag with a playbook to auto-generate sequence diagram.
+### Component Architecture
+<!-- DOCSIBLE GENERATED -->
+*This diagram shows the internal structure and data flow of the role.*
 ```mermaid
-graph TD
-  A[Role Input] --> B[Validation]
-  B --> C[Package Installation]
-  C --> D[Configuration]
-  D --> E[Service Management]
-  E --> F[Handler Triggers]
+graph TB
+    subgraph Variables
+        defaults["📋 Defaults<br/>20 variables"]
+    end
+
+    subgraph Tasks
+        tasks_uninstall_yml["⚙️ uninstall.yml<br/>3 tasks"]
+        tasks_install_yml["⚙️ install.yml<br/>3 tasks"]
+        tasks_prerequisites_yml["⚙️ prerequisites.yml<br/>2 tasks"]
+        tasks_main_yml["⚙️ main.yml<br/>5 tasks"]
+    end
+
+    handlers["🔔 Handlers<br/>3 handlers"]
+
+    external["🌐 External Systems<br/>REST APIs"]
+
+    %% Data Flow
+    defaults --> tasks_uninstall_yml
+    tasks_uninstall_yml --> tasks_main_yml
+    tasks_main_yml -."notify".-> handlers
+
+    %% Styling
+    classDef varStyle fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
+    classDef taskStyle fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    classDef handlerStyle fill:#fff3e0,stroke:#f57c00,stroke-width:2px
+    classDef externalStyle fill:#ffebee,stroke:#c62828,stroke-width:2px
+
+    class defaults varStyle
+    class handlers handlerStyle
+    class external externalStyle
+    class tasks_uninstall_yml taskStyle
+    class tasks_install_yml taskStyle
+    class tasks_prerequisites_yml taskStyle
+    class tasks_main_yml taskStyle
 ```
-*Customize the mermaid diagram above to match your role's architecture.*
+
+**Legend:**
+- 📋 Variables: Default values and configuration
+- ⚙️ Tasks: Execution units organized by file
+- 🔔 Handlers: Triggered by task notifications
+- 🌐 External Systems: Third-party integrations
 
 ---
 
@@ -145,7 +180,7 @@ app_config_file: "{{ app_install_dir }}/config.yml"
 - Better for multi-environment deployments
 
 **Expected benefit:** Improves flexibility and reduces change burden
-**Files:** `uninstall.yml`, `prerequisites.yml`, `main.yml`
+**Files:** `uninstall.yml`, `main.yml`, `prerequisites.yml`
 
 </details>
 
