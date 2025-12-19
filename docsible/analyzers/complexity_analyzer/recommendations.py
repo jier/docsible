@@ -264,7 +264,7 @@ def _generate_inflection_recommendations(
     recommendations = []
 
     if inflection_points and len(inflection_points) > 2:
-        variables = [ip.variable_name for ip in inflection_points[:3]]
+        variables = [ip.variable for ip in inflection_points[:3]]
         recommendations.append(
             f"🔀 {len(inflection_points)} inflection points detected\n"
             f"   WHY: Key variables control execution: {', '.join(variables)}\n"
@@ -289,7 +289,7 @@ def _generate_integration_recommendations(
     Returns:
         List of integration-related recommendations
     """
-    recommendations = []
+    recommendations: list[str] = []
 
     if not integration_points:
         return recommendations

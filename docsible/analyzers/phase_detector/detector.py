@@ -3,7 +3,7 @@
 from collections import defaultdict
 from pathlib import Path
 
-from .models import Phase, PhaseDetectionResult, PhaseMatch
+from .models import Phase, PhaseDetectionResult, PhaseMatch, PhasePattern
 from .patterns import PatternLoader
 
 
@@ -45,7 +45,7 @@ class PhaseDetector:
         self.min_confidence = min_confidence
         if patterns_file:
             try:
-                self.patterns = PatternLoader.load_from_file(patterns_file)
+                self.patterns: dict[Phase, PhasePattern] = PatternLoader.load_from_file(patterns_file)
             except Exception:
                 # Fall back to defaults on any error
                 self.patterns = PatternLoader.get_defaults()
@@ -76,11 +76,11 @@ class PhaseDetector:
             ...     priority=1
             ... )
         """
-        self.patterns[phase] = {
-            "modules": modules or set(),
-            "name_keywords": keywords or [],
-            "priority": priority if priority is not None else 99,
-        }
+        self.patterns[phase] = PhasePattern(
+            modules= modules or set(),
+            name_keywords=keywords or [],
+            priority=priority if priority is not None else 99,
+        )
 
     def extend_phase(
         self,
@@ -105,16 +105,16 @@ class PhaseDetector:
         """
         if phase not in self.patterns:
             # Create new pattern if it doesn't exist
-            self.patterns[phase] = {
-                "modules": set(),
-                "name_keywords": [],
-                "priority": 99,
-            }
+            self.patterns[phase] = PhasePattern(
+                modules=set(),
+                name_keywords=[],
+                priority=99,
+            )
 
         if additional_modules:
-            self.patterns[phase]["modules"].update(additional_modules)
+            self.patterns[phase].modules.update(additional_modules)
         if additional_keywords:
-            self.patterns[phase]["name_keywords"].extend(additional_keywords)
+            self.patterns[phase].name_keywords.extend(additional_keywords)
 
     def detect_phases(
         self, tasks: list[dict], line_numbers: list[tuple[int, int]] | None = None
@@ -185,11 +185,11 @@ class PhaseDetector:
             score = 0.0
 
             # Check module match (strong signal)
-            if task_module and task_module in patterns["modules"]:
+            if task_module and task_module in patterns.modules:
                 score += 0.7
 
             # Check name keywords (moderate signal)
-            for keyword in patterns["name_keywords"]:
+            for keyword in patterns.name_keywords:
                 if keyword in task_name:
                     score += 0.3
                     break
@@ -418,8 +418,8 @@ class PhaseDetector:
         total_transitions = len(phase_groups) - 1
 
         for i in range(total_transitions):
-            current_priority = self.patterns[phase_groups[i].phase]["priority"]
-            next_priority = self.patterns[phase_groups[i + 1].phase]["priority"]
+            current_priority = self.patterns[phase_groups[i].phase].priority
+            next_priority = self.patterns[phase_groups[i + 1].phase].priority
 
             if next_priority >= current_priority:
                 correct_transitions += 1
