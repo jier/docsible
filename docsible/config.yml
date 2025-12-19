@@ -1,0 +1,193 @@
+# Docsible Configuration File (.docsible.yml)
+# ================================================
+# This file allows you to customize how docsible interprets your Ansible project
+# structure and configure performance settings.
+#
+# Place this file in your project root, role directory, or collection directory.
+# Priority: CLI flags > .docsible.yml > Auto-detection > Built-in defaults
+#
+# Documentation: https://github.com/docsible/docsible/blob/main/CONFIGURATION.md
+
+# ============================================================================
+# Project Metadata (Optional)
+# ============================================================================
+# These fields appear in generated documentation and help categorize your automation
+
+# Functional description of the role/collection
+description: "Brief description of what this role/collection does"
+
+# Version number (semver recommended)
+version: "1.0.0"
+
+# Who requested this automation
+requester: "DevOps Team"
+
+# Target users of this automation
+users: "System Administrators"
+
+# Development date (YYYY-MM-DD)
+dt_dev: "2025-01-15"
+
+# Production deployment date (YYYY-MM-DD)
+# dt_prod: "2025-02-01"
+
+# Last documentation update date (auto-updated by docsible)
+# dt_update: "2025-01-20"
+
+# Estimated time savings (e.g., "2 hours per deployment")
+time_saving: "1 hour per server setup"
+
+# Primary category for classification
+category: "Web Servers"
+
+# Sub-category for finer classification
+subCategory: "Reverse Proxy"
+
+# AAP Hub availability status
+# aap_hub: "Available"
+
+# Type of automation (e.g., "Role", "Collection", "Playbook")
+# automation_kind: "Role"
+
+# Critical system indicator (true/false)
+# critical: "false"
+
+# ============================================================================
+# Project Structure Configuration
+# ============================================================================
+# Customize directory names and file patterns for your project layout.
+# Uncomment and modify only what you need to override.
+
+structure:
+  # -------------------------------------------------------------------------
+  # Directory Names (without leading/trailing slashes)
+  # -------------------------------------------------------------------------
+
+  # Core role directories
+  defaults_dir: 'defaults'           # Default variables directory
+  vars_dir: 'vars'                   # Role variables directory
+  tasks_dir: 'tasks'                 # Task files directory
+  meta_dir: 'meta'                   # Role metadata directory
+  handlers_dir: 'handlers'           # Handler files directory
+  templates_dir: 'templates'         # Jinja2 templates directory
+  files_dir: 'files'                 # Static files directory
+
+  # Custom modules and plugins
+  library_dir: 'library'             # Custom Ansible modules
+  lookup_plugins_dir: 'lookup_plugins'  # Custom lookup plugins
+  # filter_plugins_dir: 'filter_plugins'  # Custom filter plugins (future)
+  # module_utils_dir: 'module_utils'      # Module utilities (future)
+
+  # Collection/monorepo structure
+  roles_dir: 'roles'                 # Where roles are located
+
+  # For monorepo structures, specify nested paths:
+  # roles_dir: 'ansible/roles'         # Example: monorepo with ansible subdirectory
+  # roles_dir: 'playbooks/roles'       # Example: playbooks subdirectory
+
+  # -------------------------------------------------------------------------
+  # File Names (without extensions - .yml and .yaml checked automatically)
+  # -------------------------------------------------------------------------
+
+  meta_file: 'main'                  # Meta file name (meta/main.yml)
+  argument_specs_file: 'argument_specs'  # Argument specs file name
+
+  # Test playbook path (relative to role directory)
+  test_playbook: 'tests/test.yml'
+
+  # -------------------------------------------------------------------------
+  # File Extensions
+  # -------------------------------------------------------------------------
+
+  yaml_extensions: ['.yml', '.yaml'] # YAML file extensions to recognize
+
+# ============================================================================
+# Performance & Caching Configuration
+# ============================================================================
+# Configure caching to improve performance on repeated runs.
+# Cache is stored in memory and automatically invalidates on file changes.
+
+cache:
+  # Enable or disable caching globally
+  enabled: true
+
+  # Number of YAML files to cache in memory (~100KB per file average)
+  # Recommended: 1000 for typical projects, increase for large collections
+  yaml_cache_size: 1000
+
+  # Number of analysis results to cache (~250KB per analysis average)
+  # Recommended: 200 for most use cases
+  analysis_cache_size: 200
+
+  # Number of file paths to cache (~2KB per path average)
+  # Recommended: 512 for balanced performance
+  path_cache_size: 512
+
+# ============================================================================
+# Examples for Different Project Types
+# ============================================================================
+
+# -----------------------------------------------------------------------------
+# Standard Ansible Role (Default)
+# -----------------------------------------------------------------------------
+# Use default structure - no configuration needed
+# Just place .docsible.yml in role directory
+
+# -----------------------------------------------------------------------------
+# AWX Project Structure
+# -----------------------------------------------------------------------------
+# structure:
+#   roles_dir: 'roles'
+#   tasks_dir: 'tasks'
+#   defaults_dir: 'defaults'
+
+# -----------------------------------------------------------------------------
+# Monorepo with Ansible Subdirectory
+# -----------------------------------------------------------------------------
+# structure:
+#   roles_dir: 'ansible/roles'
+#   tasks_dir: 'tasks'
+
+# -----------------------------------------------------------------------------
+# Custom Directory Names
+# -----------------------------------------------------------------------------
+# structure:
+#   defaults_dir: 'role_defaults'
+#   vars_dir: 'variables'
+#   tasks_dir: 'playbooks'
+#   handlers_dir: 'event_handlers'
+
+# -----------------------------------------------------------------------------
+# Collection Structure
+# -----------------------------------------------------------------------------
+# structure:
+#   roles_dir: 'roles'
+#   # Collections typically use standard structure within roles/
+
+# ============================================================================
+# Usage Examples
+# ============================================================================
+
+# Initialize configuration:
+#   docsible init-config --path /path/to/role
+
+# Document a role with complexity analysis:
+#   docsible role --role . --complexity-report --show-dependencies
+
+# Document with graph generation:
+#   docsible role --role . --graph --hybrid
+
+# Disable cache for testing:
+#   DOCSIBLE_DISABLE_CACHE=1 docsible role --role .
+#   # OR in .docsible.yml: cache.enabled: false
+
+# ============================================================================
+# Notes
+# ============================================================================
+#
+# - All paths are relative to the location of this .docsible.yml file
+# - Directory names should NOT start or end with '/' (use relative paths)
+# - File extensions must start with '.' (e.g., '.yml', not 'yml')
+# - Cache automatically invalidates when files are modified (mtime check)
+# - For detailed documentation, see: CONFIGURATION.md
+# - For caching implementation details, see: CACHING_IMPLEMENTATION_GUIDE.md
