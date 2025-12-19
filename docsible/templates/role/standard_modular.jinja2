@@ -1,0 +1,37 @@
+{% extends 'base.jinja2' %}
+{% import 'macros/repo_links.jinja2' as links %}
+{% import 'macros/arguments.jinja2' as args %}
+{% import 'macros/tables.jinja2' as tables %}
+{% block content %}
+<!-- DOCSIBLE START -->
+# 📃 Role overview
+## {{ role.name }}
+{% include 'sections/overview.jinja2' %}
+{% include 'sections/galaxy_info.jinja2' %}
+{% if not no_vars %}
+{% if role.argument_specs %}
+{% include 'sections/argument_specs.jinja2' %}
+{% endif %}
+{% endif %}
+{% if role.defaults %}
+{% include 'sections/defaults.jinja2' %}
+{% endif %}
+{% if role.vars %}
+{% include 'sections/vars.jinja2' %}
+{% endif %}
+{% if not no_tasks %}
+{% include 'sections/tasks.jinja2' %}
+{% endif %}
+{% if not no_handlers %}
+{% include 'sections/handlers.jinja2' %}
+{% endif %}
+{% if not no_diagrams %}
+{% include 'sections/complexity_analysis.jinja2' %}
+{% include 'sections/simplification_suggestions.jinja2' %}
+{% include 'sections/adaptive_diagrams.jinja2' %}
+{% include 'sections/integration_boundary.jinja2' %}
+{% endif %}
+{% include 'sections/playbook.jinja2' %}
+{% include 'sections/dependencies.jinja2' %}
+<!-- DOCSIBLE END -->
+{% endblock %}

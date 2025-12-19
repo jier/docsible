@@ -1,0 +1,21 @@
+{# Import both implementations #}
+{% from 'macros/table_standard.jinja2' import render_table as render_standard %}
+{% from 'macros/table_hybrid.jinja2' import render_table as render_hybrid %}
+
+{# Re-export with clear names #}
+{% macro render_variable_table_standard(file_data, file_path, role) -%}
+{{ render_standard(file_data, file_path, role) }}
+{%- endmacro %}
+
+{% macro render_variable_table_hybrid(file_data, file_path, role) -%}
+{{ render_hybrid(file_data, file_path, role) }}
+{%- endmacro %}
+
+{# Unified API with style parameter #}
+{% macro render_variable_table(file_data, file_path, role, style='standard') -%}
+{%- if style == 'standard' -%}
+{{ render_standard(file_data, file_path, role) }}
+{%- elif style == 'hybrid' -%}
+{{ render_hybrid(file_data, file_path, role) }}
+{%- endif -%}
+{%- endmacro %}

@@ -1,0 +1,250 @@
+{% extends 'base.jinja2' %}
+{% import 'macros/repo_links.jinja2' as links %}
+{% import 'macros/arguments.jinja2' as args %}
+{% import 'macros/tables.jinja2' as tables %}
+{% block content %}
+# {{ role.name }}
+<!-- MANUALLY MAINTAINED -->
+> **Note**: Replace this section with your role's description
+>
+> Brief description of role purpose and scope. Explain what problem this role solves
+> and what it accomplishes.
+
+## Quick Start
+<!-- MANUALLY MAINTAINED -->
+Minimal example for immediate usage:
+```yaml
+- hosts: servers
+  roles:
+    - { role: {{ role.name }}, variable_key: "value" }
+```
+
+## Architecture Overview
+<!-- MANUALLY MAINTAINED -->
+> **Note**: Add high-level explanation of what the role does and how components interact
+{% if sequence_diagram_high_level %}
+### Execution Sequence
+<!-- DOCSIBLE GENERATED -->
+```mermaid
+{{ sequence_diagram_high_level }}
+```
+*This diagram shows how the playbook interacts with roles, dependencies, and handlers.*
+{% elif architecture_diagram %}
+### Component Architecture
+<!-- DOCSIBLE GENERATED -->
+*This diagram shows the internal structure and data flow of the role.*
+```mermaid
+{{ architecture_diagram }}
+```
+
+**Legend:**
+- 📋 Variables: Default values and configuration
+- ⚙️ Tasks: Execution units organized by file
+- 🔔 Handlers: Triggered by task notifications
+- 🌐 External Systems: Third-party integrations
+{% elif state_diagram %}
+### Workflow Phases
+<!-- DOCSIBLE GENERATED -->
+*This diagram shows the workflow phases and state transitions of the role.*
+```mermaid
+{{ state_diagram }}
+```
+{% else %}
+> **Note**: Add a high-level architecture diagram below. Use `--graph` flag with a playbook to auto-generate sequence diagram.
+```mermaid
+graph TD
+  A[Role Input] --> B[Validation]
+  B --> C[Package Installation]
+  C --> D[Configuration]
+  D --> E[Service Management]
+  E --> F[Handler Triggers]
+```
+*Customize the mermaid diagram above to match your role's architecture.*
+{% endif %}
+---
+{% include 'sections/complexity_analysis.jinja2' %}
+{% include 'sections/simplification_suggestions.jinja2' %}
+{% include 'sections/dependency_matrix.jinja2' %}
+## Task Execution Flow
+<!-- DOCSIBLE GENERATED -->
+> Generated via: `docsible --role . --graph --comments --no-backup`
+
+{% if not no_diagrams %}
+{% include 'sections/diagrams_hybrid.jinja2' %}
+{% endif %}
+---
+
+{% if not no_handlers %}
+{% include 'sections/handlers_hybrid.jinja2' %}
+---
+{% endif %}
+
+{% if not no_vars %}
+## Role Variables
+<!-- DOCSIBLE GENERATED -->
+{% include 'sections/defaults_hybrid.jinja2' %}
+{% include 'sections/vars_hybrid.jinja2' %}
+{% if role.argument_specs %}
+### Argument Specifications
+{% for spec_name, spec_data in role.argument_specs.items() %}
+#### {{ spec_name }}
+{% if spec_data.short_description %}{{ spec_data.short_description }}{% endif %}
+{% if spec_data.options %}
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+{%- for option_name, option_data in spec_data.options.items() %}
+| `{{ option_name | escape_table_cell }}` | {{ option_data.type | default("str") | escape_table_cell }} | {{ 'Yes' if option_data.required else 'No' }} | {{ option_data.default | escape_table_value if option_data.default is defined else '-' }} | {{ option_data.description | safe_join(" ") if option_data.description is iterable and option_data.description is not string else option_data.description | escape_table_cell | default('') }} |
+{%- endfor %}
+{% endif %}
+{% endfor %}
+{% endif %}
+---
+{% endif %}
+
+## Dependencies
+<!-- DOCSIBLE GENERATED + MANUAL ADDITIONS -->
+{% include 'sections/dependencies.jinja2' %}
+
+### Execution Order Notes
+<!-- MANUALLY MAINTAINED -->
+> **Note**: Add important sequencing information and dependency rationale here
+>
+> Example:
+> - This role must run after `common` role to ensure base packages are installed
+> - Database initialization tasks depend on the service being started first
+> - Configuration changes trigger handler restarts automatically
+
+---
+
+{% if not no_examples %}
+## Example Playbooks
+<!-- MANUALLY MAINTAINED -->
+### Basic Usage
+```yaml
+- hosts: servers
+  roles:
+    - role: {{ role.name }}
+      # Add your basic variables here
+      # variable_name: value
+```
+
+### Advanced Configuration
+```yaml
+- hosts: servers
+  vars:
+    # Add complex variable examples here
+    # complex_variable:
+    #   - item1: value1
+    #     item2: value2
+  roles:
+    - {{ role.name }}
+```
+
+### Multiple Environments
+```yaml
+# Production
+- hosts: production_servers
+  roles:
+    - role: {{ role.name }}
+      environment: production
+
+# Staging
+- hosts: staging_servers
+  roles:
+    - role: {{ role.name }}
+      environment: staging
+```
+---
+{% endif %}
+
+{% if not no_tasks %}
+## Task Details
+<!-- DOCSIBLE GENERATED -->
+{% include 'sections/tasks_hybrid.jinja2' %}
+---
+
+## Testing
+<!-- MANUALLY MAINTAINED -->
+> **Note**: Add testing instructions here
+
+### Test Environment Setup
+```bash
+# Example test setup commands
+# ansible-playbook tests/test.yml -i tests/inventory
+```
+
+### Validation Steps
+1. Verify service is running
+2. Check configuration files are in place
+3. Validate connectivity/functionality
+
+### Molecule Testing (Optional)
+```bash
+# If using Molecule for testing
+# molecule test
+```
+
+---
+{% endif %}
+
+## Compatibility
+<!-- MANUALLY MAINTAINED -->
+### Supported Operating Systems
+- Ubuntu 20.04, 22.04
+- Debian 10, 11
+- CentOS 7, 8
+- RHEL 7, 8
+
+### Requirements
+- **Ansible version**: >= 2.10
+- **Python version**: >= 3.6
+- **Privilege level**: root/sudo required
+
+### Known Limitations
+> **Note**: Document any known issues or limitations here
+
+---
+
+{% if not no_metadata %}
+## Role Metadata
+<!-- DOCSIBLE GENERATED -->
+{% include 'sections/metadata_hybrid.jinja2' %}
+---
+
+## License & Author
+<!-- MANUALLY MAINTAINED -->
+{% if role.meta and role.meta.galaxy_info %}
+**License**: {{ role.meta.galaxy_info.license | default("Not specified") }}
+
+**Author**: {{ role.meta.galaxy_info.author | default("Your Name") }}
+{% else %}
+**License**: Specify your license here (e.g., MIT, Apache 2.0, GPL-3.0)
+
+**Author**: Your Name <your.email@example.com>
+{% endif %}
+
+### Contributing
+Contributions are welcome! Please:
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Submit a pull request
+
+---
+{% endif %}
+
+## Changelog
+<!-- MANUALLY MAINTAINED -->
+### [Version] - Date
+**Added**
+- New feature description
+
+**Changed**
+- Modified behavior description
+
+**Fixed**
+- Bug fix description
+
+---
+*This documentation was generated with [Docsible](https://github.com/docsible/docsible)*
+{% endblock %}

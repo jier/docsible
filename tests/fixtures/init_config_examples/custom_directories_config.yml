@@ -1,0 +1,15 @@
+---
+# Custom directory structure
+structure:
+  project_type: role
+  defaults_dir: config/defaults
+  vars_dir: config/variables
+  tasks_dir: playbooks/tasks
+  meta_dir: metadata
+  handlers_dir: playbooks/handlers
+  files_dir: assets/files
+  templates_dir: assets/templates
+  yaml_extensions:
+    - .yml
+    - .yaml
+    - .YML

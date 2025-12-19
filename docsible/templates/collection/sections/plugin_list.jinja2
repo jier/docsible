@@ -1,0 +1,37 @@
+{# Collection plugins listing #}
+
+{% if collection.plugins and collection.plugins|length > 0 %}
+## Plugins
+
+{% if collection.plugins.modules and collection.plugins.modules|length > 0 %}
+### Modules
+
+{% for module in collection.plugins.modules|sort %}
+- `{{ module }}`
+{% endfor %}
+{% endif %}
+
+{% if collection.plugins.filters and collection.plugins.filters|length > 0 %}
+### Filters
+
+{% for filter in collection.plugins.filters|sort %}
+- `{{ filter }}`
+{% endfor %}
+{% endif %}
+
+{% if collection.plugins.lookup and collection.plugins.lookup|length > 0 %}
+### Lookup Plugins
+
+{% for lookup in collection.plugins.lookup|sort %}
+- `{{ lookup }}`
+{% endfor %}
+{% endif %}
+
+{% if collection.plugins.callback and collection.plugins.callback|length > 0 %}
+### Callback Plugins
+
+{% for callback in collection.plugins.callback|sort %}
+- `{{ callback }}`
+{% endfor %}
+{% endif %}
+{% endif %}

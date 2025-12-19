@@ -25,6 +25,12 @@ Docsible is a command-line interface (CLI) written in Python that automates the 
 - Includes meta-data like author and license from `meta/main.[yml/yaml]`
 - Generates a well-structured table for default and role-specific variables
 - Support for encrypted Ansible Vault variables
+- **NEW**: Flexible project structure support (AWX, monorepos, custom directories)
+- **NEW**: Auto-detection of various Ansible project layouts
+- **NEW**: Optional `.docsible.yml` configuration for custom structures
+- **NEW**: Comment tag flexibility (supports both `-` and `_` separators)
+- **NEW**: Intelligent caching system (4-100x faster on repeated runs)
+- **NEW**: Modular codebase with improved maintainability
 
 ## Installation
 
@@ -46,18 +52,72 @@ To use Docsible, you can run the following command in your terminal:
 
 ### Specific path
 ```bash
-docsible --role /path/to/ansible/role --playbook /path/to/playbook.yml --graph
+docsible role --role /path/to/ansible/role --playbook /path/to/playbook.yml --graph
 ```
 
 ### Document collection
 ```bash
-docsible --collection ./collections_tests/lucian/ --no-backup --graph
+docsible role --collection ./collections_tests/lucian/ --no-backup --graph
 ```
 
 ### Only role without playbook
 ```bash
-docsible --role /path/to/ansible/role # without include a playbook into readme
+docsible role --role /path/to/ansible/role # without include a playbook into readme
 ```
+
+### Flexible Project Structures (NEW in 0.8.0)
+
+Docsible now supports flexible project structures including AWX projects, monorepos, and custom directory layouts!
+
+#### Generate Configuration Template
+```bash
+# Create a .docsible.yml configuration file in your project
+docsible init
+
+# Or specify a custom path
+docsible init --path /path/to/your/project
+```
+
+#### Example: Documenting a Monorepo
+```bash
+# For a monorepo with roles in ansible/roles/
+docsible role --collection /path/to/monorepo
+```
+
+#### Example: Custom Directory Names
+If your project uses custom directory names, create a `.docsible.yml`:
+```yaml
+structure:
+  defaults_dir: 'role_defaults'
+  vars_dir: 'variables'
+  tasks_dir: 'playbooks'
+```
+
+Then run docsible normally:
+```bash
+docsible role --role /path/to/custom/role
+```
+
+**For detailed configuration options, see [CONFIGURATION.md](CONFIGURATION.md)**
+
+### Hybrid Template (NEW in 0.8.0)
+
+Use the `--hybrid` flag to generate a README with a mix of **manual sections** (for high-level docs) and **auto-generated sections** (for technical details):
+
+```bash
+# Generate README with hybrid template
+docsible role --role ./my-role --hybrid --graph --comments
+
+# Auto-generates technical sections while preserving manual content areas
+# Perfect for maintaining both overview docs and accurate technical details
+```
+
+The hybrid template includes:
+- **Manual sections**: Quick Start, Architecture Overview, Example Playbooks, Testing, Compatibility, etc.
+- **Auto-generated sections**: Task Execution Flow, Role Variables, Task Details, Dependencies, Role Metadata
+- Clear HTML comments (`<!-- MANUALLY MAINTAINED -->` vs `<!-- DOCSIBLE GENERATED -->`) showing which sections to customize
+
+This approach lets you maintain high-level narrative documentation while ensuring technical details stay accurate and up-to-date!
 
 ```bash
 $ docsible --help
@@ -95,6 +155,7 @@ Options:
 - `--comments`: Read comments from tasks files. (Optional).
 - `--md-template`: Specifies the path to the markdown template file (Optional). (Works only with roles)
 - `--md-collection-template`: Specifies the path to the markdown template file for documenting collections. (Optional).
+- `--hybrid`: Use hybrid template that combines manual sections with auto-generated content. (Optional).
 - `--append`: Append existing readme.md if needed.
 - `--output`: Output readme file name. Defaults to `README.md`.
 - `--repository-url`: Repository base URL (used for standalone roles). Use `detect` to auto-detect using Git, or provide a full URL.

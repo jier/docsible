@@ -1,0 +1,8 @@
+---
+# title: Simple Role Variables
+# description: Basic variables for testing
+
+simple_var: "default_value"
+enable_feature: true
+port: 8080
+# comment

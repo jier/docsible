@@ -1,0 +1,36 @@
+{% from 'macros/table_utils.jinja2' import render_repo_link_for_key %}
+
+{% macro format_packed_description(details) -%}
+{%- if details.title -%}
+**{{ details.title | escape_table_cell }}**<br>
+{%- endif -%}
+{%- if details.description -%}
+{{ details.description | escape_table_cell }}
+{%- endif -%}
+{%- if details.required -%}
+<br>**Required:** {{ details.required | escape_table_cell }}
+{%- endif -%}
+{%- if details.choices -%}
+<br>**Choices:** {{ details.choices | escape_table_cell }}
+{%- endif -%}
+{%- endmacro %}
+
+{% macro format_value(details) -%}
+{%- if details.value is mapping or details.value is sequence -%}
+*See YAML*
+{%- else -%}
+{{ details.value | escape_table_value }}
+{%- endif -%}
+{%- endmacro %}
+
+{% macro render_row(key, details, file_path, role) -%}
+| `{{ key | escape_table_cell }}` | {{ format_value(details) }} | {{ details.type | escape_table_cell }} | {{ format_packed_description(details) }} |
+{%- endmacro %}
+
+{% macro render_table(file_data, file_path, role) -%}
+| Variable | Default Value | Type | Description |
+|----------|---------------|------|-------------|
+{% for key, details in file_data.items() -%}
+{{ render_row(key, details, file_path, role) }}
+{% endfor -%}
+{%- endmacro %}

@@ -1,0 +1,11 @@
+{# Collection dependencies section #}
+
+{% if collection.dependencies and collection.dependencies|length > 0 %}
+## Dependencies
+
+This collection depends on the following collections:
+
+{% for dep_key, dep_value in collection.dependencies.items() %}
+- `{{ dep_key }}`: {{ dep_value }}
+{% endfor %}
+{% endif %}

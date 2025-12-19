@@ -1,0 +1,37 @@
+---
+- name: Test complex role with dependencies
+  hosts: localhost
+  become: true
+
+  pre_tasks:
+    - name: Update apt cache
+      ansible.builtin.apt:
+        update_cache: true
+      when: ansible_os_family == "Debian"
+
+    - name: Include vault role
+      ansible.builtin.include_role:
+        name: hashi_vault
+      when: vault_enabled | default(false)
+
+  roles:
+    - role: common
+    - role: complex_role
+      state: present
+      app_name: "testapp"
+
+  tasks:
+    - name: Verify installation
+      ansible.builtin.command: systemctl status testapp
+      register: service_status
+      changed_when: false
+
+    - name: Include post-install tasks
+      ansible.builtin.include_tasks: post_install.yml
+      when: state == "present"
+
+  post_tasks:
+    - name: Run health check
+      ansible.builtin.uri:
+        url: "http://localhost:3000/health"
+        status_code: 200

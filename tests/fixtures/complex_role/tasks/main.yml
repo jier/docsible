@@ -1,0 +1,28 @@
+---
+# title: Main tasks with includes
+# description: Complex task flow with includes and conditionals
+
+- name: Include prerequisites
+  ansible.builtin.include_tasks: prerequisites.yml
+
+- name: Install application
+  ansible.builtin.include_tasks: install.yml
+  when: state == "present"
+
+- name: Remove application
+  ansible.builtin.include_tasks: uninstall.yml
+  when: state == "absent"
+
+- name: Configure application
+  ansible.builtin.template:
+    src: config.j2
+    dest: "/etc/{{ app_name }}/config.yml"
+    mode: '0644'
+  when: state == "present"
+  notify: Restart application
+
+- name: Ensure service state
+  ansible.builtin.service:
+    name: "{{ app_name }}"
+    state: "{{ 'started' if state == 'present' else 'stopped' }}"
+    enabled: "{{ state == 'present' }}"

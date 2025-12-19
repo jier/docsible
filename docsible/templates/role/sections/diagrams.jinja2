@@ -1,0 +1,13 @@
+{% if state_diagram %}
+## State Transition Diagram
+```mermaid
+{{ state_diagram }}
+```
+{% endif %}
+{% for file, code in mermaid_code_per_file.items() %}
+## Task in {{ file }}
+```mermaid
+{{ code }}
+```
+{% endfor %}
+

@@ -1,0 +1,50 @@
+# Docsible Project Structure Configuration
+# This file allows you to customize how docsible interprets your Ansible project structure.
+# All paths are relative to the location of this file.
+#
+# Priority: CLI flags > .docsible.yml > Auto-detection > Built-in defaults
+
+structure:
+  # Directory names (without leading/trailing slashes)
+  # Uncomment and modify only what you need to override
+
+  defaults_dir: 'defaults'           # Where default variables are stored
+  vars_dir: 'vars'                   # Where role variables are stored
+  tasks_dir: 'tasks'                 # Where task files are located
+  meta_dir: 'meta'                   # Where role metadata is stored
+  roles_dir: 'roles'                 # Where roles are located (for collections/monorepos)
+  handlers_dir: 'handlers'       # Where handlers are located (for collections/monorepos)
+  templates_dir: 'templates'         # Where Jinja2 templates are located 
+  
+  # Custom modules and plugins
+  library_dir: 'library'                     # Custom Ansible modules
+  lookup_plugins_dir: 'lookup_plugins'       # Custom lookup plugins 
+  # For monorepo structures, you can specify nested paths:
+  # roles_dir: 'ansible/roles'         # Example: monorepo with ansible subdirectory
+  # roles_dir: 'playbooks/roles'       # Example: playbooks subdirectory
+
+  # File names (without extensions - both .yml and .yaml are checked automatically)
+  # meta_file: 'main'                  # Meta file name (meta/main.yml)
+  # argument_specs_file: 'argument_specs'  # Argument specs file name
+
+  # Test playbook path
+  # test_playbook: 'tests/test.yml'    # Default test playbook location
+
+  # Advanced: YAML file extensions to recognize
+  yaml_extensions: ['.yml', '.yaml'] # File extensions to scan
+
+# Examples for different project types:
+
+# AWX Project:
+# structure:
+#   roles_dir: 'roles'
+
+# Monorepo:
+# structure:
+#   roles_dir: 'ansible/roles'
+
+# Custom directory names:
+# structure:
+#   defaults_dir: 'role_defaults'
+#   vars_dir: 'variables'
+#   tasks_dir: 'playbooks'

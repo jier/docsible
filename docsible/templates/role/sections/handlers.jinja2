@@ -1,0 +1,10 @@
+{% if role.handlers and role.handlers | length > 0 %}
+### Handlers
+Handlers are triggered by task notifications and typically handle service restarts or configuration reloads.
+{% for handler in role.handlers %}
+#### {{ handler.name | escape_table_cell }}
+- **Module**: `{{ handler.module | escape_table_cell }}`
+- **File**: `{{ handler.file | escape_table_cell }}`
+{% if handler.listen %}- **Listen**: {{ handler.listen | escape_table_cell }}{% endif %}
+{% endfor %}
+{% endif %}

@@ -1,0 +1,14 @@
+---
+- name: Restart application
+  ansible.builtin.service:
+    name: "{{ app_name }}"
+    state: restarted
+
+- name: Reload application
+  ansible.builtin.service:
+    name: "{{ app_name }}"
+    state: reloaded
+
+- name: Clear cache
+  ansible.builtin.command: "/opt/{{ app_name }}/clear-cache.sh"
+  listen: "clear cache"

@@ -1,0 +1,126 @@
+{# Adaptive diagram section based on role complexity #}
+{% if complexity_report %}
+{# SIMPLE roles (1-10 tasks): Use sequence diagrams #}
+{% if complexity_report.category.value == 'simple' %}
+{% if sequence_diagram_detailed %}
+## Execution Flow
+This sequence diagram shows the linear task execution flow:
+```mermaid
+{{ sequence_diagram_detailed }}
+```
+{% endif %}
+{% if mermaid_code_per_file %}
+## Task Details
+{% for file, code in mermaid_code_per_file.items() %}
+### Tasks in {{ file }}
+```mermaid
+{{ code }}
+```
+{% endfor %}
+{% endif %}
+{% endif %}
+
+{# MEDIUM roles (11-25 tasks): Use state transitions + component trees #}
+{% if complexity_report.category.value == 'medium' %}
+{% if state_diagram %}
+## Workflow Phases
+This state diagram shows the role's execution phases and decision points:
+```mermaid
+{{ state_diagram }}
+```
+{% endif %}
+{% if sequence_diagram_detailed %}
+## Detailed Execution Sequence
+```mermaid
+{{ sequence_diagram_detailed }}
+```
+{% endif %}
+{% if mermaid_code_per_file and not simplify_diagrams %}
+## Component Hierarchy
+{% for file, code in mermaid_code_per_file.items() %}
+### {{ file }}
+```mermaid
+{{ code }}
+```
+{% endfor %}
+{% endif %}
+{% endif %}
+
+{# COMPLEX roles (25+ tasks): Use architecture + text documentation #}
+{% if complexity_report.category.value == 'complex' %}
+## Architecture Overview
+<!-- DOCSIBLE GENERATED -->
+
+### Role Components
+This role contains **{{ complexity_report.metrics.total_tasks }} tasks** across **{{ complexity_report.metrics.task_files }} files**.
+
+**Complexity Metrics:**
+- Total Tasks: {{ complexity_report.metrics.total_tasks }}
+- Conditional Tasks: {{ complexity_report.metrics.conditional_tasks }} ({{ "%.0f"|format(complexity_report.metrics.conditional_percentage) }}%)
+- Handlers: {{ complexity_report.metrics.handlers }}
+- Task Includes: {{ complexity_report.metrics.task_includes }}
+- Role Dependencies: {{ complexity_report.metrics.role_dependencies }}
+
+{% if architecture_diagram %}
+### Component Architecture
+This diagram shows the internal structure and data flow of the role:
+
+```mermaid
+{{ architecture_diagram }}
+```
+
+**Legend:**
+- 📋 **Variables:** Default values and configuration
+- ⚙️ **Tasks:** Execution units organized by file
+- 🔔 **Handlers:** Triggered by task notifications
+- 🌐 **External Systems:** Third-party integrations
+
+{% endif %}
+
+{% if complexity_report.integration_points %}
+### External Integrations
+This role integrates with {{ complexity_report.integration_points|length }} external system(s):
+{% for integration in complexity_report.integration_points %}
+- **{{ integration.system_name }}** ({{ integration.type.value }})
+  - Modules: {{ integration.modules_used|join(', ') }}
+  - Tasks: {{ integration.task_count }}
+  {% if integration.uses_credentials %}- ⚠️ Requires credentials{% endif %}
+{% endfor %}
+{% endif %}
+
+### Execution Phases
+<!-- MANUALLY MAINTAINED - Update as role evolves -->
+
+Due to complexity, this role is best understood through its execution phases:
+
+{% for task_file_info in complexity_report.task_files_detail %}
+#### Phase {{ loop.index }}: {{ task_file_info.file }}
+**Tasks:** {{ task_file_info.task_count }}
+
+> **Note:** Document decision points, error handling, and key operations for this phase
+>
+> Example structure:
+> - **Purpose:** What this phase accomplishes
+> - **Prerequisites:** What must be true before this phase
+> - **Decision Points:** Key conditional logic
+> - **Error Handling:** How failures are managed
+
+{% endfor %}
+
+### Recommendations
+{% for recommendation in complexity_report.recommendations %}
+- {{ recommendation }}
+{% endfor %}
+
+{% if sequence_diagram_high_level %}
+### High-Level Architecture
+```mermaid
+{{ sequence_diagram_high_level }}
+```
+{% endif %}
+{% endif %}
+
+{% else %}
+{# Fallback if no complexity report (shouldn't happen with new code) #}
+{% include 'sections/diagrams.jinja2' %}
+{% endif %}

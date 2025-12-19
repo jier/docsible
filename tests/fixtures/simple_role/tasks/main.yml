@@ -1,0 +1,22 @@
+---
+# title: Main tasks
+# description: Simple tasks for testing
+
+- name: Ensure directory exists
+  ansible.builtin.file:
+    path: /opt/simple
+    state: directory
+    mode: '0755'
+
+- name: Install package
+  ansible.builtin.apt:
+    name: nginx
+    state: present
+  when: ansible_os_family == "Debian"
+
+- name: Start service
+  ansible.builtin.service:
+    name: nginx
+    state: started
+    enabled: true
+  notify: Restart nginx

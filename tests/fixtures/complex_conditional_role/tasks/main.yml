@@ -1,0 +1,52 @@
+---
+# Package installation phase
+- name: Install Debian packages
+  apt:
+    name: "{{ item }}"
+  loop: "{{ packages }}"
+  when: ansible_os_family == "Debian"
+
+- name: Install RedHat packages
+  yum:
+    name: "{{ item }}"
+  loop: "{{ packages }}"
+  when: ansible_os_family == "RedHat"
+
+# Configuration phase
+- name: Configure for development
+  template:
+    src: dev.conf.j2
+    dest: /etc/app/app.conf
+  when: environment == "development"
+
+- name: Configure for production
+  template:
+    src: prod.conf.j2
+    dest: /etc/app/app.conf
+  when: environment == "production"
+
+# More tasks using ansible_os_family...
+- name: Setup Debian-specific service
+  systemd:
+    name: app
+    enabled: yes
+  when: ansible_os_family == "Debian"
+
+- name: Setup RedHat-specific service
+  systemd:
+    name: app
+    enabled: yes
+  when: ansible_os_family == "RedHat"
+
+# AWS integration
+- name: Upload to S3
+  amazon.aws.s3_bucket:
+    name: my-bucket
+    state: present
+
+- name: Configure EC2 instance
+  amazon.aws.ec2_instance:
+    name: web-server
+    state: running
+
+# ... more tasks (total ~20-25 tasks)

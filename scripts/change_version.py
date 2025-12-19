@@ -8,17 +8,17 @@ This script updates the version across multiple files:
 It supports two actions:
   - "bump": increments the patch version (e.g. 0.7.10 -> 0.7.11)
   - "revert": decrements the patch version (e.g. 0.7.10 -> 0.7.9)
-  
+
 Usage:
     python scripts/change_version.py bump
     python scripts/change_version.py revert
 """
 
+import argparse
+import logging
 import os
 import re
 import sys
-import logging
-import argparse
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
@@ -52,7 +52,9 @@ def change_version(version_str: str, bump: bool = True) -> str:
     return f"{major}.{minor}.{patch}"
 
 
-def update_file(file_path: str, pattern: str, replacement_format: str, new_version: str):
+def update_file(
+    file_path: str, pattern: str, replacement_format: str, new_version: str
+):
     """
     Updates a file by replacing the version string with the new version.
 
@@ -65,13 +67,12 @@ def update_file(file_path: str, pattern: str, replacement_format: str, new_versi
     if not os.path.exists(file_path):
         logging.error(f"File {file_path} does not exist.")
         sys.exit(1)
-    with open(file_path, "r") as f:
+    with open(file_path) as f:
         content = f.read()
     if not re.search(pattern, content):
         logging.error(f"Version string not found in {file_path}")
         sys.exit(1)
-    new_content = re.sub(
-        pattern, replacement_format.format(new_version), content)
+    new_content = re.sub(pattern, replacement_format.format(new_version), content)
     with open(file_path, "w") as f:
         f.write(new_content)
     logging.info(f"Updated {file_path}")
@@ -95,15 +96,15 @@ def main():
 
     # Define regex patterns and replacement strings using explicit group references.
     cli_pattern = r'(def\s+get_version\(\):\s+return\s+["\'])(\d+\.\d+\.\d+)(["\'])'
-    cli_replacement = r'\g<1>{}\g<3>'
+    cli_replacement = r"\g<1>{}\g<3>"
     setup_pattern = r'(version\s*=\s*["\'])(\d+\.\d+\.\d+)(["\'])'
-    setup_replacement = r'\g<1>{}\g<3>'
+    setup_replacement = r"\g<1>{}\g<3>"
     pyproject_pattern = r'(version\s*=\s*["\'])(\d+\.\d+\.\d+)(["\'])'
-    pyproject_replacement = r'\g<1>{}\g<3>'
+    pyproject_replacement = r"\g<1>{}\g<3>"
 
     # Read the current version from cli.py.
     try:
-        with open(cli_file, "r") as f:
+        with open(cli_file) as f:
             cli_content = f.read()
     except Exception as e:
         logging.error(f"Error reading {cli_file}: {e}")
@@ -127,8 +128,7 @@ def main():
     # Update all files with the new version.
     update_file(cli_file, cli_pattern, cli_replacement, new_version)
     update_file(setup_file, setup_pattern, setup_replacement, new_version)
-    update_file(pyproject_file, pyproject_pattern,
-                pyproject_replacement, new_version)
+    update_file(pyproject_file, pyproject_pattern, pyproject_replacement, new_version)
 
     logging.info(f"Version update complete. New version: {new_version}")
 

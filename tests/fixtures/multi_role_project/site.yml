@@ -1,0 +1,29 @@
+---
+- name: Deploy full stack application
+  hosts: app_servers
+  become: true
+
+  pre_tasks:
+    - name: Gather OS-specific variables
+      ansible.builtin.include_vars: "{{ ansible_os_family }}.yml"
+
+  roles:
+    - role: database
+      when: "'database' in group_names"
+
+    - role: webserver
+      webserver_port: 80
+
+    - role: monitoring
+      monitoring_enabled: true
+
+  tasks:
+    - name: Include security hardening role
+      ansible.builtin.include_role:
+        name: security
+      when: harden_security | default(true)
+
+  post_tasks:
+    - name: Verify deployment
+      ansible.builtin.debug:
+        msg: "Deployment complete"

@@ -1,0 +1,24 @@
+---
+galaxy_info:
+  author: Test Author
+  description: A complex test role with state management
+  company: Test Company
+  license: MIT
+  min_ansible_version: 2.10
+  platforms:
+    - name: Ubuntu
+      versions:
+        - focal
+        - jammy
+    - name: Debian
+      versions:
+        - bullseye
+  galaxy_tags:
+    - test
+    - complex
+    - state-management
+
+dependencies:
+  - role: common
+  - role: hashi_vault
+    when: vault_enabled | default(false)
