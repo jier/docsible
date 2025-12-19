@@ -177,4 +177,4 @@ class PatternLoader:
         Returns:
             Copy of DEFAULT_PATTERNS dictionary
         """
-        return {phase: patterns.copy() for phase, patterns in DEFAULT_PATTERNS.items()}
+        return {phase: patterns.model_copy() for phase, patterns in DEFAULT_PATTERNS.items()}
