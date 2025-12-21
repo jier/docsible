@@ -45,5 +45,5 @@ class RenderConfig(BaseModel):
         description="Fail on validation errors"
     )
     
-    class Config:
+    class ConfigDict:
         frozen = False  # Allow modification if needed

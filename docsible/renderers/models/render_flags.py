@@ -39,5 +39,5 @@ class RenderFlags(BaseModel):
         description="Exclude handlers section"
     )
     
-    class Config:
+    class ConfigDict:
         frozen = False

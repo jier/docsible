@@ -34,7 +34,7 @@ class DiagramData(BaseModel):
         description="Architecture overview diagram"
     )
     
-    class Config:
+    class ConfigDict:
         frozen = False
     
     def has_any_diagram(self) -> bool:

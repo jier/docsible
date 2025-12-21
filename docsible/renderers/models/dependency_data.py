@@ -21,5 +21,5 @@ class DependencyData(BaseModel):
         description="Whether to display the matrix"
     )
     
-    class Config:
+    class ConfigDict:
         frozen = False
