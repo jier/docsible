@@ -5,6 +5,7 @@ from docsible.renderers.models import (
     DependencyData,
     DiagramData,
     RenderConfig,
+    RenderContext,
     RenderFlags,
 )
 
@@ -12,7 +13,11 @@ from docsible.renderers.models import (
 from docsible.renderers.processors import (
     BackupManager,
     ContentMerger,
+    FileWriter,
     MarkdownProcessor,
+    MetadataProcessor,
+    TagProcessor,
+    TemplateProcessor,
 )
 from docsible.renderers.readme_renderer import ReadmeRenderer
 from docsible.renderers.tag_manager import (
@@ -24,20 +29,22 @@ from docsible.renderers.tag_manager import (
 __all__ = [
     # Main renderer
     "ReadmeRenderer",
-
     # Tag management
     "manage_docsible_file_keys",
     "manage_docsible_tags",
     "replace_between_tags",
-    
     # Models
     "RenderConfig",
+    "RenderContext",
     "RenderFlags",
     "DiagramData",
     "DependencyData",
-    
     # Processors
     "BackupManager",
     "ContentMerger",
+    "FileWriter",
     "MarkdownProcessor",
+    "MetadataProcessor",
+    "TagProcessor",
+    "TemplateProcessor",
 ]

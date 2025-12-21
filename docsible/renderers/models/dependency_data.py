@@ -1,5 +1,3 @@
-"""Dependency analysis data for documentation."""
-
 from typing import Any
 
 from pydantic import BaseModel, Field

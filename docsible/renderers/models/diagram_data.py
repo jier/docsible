@@ -1,5 +1,3 @@
-"""Diagram data for documentation rendering."""
-
 from pydantic import BaseModel, Field
 
 

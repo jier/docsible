@@ -1,5 +1,3 @@
-"""Configuration for rendering behavior."""
-
 from pydantic import BaseModel, Field
 
 

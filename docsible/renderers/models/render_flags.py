@@ -1,5 +1,3 @@
-"""Feature flags for what to include/exclude in documentation."""
-
 from pydantic import BaseModel, Field
 
 
