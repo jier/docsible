@@ -17,7 +17,7 @@ class TestSimpleRoleGeneration:
     @pytest.fixture
     def simple_role_path(self):
         """Path to simple role fixture."""
-        return Path(__file__).parent / "fixtures" / "simple_role"
+        return Path(__file__).parent.parent / "fixtures" / "simple_role"
 
     def test_simple_role_generates_readme(self, simple_role_path, tmp_path):
         """Test that simple role generates README correctly."""
@@ -85,7 +85,7 @@ class TestComplexRoleGeneration:
     @pytest.fixture
     def complex_role_path(self):
         """Path to complex role fixture."""
-        return Path(__file__).parent / "fixtures" / "complex_role"
+        return Path(__file__).parent.parent / "fixtures" / "complex_role"
 
     def test_complex_role_generates_readme(self, complex_role_path, tmp_path):
         """Test that complex role generates README correctly."""
@@ -153,7 +153,7 @@ class TestPlaybookSequenceDiagram:
     @pytest.fixture
     def complex_role_path(self):
         """Path to complex role with playbook."""
-        return Path(__file__).parent / "fixtures" / "complex_role"
+        return Path(__file__).parent.parent / "fixtures" / "complex_role"
 
     def test_playbook_high_level_diagram(self, complex_role_path, tmp_path):
         """Test that playbook generates high-level sequence diagram."""
@@ -194,7 +194,7 @@ class TestMultiRoleProject:
     @pytest.fixture
     def multi_role_path(self):
         """Path to multi-role project fixture."""
-        return Path(__file__).parent / "fixtures" / "multi_role_project"
+        return Path(__file__).parent.parent / "fixtures" / "multi_role_project"
 
     def test_webserver_role_generation(self, multi_role_path, tmp_path):
         """Test README generation for webserver role in multi-role project."""

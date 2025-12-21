@@ -5,7 +5,7 @@ from docsible.utils.yaml import load_yaml_file_custom
 
 
 def test_type_detection():
-    basepath = Path(__file__).parent / "fixtures"
+    basepath = Path(__file__).parent.parent / "fixtures"
     result: dict[str, dict[str, Any]] | None = load_yaml_file_custom(basepath / "type_fixture.yml")
     # Type is overriden in the fixture to str
     assert result is not None, "Expected not None"

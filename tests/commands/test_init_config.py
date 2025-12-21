@@ -14,7 +14,7 @@ from docsible.cli import init_config
 @pytest.fixture
 def config_examples_path() -> Path:
     """Path to config examples."""
-    return Path(__file__).parent / "fixtures" / "init_config_examples"
+    return Path(__file__).parent.parent / "fixtures" / "init_config_examples"
 
 
 class TestInitConfigCommand:
