@@ -11,7 +11,7 @@ import logging
 import re
 from typing import Any
 
-from .doc_validator import ValidationIssue, ValidationSeverity, ValidationType
+from .models import ValidationIssue, ValidationSeverity, ValidationType
 
 logger = logging.getLogger(__name__)
 

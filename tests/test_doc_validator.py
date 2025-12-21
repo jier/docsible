@@ -10,13 +10,20 @@ from docsible.analyzers.complexity_analyzer import (
     IntegrationType,
 )
 from docsible.validators.doc_validator import (
+    ClarityValidator,
     DocumentationValidator,
+    MaintenanceValidator,
+    TruthValidator,
+    ValueValidator,
+    validate_documentation,
+)
+from docsible.validators.models import (
     ValidationIssue,
     ValidationResult,
     ValidationSeverity,
     ValidationType,
-    validate_documentation,
 )
+from docsible.validators.scoring import calculate_score
 
 
 class TestClarityValidation:
@@ -49,8 +56,8 @@ None
 ## License
 MIT
 """
-        validator = DocumentationValidator()
-        issues, metrics = validator._validate_clarity(doc)
+        validator = ClarityValidator()
+        issues, metrics = validator.validate(documentation=doc, role_info=None, complexity_report=None)
 
         # Should have minimal or no clarity issues
         error_issues = [i for i in issues if i.severity == ValidationSeverity.ERROR]
@@ -62,8 +69,8 @@ MIT
         """Test that documentation without headings fails clarity."""
         doc = "This is just plain text without any structure."
 
-        validator = DocumentationValidator()
-        issues, metrics = validator._validate_clarity(doc)
+        validator = ClarityValidator()
+        issues, metrics = validator.validate(documentation=doc, role_info=None, complexity_report=None)
 
         # Should have error about missing headings
         assert any(
@@ -82,8 +89,8 @@ Some code without language label:
 apt install foo
 ```
 """
-        validator = DocumentationValidator()
-        issues, metrics = validator._validate_clarity(doc)
+        validator = ClarityValidator()
+        issues, metrics = validator.validate(doc, role_info=None, complexity_report=None)
 
         # Should warn about unlabeled code block
         assert any("unlabeled" in issue.message.lower() for issue in issues)
@@ -99,8 +106,8 @@ apt install foo
 {long_line}
 {long_line}
 """
-        validator = DocumentationValidator()
-        issues, metrics = validator._validate_clarity(doc)
+        validator = ClarityValidator()
+        issues, metrics = validator.validate(documentation=doc, role_info=None, complexity_report=None)
 
         assert metrics["long_lines"] > 0
         # May generate info about long lines if >20% of lines are long
@@ -133,18 +140,17 @@ class TestMaintenanceValidation:
 No variables section here.
 """
 
-        validator = DocumentationValidator()
+        validator = MaintenanceValidator()
 
         # With variables section
-        issues_good, metrics_good = validator._validate_maintenance(
-            doc_with_vars, role_info
+        issues_good, metrics_good = validator.validate(
+            documentation=doc_with_vars, role_info=role_info, complexity_report=None
         )
         # Should have minimal warnings
 
         # Without variables section
-        issues_bad, metrics_bad = validator._validate_maintenance(
-            doc_without_vars, role_info
-        )
+        issues_bad, metrics_bad = validator.validate(
+            documentation=doc_without_vars, role_info=role_info, complexity_report=None)
         # Should warn about missing variables section
         assert any("variables" in issue.message.lower() for issue in issues_bad)
         assert metrics_bad["total_variables"] == 2
@@ -162,8 +168,8 @@ No variables section here.
 
 Just description, no examples.
 """
-        validator = DocumentationValidator()
-        issues, metrics = validator._validate_maintenance(doc, role_info)
+        validator = MaintenanceValidator()
+        issues, metrics = validator.validate(documentation=doc, role_info=role_info, complexity_report=None )
 
         assert any("example" in issue.message.lower() for issue in issues)
         assert not metrics["has_example"]
@@ -182,8 +188,8 @@ Just description, no examples.
 
 Just a basic description without any mention of other roles.
 """
-        validator = DocumentationValidator()
-        issues, metrics = validator._validate_maintenance(doc, role_info)
+        validator = MaintenanceValidator()
+        issues, metrics = validator.validate(documentation=doc, role_info=role_info, complexity_report=None)
 
         assert any("dependencies" in issue.message.lower() for issue in issues)
         assert metrics["dependencies"] == 2
@@ -205,8 +211,8 @@ Just a basic description without any mention of other roles.
 
 Basic description without mentioning event triggers.
 """
-        validator = DocumentationValidator()
-        issues, metrics = validator._validate_maintenance(doc, role_info)
+        validator = MaintenanceValidator()
+        issues, metrics = validator.validate(documentation=doc, role_info=role_info, complexity_report=None)
 
         assert any("handler" in issue.message.lower() for issue in issues)
         assert metrics["handlers"] == 2
@@ -240,10 +246,10 @@ This role contains **3 tasks** across all task files.
 This role contains **10 tasks** across all task files.
 """
 
-        validator = DocumentationValidator()
+        validator = TruthValidator()
 
         # Accurate count
-        issues_good, metrics_good = validator._validate_truth(
+        issues_good, metrics_good = validator.validate(
             doc_accurate, role_info, None
         )
         assert metrics_good["actual_tasks"] == 3
@@ -256,7 +262,7 @@ This role contains **10 tasks** across all task files.
         assert len(task_count_errors) == 0
 
         # Inaccurate count
-        issues_bad, metrics_bad = validator._validate_truth(
+        issues_bad, metrics_bad = validator.validate(
             doc_inaccurate, role_info, None
         )
         # Should have error about incorrect task count
@@ -291,10 +297,10 @@ This is a **COMPLEX role** with 30 tasks.
 This is a **SIMPLE role** with just a few tasks.
 """
 
-        validator = DocumentationValidator()
+        validator = TruthValidator()
 
         # Accurate category
-        issues_good, _ = validator._validate_truth(
+        issues_good, _ = validator.validate(
             doc_accurate, None, complexity_report
         )
         complexity_errors = [
@@ -305,7 +311,7 @@ This is a **SIMPLE role** with just a few tasks.
         assert len(complexity_errors) == 0
 
         # Inaccurate category
-        issues_bad, _ = validator._validate_truth(
+        issues_bad, _ = validator.validate(
             doc_inaccurate, None, complexity_report
         )
         assert any(
@@ -320,8 +326,8 @@ This is a **SIMPLE role** with just a few tasks.
 
 Content here.
 """
-        validator = DocumentationValidator()
-        issues, metrics = validator._validate_truth(doc, None, None)
+        validator = TruthValidator()
+        issues, metrics = validator.validate(doc, None, None)
 
         assert metrics["has_generated_markers"] is True
 
@@ -358,17 +364,17 @@ graph TB
 No diagrams here.
 """
 
-        validator = DocumentationValidator()
+        validator = ValueValidator()
 
         # With diagram
-        issues_good, _ = validator._validate_value(doc_with_diagram, complexity_report)
+        issues_good, _ = validator.validate(doc_with_diagram,None, complexity_report)
         diagram_warnings = [i for i in issues_good if "diagram" in i.message.lower()]
         # Should have no warnings about missing diagrams
         assert len(diagram_warnings) == 0
 
         # Without diagram
-        issues_bad, _ = validator._validate_value(
-            doc_without_diagram, complexity_report
+        issues_bad, _ = validator.validate(
+            doc_without_diagram,None, complexity_report
         )
         # Should warn about missing diagrams
         assert any("diagram" in i.message.lower() for i in issues_bad)
@@ -409,15 +415,15 @@ Credentials are required for database access.
 Just a basic description.
 """
 
-        validator = DocumentationValidator()
+        validator = ValueValidator()
 
         # With security guidance
-        issues_good, _ = validator._validate_value(doc_with_security, complexity_report)
+        issues_good, _ = validator.validate(doc_with_security,None, complexity_report)
         # Should not warn about security
 
         # Without security guidance
-        issues_bad, metrics_bad = validator._validate_value(
-            doc_without_security, complexity_report
+        issues_bad, metrics_bad = validator.validate(
+            doc_without_security,None, complexity_report
         )
         # Should warn about missing security guidance
         assert any("security" in i.message.lower() for i in issues_bad)
@@ -428,8 +434,8 @@ Just a basic description.
 
 Short.
 """
-        validator = DocumentationValidator()
-        issues, metrics = validator._validate_value(doc_brief, None)
+        validator = ValueValidator()
+        issues, metrics = validator.validate(doc_brief,None, None)
 
         assert metrics["word_count"] < 200
         assert any("brief" in i.message.lower() for i in issues)
@@ -451,12 +457,12 @@ Short.
 Description only.
 """
 
-        validator = DocumentationValidator()
+        validator = ValueValidator()
 
-        issues_good, metrics_good = validator._validate_value(doc_with_example, None)
+        issues_good, metrics_good = validator.validate(doc_with_example,None, None)
         assert metrics_good["playbook_examples"] >= 1
 
-        issues_bad, metrics_bad = validator._validate_value(doc_without_example, None)
+        issues_bad, metrics_bad = validator.validate(doc_without_example, None, None)
         assert metrics_bad["playbook_examples"] == 0
         # Should have info about missing examples
 
@@ -596,8 +602,6 @@ Test Author
 
     def test_score_calculation(self):
         """Test quality score calculation."""
-        validator = DocumentationValidator()
-
         # Test with different issue severities
         issues_severe = [
             ValidationIssue(
@@ -612,7 +616,7 @@ Test Author
             ),
         ]
 
-        score_severe = validator._calculate_score(issues_severe, {})
+        score_severe = calculate_score(issues_severe)
         # 100 - (2 * 15) = 70
         assert score_severe == 70.0
 
@@ -634,7 +638,7 @@ Test Author
             ),
         ]
 
-        score_mixed = validator._calculate_score(issues_mixed, {})
+        score_mixed = calculate_score(issues_mixed)
         # 100 - 15 - 5 - 2 = 78
         assert score_mixed == 78.0
 
