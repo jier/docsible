@@ -1,9 +1,16 @@
+
+from typing import Any, TypedDict
+
 import pytest
 from pydantic import ValidationError
 
 from docsible.renderers.models.render_context import RenderContext
 
 
+class RenderContextDict(TypedDict):
+    role_info: dict[str, Any]
+    template_type: str
+    no_vars: bool
 class TestRenderContextCreation:
     """Test RenderContext instantiation and validation."""
 
@@ -52,7 +59,7 @@ class TestRenderContextCreation:
     def test_validation_requires_role_info(self):
         """Test that role_info is required."""
         with pytest.raises(ValidationError) as exc_info:
-            RenderContext()
+            RenderContext() # type: ignore[call-arg]
         
         assert 'role_info' in str(exc_info.value)
 
@@ -156,13 +163,14 @@ class TestPydanticFeatures:
 
     def test_model_from_dict(self):
         """Test creating RenderContext from dictionary."""
-        data = {
+
+        data: RenderContextDict = {
             'role_info': {'name': 'test'},
             'template_type': 'hybrid',
             'no_vars': True
         }
         
-        context = RenderContext(**data)
+        context = RenderContext(**data) 
         
         assert context.role_info == {'name': 'test'}
         assert context.template_type == 'hybrid'

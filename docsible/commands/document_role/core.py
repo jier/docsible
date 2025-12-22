@@ -471,6 +471,51 @@ def doc_the_role(
     Example:
         docsible role --role ./my-role --graph --hybrid
     """
+    # Feature flag: Use orchestrator if enabled via environment variable
+    from docsible.commands.document_role.core_orchestrated import (
+        doc_the_role_orchestrated,
+        should_use_orchestrator,
+    )
+
+    if should_use_orchestrator():
+        # New orchestrator-based implementation
+        return doc_the_role_orchestrated(
+            role_path=role_path,
+            collection_path=collection_path,
+            playbook=playbook,
+            generate_graph=generate_graph,
+            no_backup=no_backup,
+            no_docsible=no_docsible,
+            dry_run=dry_run,
+            comments=comments,
+            task_line=task_line,
+            md_collection_template=md_collection_template,
+            md_role_template=md_role_template,
+            hybrid=hybrid,
+            no_vars=no_vars,
+            no_tasks=no_tasks,
+            no_diagrams=no_diagrams,
+            simplify_diagrams=simplify_diagrams,
+            no_examples=no_examples,
+            no_metadata=no_metadata,
+            no_handlers=no_handlers,
+            minimal=minimal,
+            complexity_report=complexity_report,
+            include_complexity=include_complexity,
+            simplification_report=simplification_report,
+            show_dependencies=show_dependencies,
+            analyze_only=analyze_only,
+            append=append,
+            output=output,
+            repository_url=repository_url,
+            repo_type=repo_type,
+            repo_branch=repo_branch,
+            validate_markdown=validate_markdown,
+            auto_fix=auto_fix,
+            strict_validation=strict_validation,
+        )
+
+    # Original implementation (existing code below)
     # Import here to avoid circular imports
     from docsible.commands.document_collection import document_collection_roles
 

@@ -90,8 +90,11 @@ class TemplateProcessor:
             FileNotFoundError: If template file doesn't exist
             jinja2.TemplateError: If template has syntax errors
         """
+        logger.debug(f"Template path: {template_path}")
         template_dir = os.path.dirname(template_path)
         template_file = os.path.basename(template_path)
+        logger.debug(f"Template path: {template_dir}")
+        logger.debug(f"Template path: {template_file}")
 
         # Create environment for custom template directory
         env = Environment(loader=FileSystemLoader(template_dir))

@@ -248,6 +248,7 @@ class ReadmeRenderer:
             self.backup_manager.create_backup(output_path)
 
         # Step 2: Load template
+        logger.debug(f"In renderer custom path, {custom_template_path}")
         template = self.template_processor.get_collection_template(custom_template_path)
 
         # Step 3: Render template
