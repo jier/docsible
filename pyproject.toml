@@ -23,13 +23,14 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
-    "Programming Language :: Python :: 3.13",
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Topic :: Software Development :: Documentation",
     "Topic :: System :: Systems Administration",
 ]
 
+# =========================================================
 # Core dependencies
+# =========================================================
 dependencies = [
     "click>=8.1.7",
     "PyYAML>=6.0.1",
@@ -37,6 +38,9 @@ dependencies = [
     "pydantic>=2.0.0",
 ]
 
+# =========================================================
+# Optional dependencies for development
+# =========================================================
 [project.optional-dependencies]
 dev = [
     "ruff>=0.14.8",
@@ -48,25 +52,49 @@ test = [
     "pytest>=7.4.4",
 ]
 
+# =========================================================
+# Ruff (Linting & Formatting) 
+# =========================================================
 [tool.ruff]
 line-length = 100
 target-version = "py310"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
-ignore = ["E501"]  # line-length handled elsewhere
+ignore = ["E501"]  # line-length handled by formatter
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["B", "E"]
 
+# =========================================================
+# Mypy (static typing and plugins)
+# =========================================================
 [tool.mypy]
+plugins = ['pydantic.mypy']
+
 python_version = "3.10"
 ignore_missing_imports = true
 warn_return_any = true
 warn_unused_ignores = true
 check_untyped_defs = true
 
+[tool.pydantic-mypy]
+init_forbid_extra = true
+init_typed = true
+warn_required_dynamic_aliases = true
 
+# =========================================================
+# Pytest
+# =========================================================
+[tool.pytest.ini_options]
+addopts = [
+    "--import-mode=importlib",
+    "-v"
+]
+
+# =========================================================
+# Project information
+# =========================================================
 # URLs for project
 [project.urls]
 Homepage = "https://github.com/docsible/docsible"
@@ -74,17 +102,35 @@ Repository = "https://github.com/docsible/docsible"
 Issues = "https://github.com/docsible/docsible/issues"
 Documentation = "https://github.com/docsible/docsible"
 
+# =========================================================
+# Project cli entrypoint
+# =========================================================
 # Entry points (scripts) - works with uv, pip
 [project.scripts]
 docsible = "docsible.cli:cli"
 
+# =========================================================
+# Build system (Hatch)
+# =========================================================
 # Build system configuration - supports multiple backends
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
+# Hatch configuration for building
+[tool.hatch.build.targets.wheel]
+packages = ["docsible"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/docsible",
+    "/README.md",
+    "/LICENSE",
+    "/CONFIGURATION.md",
+]
+
 #########################################################################
-# Poetry configuration (for backward compatibility)
+# Poetry configuration (for backward compatibility) soon to be deprecated
 #########################################################################
 [tool.poetry]
 name = "docsible"
@@ -108,7 +154,7 @@ classifiers = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = ">=3.10"
 click = "^8.1.7"
 PyYAML = "^6.0.1"
 Jinja2 = "^3.1.2"
@@ -117,34 +163,3 @@ pydantic = "^2.0.0"
 
 [tool.poetry.scripts]
 docsible = 'docsible.cli:cli'
-
-#########################################################################
-# uv specific configuration
-#########################################################################
-[tool.uv]
-[dependency-groups]
-dev =[
-    "ruff>=0.14.8",
-    "mypy>=1.10",
-    "types-PyYAML>=6.0",
-]
-test = [
-    "pytest>=7.4.4",
-]
-[tool.pytest.ini_options]
-addopts = [
-    "--import-mode=importlib",
-    "-v"
-]
-
-# Hatch configuration for building
-[tool.hatch.build.targets.wheel]
-packages = ["docsible"]
-
-[tool.hatch.build.targets.sdist]
-include = [
-    "/docsible",
-    "/README.md",
-    "/LICENSE",
-    "/CONFIGURATION.md",
-]

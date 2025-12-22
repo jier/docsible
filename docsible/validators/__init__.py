@@ -4,16 +4,23 @@ Documentation validation framework for Docsible.
 Provides automated quality checks for generated documentation.
 """
 
-from docsible.validators.doc_validator import (
+
+from .doc_validator import (
     DocumentationValidator,
+    validate_documentation,
+)
+from .models import (
+    ValidationIssue,
     ValidationResult,
     ValidationSeverity,
-    validate_documentation,
+    ValidationType,
 )
 
 __all__ = [
     "DocumentationValidator",
-    "ValidationResult",
-    "ValidationSeverity",
     "validate_documentation",
+    "ValidationResult",
+    "ValidationIssue",
+    "ValidationSeverity",
+    "ValidationType",
 ]

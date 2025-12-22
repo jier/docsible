@@ -7,6 +7,7 @@ and understand over time.
 from typing import Any
 
 from docsible.analyzers.patterns.base import BasePatternDetector
+from docsible.analyzers.patterns.detectors.suggestions.maintanability_suggestion import Suggestion
 from docsible.analyzers.patterns.models import (
     PatternCategory,
     SeverityLevel,
@@ -74,46 +75,7 @@ class MaintainabilityDetector(BasePatternDetector):
                     severity=SeverityLevel.WARNING,
                     description=f"Found {len(risky_tasks)} shell/command tasks without idempotency checks",
                     example=self._show_task_snippet(risky_tasks[:2]),
-                    suggestion=(
-                        "Make tasks idempotent:\n\n"
-                        "**Option 1: Use creates/removes**\n"
-                        "```yaml\n"
-                        "- name: Download file\n"
-                        "  command: wget https://example.com/file.tar.gz\n"
-                        "  args:\n"
-                        "    creates: /tmp/file.tar.gz  # Skip if file exists\n"
-                        "\n"
-                        "- name: Remove old config\n"
-                        "  command: rm /etc/old.conf\n"
-                        "  args:\n"
-                        "    removes: /etc/old.conf  # Skip if file doesn't exist\n"
-                        "```\n\n"
-                        "**Option 2: Use changed_when**\n"
-                        "```yaml\n"
-                        "- name: Check service status\n"
-                        "  command: systemctl is-active myapp\n"
-                        "  register: result\n"
-                        "  changed_when: false  # Never report as changed\n"
-                        "  failed_when: false   # Don't fail if not active\n"
-                        "```\n\n"
-                        "**Option 3: Use check mode**\n"
-                        "```yaml\n"
-                        "- name: Configure app\n"
-                        "  shell: /usr/local/bin/configure.sh\n"
-                        "  changed_when: result.rc == 0\n"
-                        "  check_mode: no  # Always run in check mode\n"
-                        "  register: result\n"
-                        "```\n\n"
-                        "**Best: Use native modules instead**\n"
-                        "```yaml\n"
-                        "# Instead of: shell: wget ...\n"
-                        "- name: Download file\n"
-                        "  get_url:\n"
-                        "    url: https://example.com/file.tar.gz\n"
-                        "    dest: /tmp/file.tar.gz\n"
-                        "  # Automatically idempotent!\n"
-                        "```"
-                    ),
+                    suggestion=Suggestion.missing_idempotency(),
                     affected_files=self._get_unique_files(risky_tasks),
                     impact="Ensures role can be run multiple times safely without unnecessary changes",
                     confidence=0.9,
@@ -149,38 +111,7 @@ class MaintainabilityDetector(BasePatternDetector):
                         severity=SeverityLevel.WARNING,
                         description=f"main.yml contains {task_count} tasks (recommended: <30)",
                         example="",
-                        suggestion=(
-                            "Split into logical files:\n\n"
-                            "```yaml\n"
-                            "# tasks/main.yml - Orchestration only\n"
-                            "---\n"
-                            "- import_tasks: validate.yml\n"
-                            "- import_tasks: install.yml\n"
-                            "- import_tasks: configure.yml\n"
-                            "- import_tasks: services.yml\n"
-                            "```\n\n"
-                            "```yaml\n"
-                            "# tasks/install.yml - Package installation\n"
-                            "---\n"
-                            "- name: Install dependencies\n"
-                            "  apt:\n"
-                            '    name: "{{ item }}"\n'
-                            '  loop: "{{ app_dependencies }}"\n'
-                            "```\n\n"
-                            "```yaml\n"
-                            "# tasks/configure.yml - Configuration\n"
-                            "---\n"
-                            "- name: Copy configuration\n"
-                            "  template:\n"
-                            "    src: app.conf.j2\n"
-                            "    dest: /etc/app.conf\n"
-                            "```\n\n"
-                            "**Benefits:**\n"
-                            "- Easier to find specific functionality\n"
-                            "- Can reuse files with include_tasks conditionally\n"
-                            "- Better for testing individual components\n"
-                            "- Clearer separation of concerns"
-                        ),
+                        suggestion=Suggestion.monolithic_main_file(),
                         affected_files=["tasks/main.yml"],
                         impact=f"Improves maintainability and navigation ({task_count} tasks → 4-5 focused files)",
                         confidence=0.95,
@@ -246,41 +177,7 @@ class MaintainabilityDetector(BasePatternDetector):
                     severity=SeverityLevel.INFO,
                     description=f"Found {len(magic_values)} repeated literal values across tasks",
                     example=f"\n{example}\n",
-                    suggestion=(
-                        "Replace magic values with variables:\n\n"
-                        "**Instead of hardcoding:**\n"
-                        "```yaml\n"
-                        "- name: Create directory\n"
-                        "  file:\n"
-                        "    path: /opt/myapp  # ← Hardcoded\n"
-                        "    state: directory\n"
-                        "\n"
-                        "- name: Copy config\n"
-                        "  copy:\n"
-                        "    dest: /opt/myapp/config.yml  # ← Repeated\n"
-                        "```\n\n"
-                        "**Use variables:**\n"
-                        "```yaml\n"
-                        "# defaults/main.yml\n"
-                        "app_install_dir: /opt/myapp\n"
-                        'app_config_file: "{{ app_install_dir }}/config.yml"\n'
-                        "```\n\n"
-                        "```yaml\n"
-                        "# tasks/main.yml\n"
-                        "- name: Create directory\n"
-                        "  file:\n"
-                        '    path: "{{ app_install_dir }}"\n'
-                        "    state: directory\n"
-                        "\n"
-                        "- name: Copy config\n"
-                        "  copy:\n"
-                        '    dest: "{{ app_config_file }}"\n'
-                        "```\n\n"
-                        "**Benefits:**\n"
-                        "- Single source of truth\n"
-                        "- Easy to change paths\n"
-                        "- Better for multi-environment deployments"
-                    ),
+                    suggestion=Suggestion.detect_magic_values(),
                     affected_files=list(
                         set([f for files in magic_values.values() for f in files])
                     ),
@@ -329,34 +226,7 @@ class MaintainabilityDetector(BasePatternDetector):
                     severity=SeverityLevel.INFO,
                     description=f"Found {len(problematic_tasks)} tasks that register variables but may fail in check mode",
                     example=self._show_task_snippet(problematic_tasks[:2]),
-                    suggestion=(
-                        "Support check mode (ansible-playbook --check):\n\n"
-                        "**Problem:**\n"
-                        "```yaml\n"
-                        "- name: Get app version\n"
-                        "  command: /opt/app --version\n"
-                        "  register: app_version  # ← Fails in check mode\n"
-                        "\n"
-                        "- name: Upgrade if old\n"
-                        "  apt: name=myapp\n"
-                        "  when: app_version.stdout is version('2.0', '<')\n"
-                        "  # ↑ Error: app_version undefined in check mode\n"
-                        "```\n\n"
-                        "**Solution:**\n"
-                        "```yaml\n"
-                        "- name: Get app version\n"
-                        "  command: /opt/app --version\n"
-                        "  register: app_version\n"
-                        "  check_mode: no  # ← Always run, even in check mode\n"
-                        "  changed_when: false\n"
-                        "\n"
-                        "- name: Upgrade if old\n"
-                        "  apt: name=myapp\n"
-                        "  when: app_version.stdout is version('2.0', '<')\n"
-                        "  # Works in check mode now!\n"
-                        "```\n\n"
-                        "Check mode lets you test playbooks safely without making changes."
-                    ),
+                    suggestion=Suggestion.missing_check_mode(),
                     affected_files=self._get_unique_files(problematic_tasks),
                     impact="Enables safe testing with --check flag",
                     confidence=0.75,
@@ -399,38 +269,7 @@ class MaintainabilityDetector(BasePatternDetector):
                     severity=SeverityLevel.INFO,
                     description=f"Found {len(risky_tasks)} shell commands with pipes but no failure handling",
                     example=self._show_task_snippet(risky_tasks[:2]),
-                    suggestion=(
-                        "Handle pipeline failures explicitly:\n\n"
-                        "**Problem:**\n"
-                        "```yaml\n"
-                        "- name: Check service running\n"
-                        "  shell: systemctl status app | grep 'active'\n"
-                        "  # ↑ If systemctl fails, grep might still succeed\n"
-                        "  #   Or if grep fails (no match), task fails unexpectedly\n"
-                        "```\n\n"
-                        "**Solution:**\n"
-                        "```yaml\n"
-                        "- name: Check service running\n"
-                        "  shell: |\n"
-                        "    set -o pipefail  # ← Fail if any command in pipeline fails\n"
-                        "    systemctl status app | grep 'active'\n"
-                        "  args:\n"
-                        "    executable: /bin/bash\n"
-                        "  register: result\n"
-                        "  failed_when: result.rc not in [0, 1]  # ← Explicit handling\n"
-                        "  changed_when: false\n"
-                        "```\n\n"
-                        "**Better - Use native modules:**\n"
-                        "```yaml\n"
-                        "- name: Check service running\n"
-                        "  service_facts:\n"
-                        "\n"
-                        "- name: Verify app is active\n"
-                        "  assert:\n"
-                        "    that:\n"
-                        "      - ansible_facts.services['app.service'].state == 'running'\n"
-                        "```"
-                    ),
+                    suggestion=Suggestion.missing_failed_when(),
                     affected_files=self._get_unique_files(risky_tasks),
                     impact="Prevents silent failures from being ignored",
                     confidence=0.8,
@@ -484,34 +323,7 @@ class MaintainabilityDetector(BasePatternDetector):
                     severity=SeverityLevel.WARNING,
                     description=f"Found {len(shadowed)} variables defined in both defaults/ and vars/",
                     example=f"Shadowed variables: {', '.join(example_vars)}",
-                    suggestion=(
-                        "Avoid variable shadowing:\n\n"
-                        "**Variable Precedence in Ansible** (lowest to highest):\n"
-                        "```\n"
-                        "1. defaults/main.yml         ← Lowest (easily overridden)\n"
-                        "2. group_vars/\n"
-                        "3. host_vars/\n"
-                        "4. playbook vars:\n"
-                        "5. vars/main.yml             ← High precedence\n"
-                        "6. extra_vars (-e)           ← Highest\n"
-                        "```\n\n"
-                        "**Best practices:**\n\n"
-                        "**Use defaults/ for:**\n"
-                        "```yaml\n"
-                        "# defaults/main.yml\n"
-                        "app_port: 8080          # Can be overridden by users\n"
-                        "app_user: appuser       # Sensible defaults\n"
-                        "```\n\n"
-                        "**Use vars/ for:**\n"
-                        "```yaml\n"
-                        "# vars/main.yml\n"
-                        "app_config_dir: /etc/app      # Internal constants\n"
-                        "app_required_packages:        # Computed values\n"
-                        '  - "{{ app_name }}-core"\n'
-                        "```\n\n"
-                        "**Don't define the same variable in both!**\n"
-                        "Choose one location based on whether users should override it."
-                    ),
+                    suggestion=Suggestion.variable_shadowing(),
                     affected_files=["defaults/main.yml", "vars/main.yml"],
                     impact="Eliminates confusion about which value will be used",
                     confidence=0.95,
