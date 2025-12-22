@@ -2,7 +2,7 @@
 # Test script for orchestrator with various CLI parameter combinations
 # Usage: ./test_orchestrator_cli.sh
 
-set -e  # Exit on error
+# set -e  # Exit on error
 
 # Colors for output
 GREEN='\033[0;32m'
@@ -112,13 +112,13 @@ if [ -d "role_test/ansible-complex-k8s-infra" ]; then
     run_test "ansible-complex-k8s-infra role" \
         "docsible role --role role_test/ansible-complex-k8s-infra --graph --complexity-report --dry-run"
 fi
-# FIXME template loading broken after refactoring, no orchestrator cli still works, why?
+
 # Test 17: Collection (if exists) - check for any _collection directories
-# COLLECTION_DIR=$(find role_test -maxdepth 1 -type d -name "*_collection" | head -1)
-# if [ -n "$COLLECTION_DIR" ]; then
-#     run_test "Collection documentation" \
-#         "docsible --verbose role --collection $COLLECTION_DIR --dry-run"
-# fi
+COLLECTION_DIR=$(find role_test -maxdepth 1 -type d -name "*_collection" | head -1)
+if [ -n "$COLLECTION_DIR" ]; then
+    run_test "Collection documentation" \
+        "docsible --verbose role --collection $COLLECTION_DIR --dry-run"
+fi
 
 # Test 18: Actually generate documentation (no dry-run) for simple role
 run_test "Generate actual documentation" \

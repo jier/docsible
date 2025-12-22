@@ -8,7 +8,6 @@ that uses the new orchestrator pattern. Enable via environment variable:
 import logging
 import os
 from pathlib import Path
-from typing import cast
 
 import click
 
@@ -31,6 +30,10 @@ logger = logging.getLogger(__name__)
 
 def _optional_path(value: str | None) -> Path | None:
     return Path(value) if value else None
+
+def _optional_str(value: Path | str |  None) -> str | None:
+    """Convert Path | None to str | None, preserving None."""
+    return str(value) if value is not None else None
 
 def doc_the_role_orchestrated(**kwargs):
     """Generate documentation for an Ansible role using orchestrator pattern.
@@ -72,7 +75,8 @@ def doc_the_role_orchestrated(**kwargs):
         kwargs["no_metadata"] = no_metadata
         kwargs["no_handlers"] = no_handlers
         kwargs["simplify_diagrams"] = simplify_diagrams
-
+    logger.debug("HEREEEEE")
+    logger.debug(f"What are kwargs path {kwargs.get('md_role_template')}")
     # Build context from parameters
     context = RoleCommandContext(
         paths=PathConfig(
@@ -132,14 +136,14 @@ def doc_the_role_orchestrated(**kwargs):
             # Keep existing collection handling (not yet modularized)
             document_collection_roles(
                 collection_path=str(context.paths.collection_path),
-                playbook=str(context.paths.playbook),
+                playbook=_optional_str(context.paths.playbook), # type: ignore[arg-type]
                 graph=context.diagrams.generate_graph,
                 no_backup=context.processing.no_backup,
                 no_docsible=context.processing.no_docsible,
                 comments=context.processing.comments,
                 task_line=context.processing.task_line,
-                md_collection_template=str(context.template.md_collection_template),
-                md_role_template=str(context.template.md_role_template),
+                md_collection_template=_optional_str(context.template.md_collection_template), # type: ignore[arg-type]
+                md_role_template=_optional_str(context.template.md_role_template), # type: ignore[arg-type]
                 hybrid=context.template.hybrid,
                 no_vars=context.content.no_vars,
                 no_tasks=context.content.no_tasks,
@@ -151,9 +155,9 @@ def doc_the_role_orchestrated(**kwargs):
                 minimal=context.content.minimal,
                 append=context.processing.append,
                 output=context.paths.output,
-                repository_url=cast(str, context.repository.repository_url),
-                repo_type=cast(str, context.repository.repo_type),
-                repo_branch=cast(str, context.repository.repo_branch),
+                repository_url=context.repository.repository_url or "",
+                repo_type=context.repository.repo_type or "",
+                repo_branch=context.repository.repo_branch or "",
             )
         except CollectionNotFoundError as e:
             raise click.ClickException(str(e)) from e
