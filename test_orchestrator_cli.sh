@@ -2,7 +2,7 @@
 # Test script for orchestrator with various CLI parameter combinations
 # Usage: ./test_orchestrator_cli.sh
 
-# set -e  # Exit on error
+set -e  # Exit on error
 
 # Colors for output
 GREEN='\033[0;32m'
