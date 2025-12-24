@@ -515,7 +515,15 @@ def doc_the_role(
             strict_validation=strict_validation,
         )
 
-    # Original implementation (existing code below)
+    # LEGACY IMPLEMENTATION - DEPRECATED
+    # This code path will be removed in v1.0.0
+    # The orchestrator pattern is now the default implementation
+    logger.warning(
+        "Using legacy implementation (DOCSIBLE_USE_ORCHESTRATOR=false). "
+        "This implementation is deprecated and will be removed in v1.0.0. "
+        "Please report any issues with the orchestrator implementation."
+    )
+
     # Import here to avoid circular imports
     from docsible.commands.document_collection import document_collection_roles
 

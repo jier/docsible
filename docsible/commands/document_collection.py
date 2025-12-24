@@ -17,14 +17,14 @@ logger = logging.getLogger(__name__)
 
 def document_collection_roles(
     collection_path: str,
-    playbook: str,
+    playbook: str | None,
     graph: bool,
     no_backup: bool,
     no_docsible: bool,
     comments: bool,
     task_line: bool,
-    md_collection_template: str,
-    md_role_template: str,
+    md_collection_template: str | None,
+    md_role_template: str | None,
     hybrid: bool,
     no_vars: bool,
     no_tasks: bool,
@@ -47,14 +47,14 @@ def document_collection_roles(
 
     Args:
         collection_path: Path to collection directory
-        playbook: Path to playbook file (relative to each role)
+        playbook: Path to playbook file (relative to each role), optional
         graph: Generate Mermaid graphs
         no_backup: Skip backup creation
         no_docsible: Skip .docsible file handling
         comments: Extract task comments
         task_line: Extract task line numbers
-        md_collection_template: Custom collection template path
-        md_role_template: Custom role template path
+        md_collection_template: Custom collection template path, optional
+        md_role_template: Custom role template path, optional
         hybrid: Use hybrid template for roles
         no_vars: Hide variable documentation
         no_tasks: Hide task lists and task details
