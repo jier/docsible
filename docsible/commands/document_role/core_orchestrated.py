@@ -188,6 +188,11 @@ def should_use_orchestrator() -> bool:
     """Check if orchestrator should be used based on environment variable.
 
     Returns:
-        True if DOCSIBLE_USE_ORCHESTRATOR=true, False otherwise
+        True by default, False if DOCSIBLE_USE_ORCHESTRATOR=false
+
+    Note:
+        The orchestrator is now the default implementation. Set
+        DOCSIBLE_USE_ORCHESTRATOR=false to use legacy implementation
+        (legacy will be removed in v1.0.0).
     """
-    return os.environ.get("DOCSIBLE_USE_ORCHESTRATOR", "false").lower() == "true"
+    return os.environ.get("DOCSIBLE_USE_ORCHESTRATOR", "true").lower() == "true"
