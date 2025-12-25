@@ -74,7 +74,7 @@ def load_yaml_file_custom(file_path):
         return result
 
     except (FileNotFoundError, yaml.constructor.ConstructorError, yaml.YAMLError) as e:
-        print(f"Error loading {file_path}: {e}")
+        logger.error(f"Error loading {file_path}: {e}")
         return None
 
 

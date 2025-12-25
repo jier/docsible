@@ -5,6 +5,7 @@ implementations produce identical outputs.
 """
 
 import os
+import re
 import shutil
 from pathlib import Path
 
@@ -25,6 +26,68 @@ def run_with_env(runner, args, orchestrator_enabled):
             os.environ.pop("DOCSIBLE_USE_ORCHESTRATOR", None)
         else:
             os.environ["DOCSIBLE_USE_ORCHESTRATOR"] = old_val
+
+
+def normalize_readme_for_comparison(content: str) -> str:
+    """Normalize README content by removing timestamp and role name variations.
+
+    This allows comparing READMEs that were generated at different times
+    and in different directories by replacing variable elements with fixed placeholders.
+
+    Args:
+        content: README content with embedded metadata
+
+    Returns:
+        README content with normalized timestamp and role names
+    """
+    # Replace the timestamp in the DOCSIBLE METADATA comment
+    # Pattern matches: 2025-12-25T17:30:45.123456Z or 2025-12-25T17:30:45.123456+00:00Z
+    # Replace with: generated_at: TIMESTAMP_NORMALIZED
+    timestamp_pattern = r"(generated_at: )\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|\+\d{2}:\d{2}Z?)"
+    normalized = re.sub(timestamp_pattern, r"\1TIMESTAMP_NORMALIZED", content)
+
+    # Normalize role names in headers and mermaid diagrams
+    # This handles cases where the role path differs (orig vs orch, orig_graph vs orch_graph)
+    # Replace "## orig" or "## orch" with "## ROLE_NAME"
+    normalized = re.sub(r"^## (orig|orch)(_graph)?$", r"## ROLE_NAME", normalized, flags=re.MULTILINE)
+
+    # Replace role names in mermaid diagrams
+    # participant orig_graph -> participant ROLE_NAME
+    normalized = re.sub(r"participant (orig|orch)(_graph)?(\s)", r"participant ROLE_NAME\3", normalized)
+
+    # Replace role names in mermaid diagram interactions
+    # Playbook->>+orig_graph -> Playbook->>+ROLE_NAME
+    # Tasks_main_yml-->>-orig_graph -> Tasks_main_yml-->>-ROLE_NAME
+    normalized = re.sub(r"(Playbook->>[\+\-]?)(orig|orch)(_graph)?(\b)", r"\1ROLE_NAME\4", normalized)
+    normalized = re.sub(r"(--?>>[\+\-]?)(orig|orch)(_graph)?(\b)", r"\1ROLE_NAME\4", normalized)
+    normalized = re.sub(r"(\b)(orig|orch)(_graph)?(--?>>)", r"ROLE_NAME\4", normalized)
+
+    # Replace in activate/deactivate statements
+    normalized = re.sub(r"(activate |deactivate )(orig|orch)(_graph)?(\s|$)", r"\1ROLE_NAME\4", normalized)
+
+    # Replace in Note over statements
+    normalized = re.sub(r"(Note over )(orig|orch)(_graph)?(,)", r"\1ROLE_NAME\4", normalized)
+
+    return normalized
+
+
+def normalize_dry_run_output(output: str) -> str:
+    """Normalize dry-run output by removing timestamps from backup filenames.
+
+    Dry-run output includes backup filenames with timestamps that will differ
+    between runs. This function replaces those timestamps with a placeholder.
+
+    Args:
+        output: CLI dry-run output
+
+    Returns:
+        Output with normalized backup filename timestamps
+    """
+    # Replace backup filename timestamps: README_backup_20251225_180909.md
+    # With: README_backup_TIMESTAMP.md
+    backup_pattern = r"(README_backup_)\d{8}_\d{6}(\.md)"
+    normalized = re.sub(backup_pattern, r"\1TIMESTAMP\2", output)
+    return normalized
 
 
 class TestBasicDryRunComparison:
@@ -56,7 +119,8 @@ class TestBasicDryRunComparison:
         orch = run_with_env(runner, args, orchestrator_enabled=True)
 
         assert orig.exit_code == orch.exit_code
-        assert orig.output == orch.output
+        # Normalize dry-run output to remove timestamp differences in backup filenames
+        assert normalize_dry_run_output(orig.output) == normalize_dry_run_output(orch.output)
 
     def test_dry_run_hybrid_mode(self, simple_role):
         """Test dry-run with hybrid template."""
@@ -116,9 +180,9 @@ class TestGeneratedFileComparison:
         assert orig_result.exit_code == 0, f"Original failed: {orig_result.output}"
         assert orch_result.exit_code == 0, f"Orchestrated failed: {orch_result.output}"
 
-        # Compare README content
-        orig_readme = (orig_role / "README.md").read_text()
-        orch_readme = (orch_role / "README.md").read_text()
+        # Compare README content (normalize timestamps for comparison)
+        orig_readme = normalize_readme_for_comparison((orig_role / "README.md").read_text())
+        orch_readme = normalize_readme_for_comparison((orch_role / "README.md").read_text())
 
         assert orig_readme == orch_readme, "Generated READMEs differ"
 
@@ -145,8 +209,9 @@ class TestGeneratedFileComparison:
         assert orig_result.exit_code == 0
         assert orch_result.exit_code == 0
 
-        orig_readme = (orig_role / "README.md").read_text()
-        orch_readme = (orch_role / "README.md").read_text()
+        # Compare README content (normalize timestamps for comparison)
+        orig_readme = normalize_readme_for_comparison((orig_role / "README.md").read_text())
+        orch_readme = normalize_readme_for_comparison((orch_role / "README.md").read_text())
 
         assert orig_readme == orch_readme, "Generated READMEs with graphs differ"
 

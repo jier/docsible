@@ -1,5 +1,6 @@
 import datetime as dt
 import hashlib
+import logging
 import re
 from datetime import datetime, timezone
 from pathlib import Path
@@ -8,6 +9,8 @@ from typing import Optional
 from pydantic import BaseModel, Field, field_serializer, field_validator
 
 from docsible.constants import VERSION
+
+logger = logging.getLogger(__name__)
 
 "Track when README becomes outdated when role files changes."
 
@@ -119,8 +122,9 @@ role_hash: {self.role_hash}
                 docsible_version=match.group(2),
                 role_hash=match.group(3),
             )
-        except Exception:
+        except Exception as e:
             # Invalid metadata format - return None
+            logger.debug(f"Failed to parse metadata from content: {e}")
             return None
 
 

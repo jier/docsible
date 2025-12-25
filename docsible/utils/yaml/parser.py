@@ -2,7 +2,10 @@
 YAML parsing and analysis utilities.
 """
 
+import logging
 import re
+
+logger = logging.getLogger(__name__)
 
 
 def get_multiline_indicator(line: str) -> str | None:
@@ -61,10 +64,10 @@ def get_task_comments(file_path: str) -> list[dict[str, str]]:
         with open(file_path, encoding="utf-8") as f:
             lines = f.readlines()
     except FileNotFoundError:
-        print(f"Error: File not found {file_path}")
+        logger.error(f"File not found: {file_path}")
         return []
     except Exception as e:
-        print(f"Error reading file {file_path}: {e}")
+        logger.error(f"Error reading file {file_path}: {e}")
         return []
 
     output_task_comments = []
@@ -109,8 +112,9 @@ def get_task_comments(file_path: str) -> list[dict[str, str]]:
                     :name_part_end_index
                 ].strip()
 
-            except IndexError:
+            except IndexError as e:
                 # Malformed - name: line, skip
+                logger.debug(f"Malformed task name line in {file_path}: {stripped_line} - {e}")
                 candidate_comments = []  # Reset comments
                 continue
 
