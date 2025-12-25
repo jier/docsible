@@ -1,10 +1,20 @@
 """Generation control CLI options for document_role command."""
 
+from typing import Callable, TypeVar
+
 import click
 
+F = TypeVar("F", bound=Callable[..., None])
 
-def add_generation_options(f):
+
+def add_generation_options(f: F) -> F:
     """Add generation control options to the command.
+
+    Args:
+        f: Click command function to decorate
+
+    Returns:
+        Decorated command function with generation control options added
 
     Options:
     - --graph/-g: Generate Mermaid graph for tasks

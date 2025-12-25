@@ -1,10 +1,20 @@
 """Content control CLI options for document_role command."""
 
+from typing import Callable, TypeVar
+
 import click
 
+F = TypeVar("F", bound=Callable[..., None])
 
-def add_content_options(f):
+
+def add_content_options(f: F) -> F:
     """Add content control options to the command.
+
+    Args:
+        f: Click command function to decorate
+
+    Returns:
+        Decorated command function with content control options added
 
     Options:
     - --no-vars: Hide variable documentation

@@ -39,7 +39,7 @@ def document_collection_roles(
     repository_url: str,
     repo_type: str,
     repo_branch: str,
-):
+) -> None:
     """Document all roles in an Ansible collection.
 
     Extracts metadata from galaxy.yml/yaml and generates documentation

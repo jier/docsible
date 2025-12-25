@@ -8,6 +8,7 @@ that uses the new orchestrator pattern. Enable via environment variable:
 import logging
 import os
 from pathlib import Path
+from typing import Any
 
 import click
 
@@ -45,11 +46,15 @@ def _ensure_str(value: Path | str | None, default: str = "") -> str:
         return default
     return str(value)
 
-def doc_the_role_orchestrated(**kwargs):
+def doc_the_role_orchestrated(**kwargs: Any) -> None:
     """Generate documentation for an Ansible role using orchestrator pattern.
 
     This is the new implementation using RoleOrchestrator that can be enabled
     via the DOCSIBLE_USE_ORCHESTRATOR environment variable.
+
+    Args:
+        **kwargs: All CLI parameters passed as keyword arguments matching
+                  the Click command signature from doc_the_role()
 
     All parameters are passed via **kwargs to match the Click command signature.
     """

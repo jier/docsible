@@ -61,13 +61,16 @@ def get_version() -> str:
     version=get_version(),
     help=f"Show the module version. Current version: {get_version()}",
 )
-def cli(verbose: bool):
+def cli(verbose: bool) -> None:
     """Docsible - Ansible role and collection documentation generator.
 
     Generate comprehensive documentation for your Ansible roles and collections
     with support for Mermaid diagrams, variable documentation, and more.
 
     Use 'docsible COMMAND --help' for more information on a specific command.
+
+    Args:
+        verbose: Enable verbose logging (DEBUG level)
 
     Examples:
         docsible role --role ./my-role --graph
@@ -84,7 +87,7 @@ cli.add_command(init_config, name="init")
 cli.add_command(check)
 
 
-def main():
+def main() -> None:
     """Main entry point for the CLI application.
 
     This function is called when docsible is invoked from the command line.

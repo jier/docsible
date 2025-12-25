@@ -1,10 +1,20 @@
 """Path-related CLI options for document_role command."""
 
+from typing import Callable, TypeVar
+
 import click
 
+F = TypeVar("F", bound=Callable[..., None])
 
-def add_path_options(f):
+
+def add_path_options(f: F) -> F:
     """Add path-related options to the command.
+
+    Args:
+        f: Click command function to decorate
+
+    Returns:
+        Decorated command function with path options added
 
     Options:
     - --role/-r: Path to the Ansible role directory

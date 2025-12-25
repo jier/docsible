@@ -1,10 +1,20 @@
 """Template-related CLI options for document_role command."""
 
+from typing import Callable, TypeVar
+
 import click
 
+F = TypeVar("F", bound=Callable[..., None])
 
-def add_template_options(f):
+
+def add_template_options(f: F) -> F:
     """Add template-related options to the command.
+
+    Args:
+        f: Click command function to decorate
+
+    Returns:
+        Decorated command function with template options added
 
     Options:
     - --md-role-template/--md-template: Path to role markdown template
