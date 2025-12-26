@@ -1,6 +1,7 @@
 """Generation control CLI options for document_role command."""
 
-from typing import Callable, TypeVar
+from collections.abc import Callable
+from typing import TypeVar
 
 import click
 
@@ -38,7 +39,7 @@ def add_generation_options(f: F) -> F:
         is_flag=True,
         help="Generate task dependency matrix table in documentation. Shows variable dependencies, "
         "handler triggers, error handling strategies, and facts set by each task. "
-        "Automatically included for complex roles (25+ tasks).",
+        "Auto-enabled for complex roles with dependencies (smart defaults).",
     )(f)
     f = click.option(
         "--simplification-report",
@@ -77,6 +78,7 @@ def add_generation_options(f: F) -> F:
         "generate_graph",
         is_flag=True,
         help="Generate Mermaid diagrams for role visualization. Creates sequence diagrams, "
-        "flowcharts, or architecture diagrams based on role complexity.",
+        "flowcharts, or architecture diagrams based on role complexity. "
+        "Auto-enabled for medium/complex roles (smart defaults).",
     )(f)
     return f

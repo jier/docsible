@@ -16,6 +16,9 @@ from docsible.commands.document_role.helpers import (
     load_playbook_content,
     validate_role_path,
 )
+from docsible.commands.document_role.smart_defaults_integration import (
+    apply_smart_defaults,
+)
 from docsible.exceptions import CollectionNotFoundError
 from docsible.renderers.readme_renderer import ReadmeRenderer
 from docsible.renderers.tag_manager import manage_docsible_file_keys
@@ -562,7 +565,63 @@ def doc_the_role(
     # Import here to avoid circular imports
     from docsible.commands.document_collection import document_collection_roles
 
-    # Apply minimal flag settings
+    # SMART DEFAULTS INTEGRATION
+    # Apply smart defaults based on role complexity (if enabled)
+    enable_smart_defaults = (
+        os.getenv("DOCSIBLE_ENABLE_SMART_DEFAULTS", "true").lower() == "true"
+    )
+
+    if enable_smart_defaults and role_path and not collection_path:
+        try:
+            # Validate role path first to ensure it exists
+            temp_validated_path = validate_role_path(role_path)
+
+            # Detect which flags user explicitly set
+            # For now, assume all flags that differ from Click defaults were user-set
+            # This is a simple heuristic - could be improved with Click context
+            user_overrides = {}
+
+            # If user set any of these flags, respect them
+            # (In future, use Click context to detect commandline vs default)
+            # For now, treat any non-default value as user override
+            if generate_graph is True:  # Click default is False
+                user_overrides["generate_graph"] = generate_graph
+            if minimal is True:  # Click default is False
+                user_overrides["minimal"] = minimal
+            if show_dependencies is True:  # Click default is False
+                user_overrides["show_dependencies"] = show_dependencies
+
+            # Apply smart defaults for non-overridden options
+            smart_graph, smart_minimal, smart_deps, _ = apply_smart_defaults(
+                temp_validated_path, user_overrides
+            )
+            # Note: Fourth return value (complexity_report) is ignored in legacy implementation
+            # The orchestrator implementation reuses it to avoid duplicate analysis
+
+            # Use smart defaults only if user didn't override
+            if "generate_graph" not in user_overrides:
+                generate_graph = smart_graph
+                if smart_graph:
+                    logger.info(
+                        "Smart default: Enabling graph generation for this role"
+                    )
+
+            if "minimal" not in user_overrides:
+                minimal = smart_minimal
+                if smart_minimal:
+                    logger.info("Smart default: Using minimal documentation mode")
+
+            if "show_dependencies" not in user_overrides:
+                show_dependencies = smart_deps
+                if smart_deps:
+                    logger.info("Smart default: Including dependency information")
+
+        except Exception as e:
+            logger.warning(f"Smart defaults failed: {e}")
+            logger.warning("Continuing with manual configuration")
+            # Continue with original values
+
+    # Apply minimal flag settings (still needed for backward compatibility)
     (
         no_vars,
         no_tasks,

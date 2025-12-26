@@ -131,14 +131,24 @@ class RoleOrchestrator:
     def _analyze_complexity(self, role_info: dict):
         """Analyze role complexity.
 
+        Reuses cached analysis from smart defaults if available to avoid
+        duplicate analysis.
+
         Args:
             role_info: Role information dictionary
 
         Returns:
             Complexity analysis report
         """
+        # Check if we have a cached report from smart defaults
+        if self.context.analysis.cached_complexity_report:
+            logger.debug("Reusing complexity analysis from smart defaults (avoiding duplicate)")
+            return self.context.analysis.cached_complexity_report
+
+        # No cached report available, perform fresh analysis
         from docsible.analyzers import analyze_role_complexity
 
+        logger.debug("Performing fresh complexity analysis")
         return analyze_role_complexity(
             role_info,
             include_patterns=self.context.analysis.simplification_report,

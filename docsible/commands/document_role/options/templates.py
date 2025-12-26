@@ -1,6 +1,7 @@
 """Template-related CLI options for document_role command."""
 
-from typing import Callable, TypeVar
+from collections.abc import Callable
+from typing import TypeVar
 
 import click
 

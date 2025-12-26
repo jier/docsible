@@ -16,16 +16,26 @@ from docsible.cli import cli
 
 
 def run_with_env(runner, args, orchestrator_enabled):
-    """Helper to run CLI with specific orchestrator setting."""
-    old_val = os.environ.get("DOCSIBLE_USE_ORCHESTRATOR")
+    """Helper to run CLI with specific orchestrator setting.
+
+    Also disables smart defaults for consistent comparison between implementations.
+    """
+    old_orch = os.environ.get("DOCSIBLE_USE_ORCHESTRATOR")
+    old_smart = os.environ.get("DOCSIBLE_ENABLE_SMART_DEFAULTS")
     try:
         os.environ["DOCSIBLE_USE_ORCHESTRATOR"] = "true" if orchestrator_enabled else "false"
+        # Disable smart defaults for comparison tests to ensure identical output
+        os.environ["DOCSIBLE_ENABLE_SMART_DEFAULTS"] = "false"
         return runner.invoke(cli, args)
     finally:
-        if old_val is None:
+        if old_orch is None:
             os.environ.pop("DOCSIBLE_USE_ORCHESTRATOR", None)
         else:
-            os.environ["DOCSIBLE_USE_ORCHESTRATOR"] = old_val
+            os.environ["DOCSIBLE_USE_ORCHESTRATOR"] = old_orch
+        if old_smart is None:
+            os.environ.pop("DOCSIBLE_ENABLE_SMART_DEFAULTS", None)
+        else:
+            os.environ["DOCSIBLE_ENABLE_SMART_DEFAULTS"] = old_smart
 
 
 def normalize_readme_for_comparison(content: str) -> str:
@@ -231,7 +241,8 @@ class TestContentFlags:
         orch = run_with_env(runner, args, orchestrator_enabled=True)
 
         assert orig.exit_code == orch.exit_code
-        assert orig.output == orch.output
+        # Normalize timestamps in backup filenames before comparison
+        assert normalize_dry_run_output(orig.output) == normalize_dry_run_output(orch.output)
 
     def test_no_tasks_flag(self, simple_role):
         """Test --no-tasks flag."""
@@ -245,7 +256,8 @@ class TestContentFlags:
         orch = run_with_env(runner, args, orchestrator_enabled=True)
 
         assert orig.exit_code == orch.exit_code
-        assert orig.output == orch.output
+        # Normalize timestamps in backup filenames before comparison
+        assert normalize_dry_run_output(orig.output) == normalize_dry_run_output(orch.output)
 
 
 class TestErrorHandling:

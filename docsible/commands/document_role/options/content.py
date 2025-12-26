@@ -1,6 +1,7 @@
 """Content control CLI options for document_role command."""
 
-from typing import Callable, TypeVar
+from collections.abc import Callable
+from typing import TypeVar
 
 import click
 
@@ -30,7 +31,8 @@ def add_content_options(f: F) -> F:
         "--minimal",
         "minimal",
         is_flag=True,
-        help="Generate minimal documentation (enables all --no-* flags).",
+        help="Generate minimal documentation (enables all --no-* flags). "
+        "Auto-enabled for simple roles (smart defaults).",
     )(f)
     f = click.option(
         "--include-complexity",

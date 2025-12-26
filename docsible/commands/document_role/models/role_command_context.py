@@ -4,6 +4,7 @@ Reduces 30+ parameters to structured configuration objects.
 """
 
 from pathlib import Path
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -110,12 +111,18 @@ class AnalysisConfig(BaseModel):
         include_complexity: Include complexity in README
         simplification_report: Show simplification suggestions
         analyze_only: Analyze without generating documentation
+        cached_complexity_report: Cached ComplexityReport from smart defaults (internal)
     """
 
     complexity_report: bool = Field(False, description="Show complexity report")
     include_complexity: bool = Field(False, description="Include in README")
     simplification_report: bool = Field(False, description="Show simplification suggestions")
     analyze_only: bool = Field(False, description="Analyze without generating docs")
+    cached_complexity_report: Any | None = Field(
+        None,
+        description="Cached ComplexityReport from smart defaults (avoid duplicate analysis)",
+        exclude=True,  # Don't include in model serialization
+    )
 
     class ConfigDict:
         """Pydantic configuration."""
