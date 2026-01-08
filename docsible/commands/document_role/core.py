@@ -464,6 +464,8 @@ def doc_the_role(
     validate_markdown: bool,
     auto_fix: bool,
     strict_validation: bool,
+    show_info: bool = False,
+    recommendations_only: bool = False,
 ) -> None:
     """Generate documentation for an Ansible role.
 
@@ -505,6 +507,8 @@ def doc_the_role(
         validate_markdown: Validate generated markdown
         auto_fix: Automatically fix markdown issues
         strict_validation: Fail on validation warnings
+        show_info: Show INFO-level recommendations
+        recommendations_only: Show only recommendations without generating docs
 
     Example:
         docsible role --role ./my-role --graph --hybrid
@@ -551,6 +555,8 @@ def doc_the_role(
             validate_markdown=validate_markdown,
             auto_fix=auto_fix,
             strict_validation=strict_validation,
+            show_info=show_info,
+            recommendations_only=recommendations_only,
         )
 
     # LEGACY IMPLEMENTATION - DEPRECATED

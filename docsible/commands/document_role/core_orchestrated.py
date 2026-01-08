@@ -190,6 +190,8 @@ def doc_the_role_orchestrated(**kwargs: Any) -> None:
             include_complexity=kwargs.get("include_complexity", False),
             simplification_report=kwargs.get("simplification_report", False),
             analyze_only=kwargs.get("analyze_only", False),
+            show_info=kwargs.get("show_info", False),
+            recommendations_only=kwargs.get("recommendations_only", False),
             cached_complexity_report=kwargs.get("_complexity_report"),  # From smart defaults
         ),
         processing=ProcessingConfig(

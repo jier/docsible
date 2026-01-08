@@ -14,6 +14,7 @@ from .options import (
     add_generation_options,
     add_output_options,
     add_path_options,
+    add_recommendation_options,
     add_repository_options,
     add_template_options,
 )
@@ -26,6 +27,7 @@ from .options import (
 @add_template_options
 @add_generation_options
 @add_repository_options
+@add_recommendation_options
 def doc_the_role(
     role_path: str | None,
     collection_path: str | None,
@@ -60,6 +62,8 @@ def doc_the_role(
     repository_url: str | None,
     repo_type: str | None,
     repo_branch: str | None,
+    show_info: bool,
+    recommendations_only: bool,
 ) -> None:
     """Generate documentation for an Ansible role.
 
@@ -100,6 +104,8 @@ def doc_the_role(
         repository_url: Repository URL for links
         repo_type: Repository type (github, gitlab, etc)
         repo_branch: Repository branch name
+        show_info: Show INFO-level recommendations
+        recommendations_only: Show only recommendations without generating docs
 
     Examples:
         # Document a role
@@ -154,6 +160,8 @@ def doc_the_role(
         repository_url=repository_url,
         repo_type=repo_type,
         repo_branch=repo_branch,
+        show_info=show_info,
+        recommendations_only=recommendations_only,
     )
 
 

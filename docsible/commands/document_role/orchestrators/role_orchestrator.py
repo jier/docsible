@@ -9,9 +9,11 @@ from pathlib import Path
 
 import click
 
+from docsible.analyzers.recommendations import generate_all_recommendations
 from docsible.commands.document_role.builders.role_info_builder import RoleInfoBuilder
 from docsible.commands.document_role.formatters.dry_run_formatter import DryRunFormatter
 from docsible.commands.document_role.models import RoleCommandContext
+from docsible.models.recommendation import Recommendation
 
 logger = logging.getLogger(__name__)
 
@@ -66,6 +68,17 @@ class RoleOrchestrator:
 
         # Step 7: Generate dependency matrix
         dependency_data = self._generate_dependencies(role_info, analysis_report)
+
+        # Step 7.5: Generate recommendations (use validated role_path from step 1)
+        recommendations = generate_all_recommendations(role_path)
+
+        if recommendations:
+            self._display_recommendations(recommendations)
+
+        # Step 7.6: Handle recommendations-only mode
+        if self.context.analysis.recommendations_only:
+            # Only show recommendations, don't generate documentation
+            return
 
         # Step 8: Handle dry-run mode
         if self.context.processing.dry_run:
@@ -270,6 +283,18 @@ class RoleOrchestrator:
         )
 
         click.echo(summary)
+
+    def _display_recommendations(self, recommendations: list[Recommendation]) -> None:
+        """Display recommendations to user"""
+        from docsible.formatters.recommendation_formatter import RecommendationFormatter
+
+        formatter = RecommendationFormatter()
+        output = formatter.format_recommendations(
+            recommendations=recommendations,
+            show_info=self.context.analysis.show_info
+        )
+
+        click.echo(output)
 
     def _render_documentation(
         self, role_info: dict, role_path: Path, analysis_report, diagrams: dict, dependency_data: dict
