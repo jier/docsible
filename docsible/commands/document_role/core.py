@@ -7,20 +7,6 @@ from pathlib import Path
 import click
 import yaml
 
-from docsible.commands.document_role.helpers import (
-    apply_minimal_flag,
-    generate_dependency_matrix,
-    generate_integration_and_architecture_diagrams,
-    generate_mermaid_diagrams,
-    handle_analyze_only_mode,
-    load_playbook_content,
-    validate_role_path,
-)
-from docsible.commands.document_role.smart_defaults_integration import (
-    apply_smart_defaults,
-)
-from docsible.exceptions import CollectionNotFoundError
-from docsible.renderers.readme_renderer import ReadmeRenderer
 from docsible.renderers.tag_manager import manage_docsible_file_keys
 from docsible.utils.git import get_repo_info
 from docsible.utils.mermaid import (
@@ -513,298 +499,26 @@ def doc_the_role(
     Example:
         docsible role --role ./my-role --graph --hybrid
     """
-    # Feature flag: Use orchestrator if enabled via environment variable
+
     from docsible.commands.document_role.core_orchestrated import (
         doc_the_role_orchestrated,
-        should_use_orchestrator,
     )
 
-    if should_use_orchestrator():
-        # New orchestrator-based implementation
-        return doc_the_role_orchestrated(
-            role_path=role_path,
-            collection_path=collection_path,
-            playbook=playbook,
-            generate_graph=generate_graph,
-            no_backup=no_backup,
-            no_docsible=no_docsible,
-            dry_run=dry_run,
-            comments=comments,
-            task_line=task_line,
-            md_collection_template=md_collection_template,
-            md_role_template=md_role_template,
-            hybrid=hybrid,
-            no_vars=no_vars,
-            no_tasks=no_tasks,
-            no_diagrams=no_diagrams,
-            simplify_diagrams=simplify_diagrams,
-            no_examples=no_examples,
-            no_metadata=no_metadata,
-            no_handlers=no_handlers,
-            minimal=minimal,
-            complexity_report=complexity_report,
-            include_complexity=include_complexity,
-            simplification_report=simplification_report,
-            show_dependencies=show_dependencies,
-            analyze_only=analyze_only,
-            append=append,
-            output=output,
-            repository_url=repository_url,
-            repo_type=repo_type,
-            repo_branch=repo_branch,
-            validate_markdown=validate_markdown,
-            auto_fix=auto_fix,
-            strict_validation=strict_validation,
-            show_info=show_info,
-            recommendations_only=recommendations_only,
-        )
 
-    # LEGACY IMPLEMENTATION - DEPRECATED
-    # This code path will be removed in v1.0.0
-    # The orchestrator pattern is now the default implementation
-    logger.warning(
-        "Using legacy implementation (DOCSIBLE_USE_ORCHESTRATOR=false). "
-        "This implementation is deprecated and will be removed in v1.0.0. "
-        "Please report any issues with the orchestrator implementation."
-    )
-
-    # Import here to avoid circular imports
-    from docsible.commands.document_collection import document_collection_roles
-
-    # SMART DEFAULTS INTEGRATION
-    # Apply smart defaults based on role complexity (if enabled)
-    enable_smart_defaults = (
-        os.getenv("DOCSIBLE_ENABLE_SMART_DEFAULTS", "true").lower() == "true"
-    )
-
-    if enable_smart_defaults and role_path and not collection_path:
-        try:
-            # Validate role path first to ensure it exists
-            temp_validated_path = validate_role_path(role_path)
-
-            # Detect which flags user explicitly set
-            # For now, assume all flags that differ from Click defaults were user-set
-            # This is a simple heuristic - could be improved with Click context
-            user_overrides = {}
-
-            # If user set any of these flags, respect them
-            # (In future, use Click context to detect commandline vs default)
-            # For now, treat any non-default value as user override
-            if generate_graph is True:  # Click default is False
-                user_overrides["generate_graph"] = generate_graph
-            if minimal is True:  # Click default is False
-                user_overrides["minimal"] = minimal
-            if show_dependencies is True:  # Click default is False
-                user_overrides["show_dependencies"] = show_dependencies
-
-            # Apply smart defaults for non-overridden options
-            smart_graph, smart_minimal, smart_deps, _ = apply_smart_defaults(
-                temp_validated_path, user_overrides
-            )
-            # Note: Fourth return value (complexity_report) is ignored in legacy implementation
-            # The orchestrator implementation reuses it to avoid duplicate analysis
-
-            # Use smart defaults only if user didn't override
-            if "generate_graph" not in user_overrides:
-                generate_graph = smart_graph
-                if smart_graph:
-                    logger.info(
-                        "Smart default: Enabling graph generation for this role"
-                    )
-
-            if "minimal" not in user_overrides:
-                minimal = smart_minimal
-                if smart_minimal:
-                    logger.info("Smart default: Using minimal documentation mode")
-
-            if "show_dependencies" not in user_overrides:
-                show_dependencies = smart_deps
-                if smart_deps:
-                    logger.info("Smart default: Including dependency information")
-
-        except Exception as e:
-            logger.warning(f"Smart defaults failed: {e}")
-            logger.warning("Continuing with manual configuration")
-            # Continue with original values
-
-    # Apply minimal flag settings (still needed for backward compatibility)
-    (
-        no_vars,
-        no_tasks,
-        no_diagrams,
-        no_examples,
-        no_metadata,
-        no_handlers,
-        simplify_diagrams,
-    ) = apply_minimal_flag(
-        minimal,
-        no_vars,
-        no_tasks,
-        no_diagrams,
-        no_examples,
-        no_metadata,
-        no_handlers,
-        simplify_diagrams,
-    )
-
-    # Determine if documenting a collection or role
-    if collection_path:
-        try:
-            document_collection_roles(
-                collection_path=collection_path,
-                playbook=playbook,
-                graph=generate_graph,
-                no_backup=no_backup,
-                no_docsible=no_docsible,
-                comments=comments,
-                task_line=task_line,
-                md_collection_template=md_collection_template,
-                md_role_template=md_role_template,
-                hybrid=hybrid,
-                no_vars=no_vars,
-                no_tasks=no_tasks,
-                no_diagrams=no_diagrams,
-                simplify_diagrams=simplify_diagrams,
-                no_examples=no_examples,
-                no_metadata=no_metadata,
-                no_handlers=no_handlers,
-                minimal=minimal,
-                append=append,
-                output=output,
-                repository_url=repository_url or "",
-                repo_type=repo_type or "github",
-                repo_branch=repo_branch or "main",
-            )
-        except CollectionNotFoundError as e:
-            raise click.ClickException(str(e)) from e
-        return
-
-    # Validate role path
-    validated_role_path = validate_role_path(role_path)
-
-    # Load playbook content if provided
-    playbook_content = load_playbook_content(playbook)
-
-    # Build role information
-    role_info = build_role_info(
-        role_path=validated_role_path,
-        playbook_content=playbook_content,
+    # New orchestrator-based implementation
+    return doc_the_role_orchestrated(
+        role_path=role_path,
+        collection_path=collection_path,
+        playbook=playbook,
         generate_graph=generate_graph,
+        no_backup=no_backup,
         no_docsible=no_docsible,
+        dry_run=dry_run,
         comments=comments,
         task_line=task_line,
-        belongs_to_collection=None,  # Set by collection command if needed
-        repository_url=repository_url,
-        repo_type=repo_type,
-        repo_branch=repo_branch,
-    )
-
-    # Analyze complexity for adaptive visualization
-    from docsible.analyzers import analyze_role_complexity
-
-    analysis_report = analyze_role_complexity(
-        role_info, include_patterns=simplification_report, min_confidence=0.7
-    )
-
-    # Display complexity analysis if requested
-    if complexity_report or analyze_only:
-        from docsible.utils.console import display_complexity_report
-
-        display_complexity_report(analysis_report, role_name=role_info.get("name"))
-
-    # If analyze-only mode, display dependency summary and exit without generating docs
-    if analyze_only:
-        handle_analyze_only_mode(role_info, role_info.get("name", "unknown"))
-        return  # Exit without generating documentation
-
-    # Generate Mermaid diagrams if requested
-    diagrams = generate_mermaid_diagrams(
-        generate_graph=generate_graph,
-        role_info=role_info,
-        playbook_content=playbook_content,
-        analysis_report=analysis_report,
-        minimal=minimal,
-        simplify_diagrams=simplify_diagrams,
-    )
-    mermaid_code_per_file = diagrams["mermaid_code_per_file"]
-    sequence_diagram_high_level = diagrams["sequence_diagram_high_level"]
-    sequence_diagram_detailed = diagrams["sequence_diagram_detailed"]
-    state_diagram = diagrams["state_diagram"]
-
-    # Generate integration boundary and architecture diagrams
-    (
-        integration_boundary_diagram,
-        architecture_diagram,
-    ) = generate_integration_and_architecture_diagrams(
-        generate_graph=generate_graph,
-        role_info=role_info,
-        analysis_report=analysis_report,
-    )
-
-    # Generate dependency matrix for complex roles
-    (
-        dependency_matrix,
-        dependency_summary,
-        show_dependency_matrix,
-    ) = generate_dependency_matrix(
-        show_dependencies=show_dependencies,
-        role_info=role_info,
-        analysis_report=analysis_report,
-    )
-
-    # Determine template type
-    template_type = "hybrid" if hybrid else "standard_modular"
-
-    if hybrid and not include_complexity:
-        include_complexity = True
-
-    # Handle dry-run mode
-    if dry_run:
-        _display_dry_run_summary(
-            role_info=role_info,
-            role_path=validated_role_path,
-            output=output,
-            analysis_report=analysis_report,
-            mermaid_code_per_file=mermaid_code_per_file,
-            sequence_diagram_high_level=sequence_diagram_high_level,
-            sequence_diagram_detailed=sequence_diagram_detailed,
-            state_diagram=state_diagram,
-            integration_boundary_diagram=integration_boundary_diagram,
-            architecture_diagram=architecture_diagram,
-            dependency_matrix=dependency_matrix,
-            no_backup=no_backup,
-            no_docsible=no_docsible,
-            generate_graph=generate_graph,
-            hybrid=hybrid,
-            minimal=minimal,
-        )
-        return
-
-    # Render README
-    renderer = ReadmeRenderer(
-        backup=not no_backup,
-        validate=validate_markdown,
-        auto_fix=auto_fix,
-        strict_validation=strict_validation,
-    )
-    readme_path = validated_role_path / output
-
-    renderer.render_role(
-        role_info=role_info,
-        output_path=readme_path,
-        template_type=template_type,
-        custom_template_path=md_role_template,
-        mermaid_code_per_file=mermaid_code_per_file,
-        sequence_diagram_high_level=sequence_diagram_high_level,
-        sequence_diagram_detailed=sequence_diagram_detailed,
-        state_diagram=state_diagram,
-        integration_boundary_diagram=integration_boundary_diagram,
-        architecture_diagram=architecture_diagram,
-        complexity_report=analysis_report,
-        include_complexity=include_complexity,
-        dependency_matrix=dependency_matrix,
-        dependency_summary=dependency_summary,
-        show_dependency_matrix=show_dependency_matrix,
+        md_collection_template=md_collection_template,
+        md_role_template=md_role_template,
+        hybrid=hybrid,
         no_vars=no_vars,
         no_tasks=no_tasks,
         no_diagrams=no_diagrams,
@@ -812,7 +526,21 @@ def doc_the_role(
         no_examples=no_examples,
         no_metadata=no_metadata,
         no_handlers=no_handlers,
+        minimal=minimal,
+        complexity_report=complexity_report,
+        include_complexity=include_complexity,
+        simplification_report=simplification_report,
+        show_dependencies=show_dependencies,
+        analyze_only=analyze_only,
         append=append,
+        output=output,
+        repository_url=repository_url,
+        repo_type=repo_type,
+        repo_branch=repo_branch,
+        validate_markdown=validate_markdown,
+        auto_fix=auto_fix,
+        strict_validation=strict_validation,
+        show_info=show_info,
+        recommendations_only=recommendations_only,
     )
 
-    click.echo(f"✓ Role documentation generated: {readme_path}")

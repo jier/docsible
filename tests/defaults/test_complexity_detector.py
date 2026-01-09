@@ -3,13 +3,6 @@ from pathlib import Path
 import pytest
 
 from docsible.defaults.detectors.complexity import Category, ComplexityDetector
-from tests.comparison.conftest import (
-    complex_role,
-    complex_role_fixture,
-    empty_role,
-    medium_role_fixture,
-    simple_role,
-)
 
 
 class TestComplexityDetector:
