@@ -72,6 +72,20 @@ class RoleOrchestrator:
         # Step 7.5: Generate recommendations (use validated role_path from step 1)
         recommendations = generate_all_recommendations(role_path)
 
+        if self.context.analysis.apply_suppressions:
+            from docsible.suppression.engine import apply_suppressions
+            recommendations, suppressed = apply_suppressions(
+                recommendations,
+                base_path=role_path,
+            )
+            if suppressed:
+                click.echo(
+                    f"  ({len(suppressed)} recommendation(s) suppressed"
+                    f" — see 'docsible suppress list')"
+                )
+        else:
+            suppressed = []
+
         if recommendations:
             self._display_recommendations(recommendations)
 
