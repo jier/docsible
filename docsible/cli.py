@@ -11,6 +11,7 @@ import click
 
 from docsible.commands.check import check
 from docsible.commands.document_role import doc_the_role
+from docsible.commands.guide import guide_command
 from docsible.commands.init_config import init_config
 
 # Setup logging
@@ -85,6 +86,7 @@ def cli(verbose: bool) -> None:
 cli.add_command(doc_the_role, name="role")
 cli.add_command(init_config, name="init")
 cli.add_command(check)
+cli.add_command(guide_command, name="guide")
 
 
 def main() -> None:

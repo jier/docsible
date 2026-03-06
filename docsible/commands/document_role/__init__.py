@@ -3,7 +3,7 @@
 import click
 
 # Import grouped help formatter
-from docsible.utils.cli_helpers import GroupedHelpCommand
+from docsible.utils.cli_helpers import BriefHelpCommand
 
 from .core import build_role_info, extract_playbook_role_dependencies
 
@@ -21,7 +21,7 @@ from .options import (
 )
 
 
-@click.command(name="role", cls=GroupedHelpCommand)
+@click.command(name="role", cls=BriefHelpCommand)
 @add_path_options
 @add_output_options
 @add_content_options

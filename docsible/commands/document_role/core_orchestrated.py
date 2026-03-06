@@ -256,7 +256,9 @@ def doc_the_role_orchestrated(**kwargs: Any) -> None:
     except CollectionNotFoundError as e:
         raise click.ClickException(str(e)) from e
     except Exception as e:
-        logger.error(f"Documentation generation failed: {e}")
+        from docsible.help.formatters.contextual_help import ContextualHelpProvider
+        help_msg = ContextualHelpProvider.format_error_with_help(e)
+        logger.error(help_msg)
         raise
 
 
