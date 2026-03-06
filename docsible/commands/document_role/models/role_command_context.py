@@ -122,6 +122,7 @@ class AnalysisConfig(BaseModel):
     analyze_only: bool = Field(False, description="Analyze without generating docs")
     show_info: bool = Field(False, description="Show INFO-level recommendations")
     recommendations_only: bool = Field(False, description="Show only recommendations without generating docs")
+    positive_framing: bool = Field(True, description="Use positive output framing")
     cached_complexity_report: Any | None = Field(
         None,
         description="Cached ComplexityReport from smart defaults (avoid duplicate analysis)",

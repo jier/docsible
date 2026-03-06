@@ -359,4 +359,15 @@ class RoleOrchestrator:
             append=self.context.processing.append,
         )
 
-        click.echo(f"✓ Role documentation generated: {readme_path}")
+        # Display positive or neutral success message
+        if self.context.analysis.positive_framing:
+            from docsible.formatters.positive_formatter import PositiveFormatter
+            formatter = PositiveFormatter()
+            success_msg = formatter.format_success(
+                output_file=readme_path,
+                complexity=analysis_report,
+                recommendations=[],  # recommendations already shown separately above
+            )
+            click.echo("\n" + success_msg)
+        else:
+            click.echo(f"✓ Role documentation generated: {readme_path}")

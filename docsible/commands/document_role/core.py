@@ -452,6 +452,7 @@ def doc_the_role(
     strict_validation: bool,
     show_info: bool = False,
     recommendations_only: bool = False,
+    positive_framing: bool = True,
 ) -> None:
     """Generate documentation for an Ansible role.
 
@@ -542,5 +543,6 @@ def doc_the_role(
         strict_validation=strict_validation,
         show_info=show_info,
         recommendations_only=recommendations_only,
+        positive_framing=positive_framing,
     )
 

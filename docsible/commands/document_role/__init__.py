@@ -11,6 +11,7 @@ from .core import build_role_info, extract_playbook_role_dependencies
 from .core import doc_the_role as core_doc_the_role
 from .options import (
     add_content_options,
+    add_framing_options,
     add_generation_options,
     add_output_options,
     add_path_options,
@@ -28,6 +29,7 @@ from .options import (
 @add_generation_options
 @add_repository_options
 @add_recommendation_options
+@add_framing_options
 def doc_the_role(
     role_path: str | None,
     collection_path: str | None,
@@ -64,6 +66,7 @@ def doc_the_role(
     repo_branch: str | None,
     show_info: bool,
     recommendations_only: bool,
+    positive_framing: bool,
 ) -> None:
     """Generate documentation for an Ansible role.
 
@@ -162,6 +165,7 @@ def doc_the_role(
         repo_branch=repo_branch,
         show_info=show_info,
         recommendations_only=recommendations_only,
+        positive_framing=positive_framing,
     )
 
 

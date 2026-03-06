@@ -1,0 +1,5 @@
+✅ Documentation Generated Successfully!
+
+📄 Output: {output_file}
+⏱️  Generated in {elapsed_time:.2f}s
+📏 Size: {file_size}
