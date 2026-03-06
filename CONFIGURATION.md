@@ -10,6 +10,8 @@ This guide explains how to configure Docsible to work with various Ansible proje
 - [Project Types](#project-types)
 - [Configuration Reference](#configuration-reference)
 - [Examples](#examples)
+- [Output Control](#output-control)
+- [Getting Help](#getting-help)
 - [Migration Guide](#migration-guide)
 
 ## Overview
@@ -1460,6 +1462,7 @@ docsible [GLOBAL_OPTIONS] COMMAND [COMMAND_OPTIONS]
 Available commands:
 - `role` - Generate documentation for Ansible roles or collections
 - `init` - Create a `.docsible.yml` configuration file
+- `guide` - Show an interactive guide on a given topic
 
 ### Main Command: `docsible role`
 
@@ -1502,6 +1505,8 @@ $ docsible role --help
   --validate/--no-validate  Validate markdown formatting before writing.
   --auto-fix             Automatically fix common markdown formatting issues.
   --strict-validation    Fail generation if markdown validation errors are found.
+  --positive/--neutral   Use positive framing in output (default: --positive).
+  --show-info            Also show INFO-level recommendations (default: CRITICAL/WARNING only).
 
 📄 Content Sections:
   --no-vars             Hide variable documentation
@@ -1559,6 +1564,8 @@ $ docsible role --help
 --validate/--no-validate: Enable/disable markdown formatting validation (default: enabled)
 --auto-fix: Automatically fix common markdown formatting issues (whitespace, tables)
 --strict-validation: Fail generation if markdown validation errors are found (default: warn only)
+--positive/--neutral: Show positive framing after generation (default: --positive). See Output Control section.
+--show-info: Show INFO-level recommendations in addition to CRITICAL and WARNING (default: off)
 
 📄 Content Sections:
 --no-vars: Skip variable documentation (defaults, vars, argument_specs)
@@ -1595,7 +1602,8 @@ $ docsible role --help
 ⚙️ Global Options:
 --verbose, -v: Enable debug logging
 --version: Show version
---help: Show help message
+--help: Show brief help (essential options only)
+--help-full: Show full help with all 30+ options grouped by category
 ```
 
 ### Configuration Command: `docsible init`
@@ -1621,6 +1629,26 @@ Init Command Options:
 --help: Show help message
 ```
 
+### Guide Command: `docsible guide`
+
+Show interactive, topic-specific guides directly in the terminal:
+
+```bash
+docsible guide getting-started    # 5-minute quickstart
+docsible guide troubleshooting    # Common issues and fixes
+docsible guide smart-defaults     # How auto-detection works
+```
+
+Output is rendered with `rich` markdown formatting when available, and falls back to plain text otherwise.
+
+Available topics:
+
+| Topic | Description |
+|-------|-------------|
+| `getting-started` | 5-minute quickstart for new users |
+| `troubleshooting` | Common issues and how to fix them |
+| `smart-defaults` | How auto-detection and smart defaults work |
+
 ### Enable Verbose Logging
 
 **Problem**: Need detailed information about what Docsible is doing
@@ -1639,6 +1667,95 @@ DEBUG - Loading template: role/standard.jinja2
 INFO - Loaded configuration from .docsible.yml
 INFO - Using hybrid template (manual + auto-generated sections)
 ```
+## Output Control
+
+These flags control how Docsible presents results after generating documentation.
+
+### `--positive` / `--neutral`
+
+By default (`--positive`), Docsible displays an encouraging summary after a successful run:
+
+```bash
+docsible role --role .              # positive framing (default)
+docsible role --role . --positive   # same as above, explicit
+docsible role --role . --neutral    # plain output, no framing
+```
+
+**Positive framing output includes:**
+- A success banner confirming documentation was generated
+- Role analysis: complexity level, structure quality, readiness assessment
+- Enhancement opportunities with estimated time-to-implement
+- Contextual next steps based on the role's characteristics
+
+**Example (--positive)**:
+```
+Documentation Generated Successfully!
+
+Role Analysis:
+  Complexity: MEDIUM (18 tasks)
+  Structure: Well-organized (3 task files)
+  Readiness: Production-ready
+
+Enhancement Opportunities:
+  Add complexity report         ~2 min
+  Enable pattern analysis       ~2 min
+
+Next Steps:
+  Review generated README.md
+  Run: docsible role --role . --complexity-report
+```
+
+Use `--neutral` in CI/CD pipelines or scripted workflows where machine-readable output is preferable.
+
+### `--show-info`
+
+By default, only CRITICAL and WARNING severity recommendations are shown. Pass `--show-info` to also see INFO-level suggestions:
+
+```bash
+docsible role --role .              # shows CRITICAL + WARNING only
+docsible role --role . --show-info  # also shows INFO suggestions
+```
+
+INFO suggestions are lower-priority improvements such as optional best-practice hints. They are hidden by default to reduce noise.
+
+---
+
+## Getting Help
+
+### Brief vs. Full Help
+
+The `--help` flag shows a concise view of the most essential options. Use `--help-full` to see every available option, organized into groups:
+
+```bash
+docsible role --help        # essential options only
+docsible role --help-full   # all 30+ options grouped by category
+```
+
+`--help-full` renders the same grouped categories shown in the [Grouped Help Output](#grouped-help-output) section — useful when exploring less common flags like `--simplify-diagrams`, `--strict-validation`, or `--show-dependencies`.
+
+### Interactive Guides
+
+The `docsible guide` command provides walkthrough-style help for specific topics:
+
+```bash
+docsible guide getting-started    # 5-minute quickstart
+docsible guide troubleshooting    # Common issues and fixes
+docsible guide smart-defaults     # Understand auto-detection
+```
+
+Guides render as formatted markdown in the terminal (requires `rich`; falls back to plain text automatically).
+
+**When to use guides vs. `--help`:**
+
+| Situation | Recommended |
+|-----------|-------------|
+| Forgot a flag name | `docsible role --help` or `--help-full` |
+| New to docsible | `docsible guide getting-started` |
+| Something isn't working | `docsible guide troubleshooting` |
+| Confused by auto-detection | `docsible guide smart-defaults` |
+
+---
+
 ## Migration Guide
 
 ### Migrating from Pre-0.8.0 Versions
