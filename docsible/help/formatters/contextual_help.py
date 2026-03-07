@@ -1,5 +1,4 @@
 """Contextual help provider for error-specific guidance."""
-from typing import Optional
 
 
 class ContextualHelpProvider:
@@ -49,7 +48,7 @@ Learn more: docsible guide troubleshooting
     }
 
     @classmethod
-    def get_help(cls, error_type: str) -> Optional[str]:
+    def get_help(cls, error_type: str) -> str | None:
         """Get contextual help text for an error type.
 
         Args:

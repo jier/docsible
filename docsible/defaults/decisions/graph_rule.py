@@ -2,8 +2,8 @@
 
 import logging
 
+from docsible.constants import MAX_TASK_FILES_LOWER_BOUND, MAX_TASKS_IN_FILES
 from docsible.defaults.decisions.base import Decision, DecisionContext, DecisionRule
-from docsible.constants import MAX_TASKS_IN_FILES, MAX_TASK_FILES_LOWER_BOUND
 
 logger = logging.getLogger(__name__)
 

@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from docsible.models.recommendation import Recommendation
-from docsible.models.suppression import SuppressionRule, SuppressionStore
+from docsible.models.suppression import SuppressionRule
 from docsible.suppression.store import load_store, resolve_suppress_path, save_store
 
 logger = logging.getLogger(__name__)

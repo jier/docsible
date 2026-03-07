@@ -31,7 +31,7 @@ def has_type_hints(node):
 def check_file(filepath):
     """Check a single file for type hints."""
     try:
-        with open(filepath, 'r') as f:
+        with open(filepath) as f:
             tree = ast.parse(f.read(), filepath)
         
         missing = []
@@ -45,7 +45,7 @@ def check_file(filepath):
                     missing.append((node.name, node.lineno))
         
         return missing
-    except Exception as e:
+    except Exception:
         return None 
 
 if __name__ == '__main__':

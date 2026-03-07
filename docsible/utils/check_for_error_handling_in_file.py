@@ -32,7 +32,7 @@ def check_file(filepath):
                         issues.append((node.lineno, exc_type, 'no_logging'))
         
         return issues
-    except Exception as e:
+    except Exception:
         return None
 
 if __name__ == '__main__':

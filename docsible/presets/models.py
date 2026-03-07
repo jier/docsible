@@ -1,5 +1,6 @@
 """Pydantic models for the Preset System."""
 from typing import Any, Literal
+
 from pydantic import BaseModel, Field
 
 PresetName = Literal["personal", "team", "enterprise", "consultant"]

@@ -1,5 +1,4 @@
 """Interactive setup wizard — docsible init."""
-import sys
 from pathlib import Path
 from typing import Any
 

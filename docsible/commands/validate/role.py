@@ -1,10 +1,11 @@
 """docsible validate role — validate without writing files."""
 import click
+
 from docsible.commands.document_role.core import doc_the_role as core_doc_the_role
 from docsible.commands.document_role.options import (
-    add_path_options,
-    add_output_options,
     add_framing_options,
+    add_output_options,
+    add_path_options,
 )
 from docsible.presets.registry import PresetRegistry
 from docsible.presets.resolver import resolve_settings

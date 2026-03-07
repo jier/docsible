@@ -1,6 +1,8 @@
 """Document command group — generate documentation."""
 import click
+
 from .role import document_role_cmd
+
 
 @click.group(name="document")
 def document_group() -> None:

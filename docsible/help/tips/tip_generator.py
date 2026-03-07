@@ -1,6 +1,5 @@
 """Contextual tip generator for docsible."""
 import random
-from typing import Optional
 
 
 class TipGenerator:
@@ -35,7 +34,7 @@ class TipGenerator:
     }
 
     @classmethod
-    def get_tip(cls, context: str = "general") -> Optional[str]:
+    def get_tip(cls, context: str = "general") -> str | None:
         """Get a random tip for the given context.
 
         Args:

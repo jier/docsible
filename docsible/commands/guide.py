@@ -1,7 +1,7 @@
 """Guide command for interactive help and tutorials."""
-import click
 from pathlib import Path
 
+import click
 
 GUIDES_DIR = Path(__file__).parent.parent / "help" / "guides"
 

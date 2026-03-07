@@ -1,5 +1,4 @@
 """Brief help formatter for docsible CLI commands."""
-import sys
 import click
 
 

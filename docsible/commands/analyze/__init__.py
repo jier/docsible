@@ -1,6 +1,8 @@
 """Analyze command group."""
 import click
+
 from .role import analyze_role_cmd
+
 
 @click.group(name="analyze")
 def analyze_group() -> None:
