@@ -166,7 +166,7 @@ def document_collection_roles(
                 # Generate role README
                 renderer = ReadmeRenderer(backup=not no_backup)
                 role_readme_path = role_path / output
-                template_type = "hybrid" if hybrid else "standard"
+                template_type = "hybrid" if hybrid else "standard_modular"
 
                 renderer.render_role(
                     role_info=role_info,
