@@ -11,8 +11,8 @@ import click
 
 from docsible.analyzers.recommendations import generate_all_recommendations
 from docsible.commands.document_role.builders.role_info_builder import RoleInfoBuilder
-from docsible.commands.document_role.formatters.dry_run_formatter import DryRunFormatter
 from docsible.commands.document_role.models import RoleCommandContext
+from docsible.formatters.text.dry_run import DryRunFormatter
 from docsible.models.recommendation import Recommendation
 
 logger = logging.getLogger(__name__)
@@ -300,7 +300,7 @@ class RoleOrchestrator:
 
     def _display_recommendations(self, recommendations: list[Recommendation]) -> None:
         """Display recommendations to user"""
-        from docsible.formatters.recommendation_formatter import RecommendationFormatter
+        from docsible.formatters.text.recommendation import RecommendationFormatter
 
         formatter = RecommendationFormatter()
         output = formatter.format_recommendations(
@@ -375,7 +375,7 @@ class RoleOrchestrator:
 
         # Display positive or neutral success message
         if self.context.analysis.positive_framing:
-            from docsible.formatters.positive_formatter import PositiveFormatter
+            from docsible.formatters.text.positive import PositiveFormatter
             formatter = PositiveFormatter()
             success_msg = formatter.format_success(
                 output_file=readme_path,

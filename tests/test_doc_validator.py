@@ -9,7 +9,7 @@ from docsible.analyzers.complexity_analyzer import (
     IntegrationPoint,
     IntegrationType,
 )
-from docsible.validators.doc_validator import (
+from docsible.validation.doc_validator import (
     ClarityValidator,
     DocumentationValidator,
     MaintenanceValidator,
@@ -17,13 +17,13 @@ from docsible.validators.doc_validator import (
     ValueValidator,
     validate_documentation,
 )
-from docsible.validators.models import (
+from docsible.validation.models import (
     ValidationIssue,
     ValidationResult,
     ValidationSeverity,
     ValidationType,
 )
-from docsible.validators.scoring import calculate_score
+from docsible.validation.scoring import calculate_score
 
 
 class TestClarityValidation:

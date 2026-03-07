@@ -41,7 +41,7 @@ class TestBriefHelpCommand:
             from docsible.utils.cli_helpers import BriefHelpCommand
         except ImportError:
             pytest.skip("BriefHelpCommand not yet implemented in cli_helpers.py")
-        from docsible.commands.document_role import doc_the_role
+        from docsible.commands.legacy.role import doc_the_role
         assert isinstance(doc_the_role, BriefHelpCommand), (
             f"doc_the_role is {type(doc_the_role).__name__}, expected BriefHelpCommand. "
             "The role command must be updated to use cls=BriefHelpCommand."
@@ -108,7 +108,7 @@ class TestGroupedHelpCommandExists:
         assert hasattr(GroupedHelpCommand, "format_options")
 
     def test_role_command_uses_grouped_help_command(self):
-        from docsible.commands.document_role import doc_the_role
+        from docsible.commands.legacy.role import doc_the_role
         from docsible.utils.cli_helpers import GroupedHelpCommand
         assert isinstance(doc_the_role, GroupedHelpCommand)
 

@@ -1,7 +1,7 @@
 """Tests for network topology diagram generation."""
 
 from docsible.analyzers.complexity_analyzer import IntegrationPoint, IntegrationType
-from docsible.utils.network_topology import (
+from docsible.diagrams.types.network_topology import (
     format_integration_details,
     generate_network_topology,
     should_generate_network_topology,

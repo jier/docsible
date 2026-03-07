@@ -1,11 +1,11 @@
 """Tests for scoring calculations."""
 
-from docsible.validators.models import (
+from docsible.validation.models import (
     ValidationIssue,
     ValidationSeverity,
     ValidationType,
 )
-from docsible.validators.scoring import calculate_score
+from docsible.validation.scoring import calculate_score
 
 
 class TestScoreCalculation:

@@ -6,7 +6,7 @@ Generates detailed diagrams showing role → tasks → handlers interaction.
 import logging
 from typing import Any
 
-from docsible.utils.mermaid import extract_task_name_from_module
+from docsible.diagrams.mermaid import extract_task_name_from_module
 
 from .sanitization import sanitize_note_text, sanitize_participant_name
 

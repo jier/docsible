@@ -2,7 +2,7 @@
 
 from typing import Any
 
-from docsible.validators.maintenance import MaintenanceValidator
+from docsible.validation.maintenance import MaintenanceValidator
 
 
 class TestMaintenanceValidation:

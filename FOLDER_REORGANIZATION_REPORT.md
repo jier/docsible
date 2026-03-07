@@ -190,7 +190,9 @@ The legacy `docsible role --role PATH` command still exists with deprecation war
 
 ---
 
-### J — Models Defined in 6 Separate Locations (LOW)
+### J — Models Defined in 6 Separate Locations (LOW PRIORITY / RESOLVED)
+
+**Status: Decision: Intentional — keep models colocated with their feature domain**
 
 Data models are spread across:
 - `models/` — core models
@@ -200,7 +202,9 @@ Data models are spread across:
 - `renderers/models/` — render context
 - `validators/models.py` — validation models
 
-**Assessment:** Each set is domain-specific enough to stay colocated with its feature. Low priority — mainly needs documentation of the pattern rather than a structural change.
+**Decision:** Each model lives next to the code that owns it (`presets/models.py` owned by presets, `renderers/models/` owned by renderers, etc.). This reduces coupling and makes each subsystem self-contained. Colocating models with their feature domain is the intentional architectural pattern — not a structural problem to be fixed.
+
+**Note:** No structural change needed. The pattern should be documented in CONTRIBUTING.md or a future ARCHITECTURE.md.
 
 ---
 
@@ -249,3 +253,20 @@ After each phase: run full test suite (`python -m pytest -q`) and mypy to verify
 ---
 
 **Total estimated effort:** 80–120 developer-hours over 3–4 weeks for full reorganization.
+
+---
+
+## Implementation Status
+
+| Item | Description | Status |
+|------|-------------|--------|
+| B | Consolidate diagram generation → `diagrams/` | ✅ Complete |
+| D | Clean up `utils/` → `utils/template/`, `utils/validators/` | ✅ Complete |
+| E | Centralize formatters → `formatters/text/`, `formatters/help/` | ✅ Complete |
+| F | Rename `validators/` → `validation/` | ✅ Complete |
+| G | Create `helpers/` alongside `help/` (guides, tips, formatters migrated) | ✅ Complete |
+| H | Move deprecated command to `commands/legacy/` | ✅ Complete |
+| I | Merge `phase_detector/` into `complexity_analyzer/phase.py` | ✅ Complete |
+| J | Document model colocation pattern | ✅ Decision documented |
+
+**Final validation (2026-03-07):** 990 tests passed · 0 mypy errors · ruff clean

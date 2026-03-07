@@ -7,7 +7,7 @@ from docsible.analyzers.complexity_analyzer import (
     IntegrationPoint,
     IntegrationType,
 )
-from docsible.template_loader import TemplateLoader
+from docsible.utils.template.loader import TemplateLoader
 
 
 class TestAdaptiveDocumentation:

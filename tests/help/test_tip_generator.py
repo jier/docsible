@@ -1,6 +1,6 @@
 """Tests for TipGenerator."""
 import pytest
-from docsible.help.tips.tip_generator import TipGenerator
+from docsible.helpers.tips.tip_generator import TipGenerator
 
 
 class TestTipGeneratorConstants:

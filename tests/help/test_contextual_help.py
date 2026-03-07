@@ -1,6 +1,6 @@
 """Tests for ContextualHelpProvider."""
 import pytest
-from docsible.help.formatters.contextual_help import ContextualHelpProvider
+from docsible.formatters.help.contextual import ContextualHelpProvider
 
 
 class TestContextualHelpProviderGetHelp:

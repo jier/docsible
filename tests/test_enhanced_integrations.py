@@ -5,8 +5,8 @@ from docsible.analyzers.complexity_analyzer import (
     IntegrationType,
     detect_integrations,
 )
-from docsible.utils.integration_diagram import generate_integration_boundary
-from docsible.utils.network_topology import (
+from docsible.diagrams.types.integration import generate_integration_boundary
+from docsible.diagrams.types.network_topology import (
     format_integration_details,
     generate_network_topology,
     should_generate_network_topology,

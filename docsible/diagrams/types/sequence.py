@@ -6,8 +6,8 @@ showing playbook-to-role-to-task execution flow.
 
 import logging
 
-from docsible.diagram_builders.base import DiagramBuilder
-from docsible.diagram_builders.formatters import break_text, escape_pipes
+from docsible.diagrams.base import DiagramBuilder
+from docsible.diagrams.types.formatters import break_text, escape_pipes
 
 logger = logging.getLogger(__name__)
 

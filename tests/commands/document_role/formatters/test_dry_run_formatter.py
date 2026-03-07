@@ -6,7 +6,7 @@ from unittest.mock import Mock
 
 import pytest
 
-from docsible.commands.document_role.formatters.dry_run_formatter import DryRunFormatter
+from docsible.formatters.text.dry_run import DryRunFormatter
 
 
 class TestDryRunFormatter:

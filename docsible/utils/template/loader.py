@@ -5,8 +5,8 @@ from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader, Template
 
-from docsible.utils.mermaid.pagination import get_diagram_complexity_warning
-from docsible.utils.template_filters import TEMPLATE_FILTERS
+from docsible.diagrams.mermaid.pagination import get_diagram_complexity_warning
+from docsible.utils.template.filters import TEMPLATE_FILTERS
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +34,7 @@ class TemplateLoader:
             >>> template = loader.get_template('role/hybrid.jinja2')
         """
         if template_dir is None:
-            template_dir = Path(__file__).parent / "templates"
+            template_dir = Path(__file__).parent.parent.parent / "templates"
 
         self.template_dir = template_dir
         # Define search paths in priority order

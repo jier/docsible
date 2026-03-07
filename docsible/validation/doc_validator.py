@@ -15,28 +15,28 @@ logger = logging.getLogger(__name__)
 class DocumentationValidator:
     """
     Orchestrates all documentation validators.
-    
+
     Follows the Composite pattern - delegates to specialized validators.
     - Clarity: Readability, structure, formatting
     - Maintenance: Completeness, freshness, coverage
     - Truth: Accuracy against actual role structure
     - Value: Usefulness, actionable information
     """
-    
+
     def __init__(
-        self, 
+        self,
         min_score: float = 70.0,
         validators: list[BaseValidator] | None = None
     ):
         """
         Initialize validator with pluggable validators.
-        
+
         Args:
             min_score: Minimum acceptable quality score (0-100)
             validators: Custom validators to use (defaults to all built-in)
         """
         self.min_score = min_score
-        
+
         # Dependency Injection - can inject custom validators!
         if validators is None:
             # Default validators
@@ -48,7 +48,7 @@ class DocumentationValidator:
             ]
         else:
             self.validators = validators
-    
+
     def validate(
         self,
         documentation: str,
@@ -57,31 +57,31 @@ class DocumentationValidator:
     ) -> ValidationResult:
         """
         Validate documentation against all quality criteria.
-        
+
         Orchestrates all registered validators.
         """
         all_issues: list[ValidationIssue] = []
         all_metrics: dict[str, Any] = {}
-        
+
         # Run all validators (Open/Closed Principle!)
         for validator in self.validators:
             issues, metrics = validator.validate(
                 documentation, role_info, complexity_report
             )
             all_issues.extend(issues)
-            
+
             # Store metrics by validation type
             validator_type = validator.type.value
             all_metrics[validator_type] = metrics
-        
+
         # Calculate score using extracted function
         score = calculate_score(all_issues)
-        
+
         # Check if passed
         passed = score >= self.min_score and not any(
             issue.severity == ValidationSeverity.ERROR for issue in all_issues
         )
-        
+
         return ValidationResult(
             passed=passed,
             score=score,

@@ -4,7 +4,7 @@ import os
 
 from jinja2 import Environment, FileSystemLoader, Template
 
-from docsible.template_loader import TemplateLoader
+from docsible.utils.template.loader import TemplateLoader
 
 logger = logging.getLogger(__name__)
 

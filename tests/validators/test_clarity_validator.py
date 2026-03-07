@@ -1,7 +1,7 @@
 """Tests for ClarityValidator (readability, structure, formatting)."""
 
-from docsible.validators.clarity import ClarityValidator
-from docsible.validators.models import ValidationSeverity
+from docsible.validation.clarity import ClarityValidator
+from docsible.validation.models import ValidationSeverity
 
 
 class TestClarityValidation:

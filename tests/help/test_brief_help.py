@@ -2,7 +2,7 @@
 import pytest
 import click
 from click.testing import CliRunner
-from docsible.help.formatters.brief_help import BriefHelpFormatter
+from docsible.formatters.help.brief import BriefHelpFormatter
 
 
 class TestBriefHelpFormatterConstants:

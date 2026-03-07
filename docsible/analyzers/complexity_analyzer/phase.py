@@ -1,10 +1,264 @@
-"""Phase detector implementation."""
+"""Phase detection for Ansible task files.
 
+This module consolidates all phase detection logic previously located in
+``docsible.analyzers.phase_detector``.  It is now the canonical location
+for phase-related models, patterns, and the detector implementation.
+"""
+
+import logging
 from collections import defaultdict
+from enum import Enum
 from pathlib import Path
 
-from .models import Phase, PhaseDetectionResult, PhaseMatch, PhasePattern
-from .patterns import PatternLoader
+from pydantic import BaseModel, Field
+
+logger = logging.getLogger(__name__)
+
+
+# ---------------------------------------------------------------------------
+# Models
+# ---------------------------------------------------------------------------
+
+
+class Phase(Enum):
+    """Common execution phases in Ansible workflows."""
+
+    SETUP = "setup"
+    INSTALL = "install"
+    CONFIGURE = "configure"
+    DEPLOY = "deploy"
+    ACTIVATE = "activate"
+    VERIFY = "verify"
+    CLEANUP = "cleanup"
+    UNKNOWN = "unknown"
+
+
+class PhaseMatch(BaseModel):
+    """Represents a detected phase in a task sequence."""
+
+    phase: Phase
+    start_line: int = Field(ge=0, description="Starting line number in source file")
+    end_line: int = Field(ge=0, description="Ending line number in source file")
+    task_count: int = Field(gt=0, description="Number of tasks in this phase")
+    task_indices: list[int] = Field(description="Task indices belonging to this phase")
+    confidence: float = Field(ge=0.0, le=1.0, description="Confidence score 0.0-1.0")
+
+
+class PhaseDetectionResult(BaseModel):
+    """Result of phase detection analysis."""
+
+    detected_phases: list[PhaseMatch] = Field(default_factory=list)
+    is_coherent_pipeline: bool = Field(
+        description="Whether tasks form a coherent pipeline"
+    )
+    confidence: float = Field(
+        ge=0.0, le=1.0, description="Overall pipeline confidence"
+    )
+    recommendation: str = Field(description="Human-readable recommendation")
+    reasoning: str = Field(description="Explanation of the analysis")
+
+
+class PhasePattern(BaseModel):
+    """Pattern for detecting a specific phase.
+
+    Converted from TypedDict to BaseModel for consistency with other models
+    and to get validation, serialization, and better IDE support.
+    """
+
+    modules: set[str] = Field(
+        default_factory=set, description="Ansible modules associated with this phase"
+    )
+    name_keywords: list[str] = Field(
+        default_factory=list, description="Keywords in task names indicating this phase"
+    )
+    priority: int = Field(
+        default=99, description="Priority for phase detection (lower = higher priority)"
+    )
+
+
+# ---------------------------------------------------------------------------
+# Default patterns
+# ---------------------------------------------------------------------------
+
+DEFAULT_PATTERNS: dict[Phase, PhasePattern] = {
+    Phase.SETUP: PhasePattern(
+        modules={
+            "assert",
+            "debug",
+            "set_fact",
+            "include_vars",
+            "stat",
+            "fail",
+            "when",
+        },
+        name_keywords=[
+            "prerequisite",
+            "pre-requisite",
+            "check",
+            "validate",
+            "ensure",
+            "verify prerequisite",
+        ],
+        priority=1,  # Typically first
+    ),
+    Phase.INSTALL: PhasePattern(
+        modules={
+            "apt",
+            "yum",
+            "dnf",
+            "pip",
+            "npm",
+            "package",
+            "gem",
+            "docker_image",
+            "get_url",
+            "git",
+            "unarchive",
+            "maven_artifact",
+        },
+        name_keywords=[
+            "install",
+            "download",
+            "fetch",
+            "pull",
+            "clone",
+            "acquire",
+        ],
+        priority=2,
+    ),
+    Phase.CONFIGURE: PhasePattern(
+        modules={
+            "template",
+            "copy",
+            "lineinfile",
+            "blockinfile",
+            "file",
+            "replace",
+            "ini_file",
+            "xml",
+        },
+        name_keywords=[
+            "configure",
+            "config",
+            "setup",
+            "set up",
+            "create config",
+            "apply config",
+        ],
+        priority=3,
+    ),
+    Phase.DEPLOY: PhasePattern(
+        modules={"command", "shell", "docker_container", "kubernetes", "k8s"},
+        name_keywords=["deploy", "run", "execute", "launch", "apply"],
+        priority=4,
+    ),
+    Phase.ACTIVATE: PhasePattern(
+        modules={"service", "systemd", "supervisorctl", "docker_container"},
+        name_keywords=["start", "enable", "activate", "restart", "reload"],
+        priority=5,
+    ),
+    Phase.VERIFY: PhasePattern(
+        modules={"uri", "wait_for", "assert", "ping", "command", "shell"},
+        name_keywords=[
+            "verify",
+            "test",
+            "check",
+            "validate",
+            "health check",
+            "smoke test",
+            "wait for",
+            "ensure running",
+        ],
+        priority=6,
+    ),
+    Phase.CLEANUP: PhasePattern(
+        modules={"file", "command", "shell"},
+        name_keywords=[
+            "cleanup",
+            "clean up",
+            "remove",
+            "delete",
+            "purge",
+            "temporary",
+        ],
+        priority=7,  # Typically last
+    ),
+}
+
+
+# ---------------------------------------------------------------------------
+# Pattern loader
+# ---------------------------------------------------------------------------
+
+
+class PatternLoader:
+    """Loads phase patterns from files or defaults."""
+
+    @staticmethod
+    def load_from_file(path: Path | str) -> dict[Phase, PhasePattern]:
+        """Parse YAML patterns file.
+
+        Args:
+            path: Path to YAML patterns file
+
+        Returns:
+            Dictionary mapping Phase to PhasePattern
+
+        Raises:
+            FileNotFoundError: If file doesn't exist
+            yaml.YAMLError: If YAML is invalid
+        """
+        import yaml
+
+        patterns_path = Path(path)
+        with open(patterns_path, encoding="utf-8") as f:
+            config = yaml.safe_load(f)
+
+        patterns: dict[Phase, PhasePattern] = {}
+        phases_config = config.get("phases", {})
+
+        for phase_name, pattern_config in phases_config.items():
+            phase = PatternLoader._get_phase_by_name(phase_name)
+            patterns[phase] = PhasePattern(
+                modules=set(pattern_config.get("modules", [])),
+                name_keywords=pattern_config.get("name_keywords", []),
+                priority=pattern_config.get("priority", 99),
+            )
+
+        return patterns
+
+    @staticmethod
+    def _get_phase_by_name(name: str) -> Phase:
+        """Get Phase enum by name, case-insensitive.
+
+        Args:
+            name: Phase name
+
+        Returns:
+            Phase enum member
+
+        Note:
+            If phase name doesn't match any existing Phase, returns Phase.UNKNOWN
+        """
+        name_upper = name.upper()
+        for phase in Phase:
+            if phase.name == name_upper:
+                return phase
+        return Phase.UNKNOWN
+
+    @staticmethod
+    def get_defaults() -> dict[Phase, PhasePattern]:
+        """Get default patterns (as a copy).
+
+        Returns:
+            Copy of DEFAULT_PATTERNS dictionary
+        """
+        return {phase: pattern.model_copy() for phase, pattern in DEFAULT_PATTERNS.items()}
+
+
+# ---------------------------------------------------------------------------
+# Detector
+# ---------------------------------------------------------------------------
 
 
 class PhaseDetector:
@@ -45,9 +299,10 @@ class PhaseDetector:
         self.min_confidence = min_confidence
         if patterns_file:
             try:
-                self.patterns: dict[Phase, PhasePattern] = PatternLoader.load_from_file(patterns_file)
+                self.patterns: dict[Phase, PhasePattern] = PatternLoader.load_from_file(
+                    patterns_file
+                )
             except Exception:
-                # Fall back to defaults on any error
                 self.patterns = PatternLoader.get_defaults()
         else:
             self.patterns = PatternLoader.get_defaults()
@@ -77,7 +332,7 @@ class PhaseDetector:
             ... )
         """
         self.patterns[phase] = PhasePattern(
-            modules= modules or set(),
+            modules=modules or set(),
             name_keywords=keywords or [],
             priority=priority if priority is not None else 99,
         )
@@ -104,7 +359,6 @@ class PhaseDetector:
             ... )
         """
         if phase not in self.patterns:
-            # Create new pattern if it doesn't exist
             self.patterns[phase] = PhasePattern(
                 modules=set(),
                 name_keywords=[],
@@ -129,7 +383,6 @@ class PhaseDetector:
             PhaseDetectionResult with detected phases and recommendation
         """
         if not tasks or len(tasks) < 3:
-            # Too few tasks to detect meaningful phases
             return PhaseDetectionResult(
                 detected_phases=[],
                 is_coherent_pipeline=False,
@@ -138,21 +391,17 @@ class PhaseDetector:
                 reasoning="Need at least 3 tasks to detect pipeline patterns",
             )
 
-        # Assign phases to each task
         task_phases = []
         for idx, task in enumerate(tasks):
             phase, confidence = self._detect_task_phase(task)
             task_phases.append((idx, phase, confidence))
 
-        # Group consecutive tasks by phase
         phase_groups = self._group_by_phase(task_phases, line_numbers)
 
-        # Analyze if this is a coherent pipeline
         is_pipeline, pipeline_confidence, reasoning = self._analyze_pipeline_coherence(
             phase_groups, task_phases
         )
 
-        # Generate recommendation
         recommendation = self._generate_recommendation(is_pipeline, phase_groups)
 
         return PhaseDetectionResult(
@@ -164,39 +413,25 @@ class PhaseDetector:
         )
 
     def _detect_task_phase(self, task: dict) -> tuple[Phase, float]:
-        """Detect the phase of a single task.
-
-        Args:
-            task: Task dictionary
-
-        Returns:
-            Tuple of (Phase, confidence_score)
-        """
+        """Detect the phase of a single task."""
         if not task:
             return Phase.UNKNOWN, 0.0
 
         task_name = task.get("name", "").lower()
         task_module = self._extract_module(task)
 
-        # Score each phase
-        phase_scores = defaultdict(float)
+        phase_scores: dict[Phase, float] = defaultdict(float)
 
         for phase, patterns in self.patterns.items():
             score = 0.0
-
-            # Check module match (strong signal)
             if task_module and task_module in patterns.modules:
                 score += 0.7
-
-            # Check name keywords (moderate signal)
             for keyword in patterns.name_keywords:
                 if keyword in task_name:
                     score += 0.3
                     break
-
             phase_scores[phase] = min(score, 1.0)
 
-        # Get highest scoring phase
         if not phase_scores:
             return Phase.UNKNOWN, 0.0
 
@@ -204,15 +439,7 @@ class PhaseDetector:
         return best_phase[0], best_phase[1]
 
     def _extract_module(self, task: dict) -> str | None:
-        """Extract the Ansible module name from a task.
-
-        Args:
-            task: Task dictionary
-
-        Returns:
-            Module name or None
-        """
-        # Skip non-module keys
+        """Extract the Ansible module name from a task."""
         skip_keys = {
             "name",
             "when",
@@ -235,7 +462,6 @@ class PhaseDetector:
 
         for key in task.keys():
             if key not in skip_keys:
-                # Handle fully qualified collection names
                 module_name = str(key).split(".")[-1]
                 return module_name.lower()
 
@@ -246,15 +472,7 @@ class PhaseDetector:
         task_phases: list[tuple[int, Phase, float]],
         line_numbers: list[tuple[int, int]] | None,
     ) -> list[PhaseMatch]:
-        """Group consecutive tasks by phase.
-
-        Args:
-            task_phases: List of (task_idx, phase, confidence) tuples
-            line_numbers: Optional list of (start_line, end_line) tuples
-
-        Returns:
-            List of PhaseMatch objects
-        """
+        """Group consecutive tasks by phase."""
         if not task_phases:
             return []
 
@@ -265,11 +483,9 @@ class PhaseDetector:
 
         for idx, phase, confidence in task_phases[1:]:
             if phase == current_phase and phase != Phase.UNKNOWN:
-                # Continue current phase
                 current_indices.append(idx)
                 current_confidences.append(confidence)
             else:
-                # End current phase, start new one
                 if current_phase != Phase.UNKNOWN:
                     groups.append(
                         self._create_phase_match(
@@ -283,7 +499,6 @@ class PhaseDetector:
                 current_indices = [idx]
                 current_confidences = [confidence]
 
-        # Add final phase
         if current_phase != Phase.UNKNOWN:
             groups.append(
                 self._create_phase_match(
@@ -300,17 +515,7 @@ class PhaseDetector:
         confidences: list[float],
         line_numbers: list[tuple[int, int]] | None,
     ) -> PhaseMatch:
-        """Create a PhaseMatch object.
-
-        Args:
-            phase: The phase
-            indices: Task indices in this phase
-            confidences: Confidence scores for each task
-            line_numbers: Optional line number information
-
-        Returns:
-            PhaseMatch object
-        """
+        """Create a PhaseMatch object."""
         avg_confidence = sum(confidences) / len(confidences) if confidences else 0.0
 
         if line_numbers and indices:
@@ -334,42 +539,28 @@ class PhaseDetector:
         phase_groups: list[PhaseMatch],
         task_phases: list[tuple[int, Phase, float]],
     ) -> tuple[bool, float, str]:
-        """Analyze if detected phases form a coherent pipeline.
-
-        Args:
-            phase_groups: Grouped phases
-            task_phases: Individual task phase assignments
-
-        Returns:
-            Tuple of (is_pipeline, confidence, reasoning)
-        """
+        """Analyze if detected phases form a coherent pipeline."""
         if len(phase_groups) < 2:
             return False, 0.0, "Only one phase detected - not a pipeline"
 
-        # Conservative approach: check multiple signals
         signals = []
 
-        # Signal 1: Sequential ordering (phases appear in expected priority order)
         ordering_score = self._check_phase_ordering(phase_groups)
         signals.append(("sequential_ordering", ordering_score))
 
-        # Signal 2: Phase coverage (what % of tasks are in detected phases)
         total_tasks = len(task_phases)
         tasks_in_phases = sum(group.task_count for group in phase_groups)
         coverage_score = tasks_in_phases / total_tasks if total_tasks > 0 else 0.0
         signals.append(("phase_coverage", coverage_score))
 
-        # Signal 3: Phase distinctiveness (average confidence of phase assignments)
         avg_phase_confidence = sum(group.confidence for group in phase_groups) / len(
             phase_groups
         )
         signals.append(("phase_confidence", avg_phase_confidence))
 
-        # Signal 4: Minimal back-and-forth (phases shouldn't repeat)
         repetition_penalty = self._check_phase_repetition(phase_groups)
         signals.append(("no_repetition", 1.0 - repetition_penalty))
 
-        # Overall confidence: weighted average of signals
         weights = {
             "sequential_ordering": 0.35,
             "phase_coverage": 0.25,
@@ -379,12 +570,11 @@ class PhaseDetector:
 
         overall_confidence = sum(weights[name] * score for name, score in signals)
 
-        # Build reasoning
         reasoning_parts = []
         for name, score in signals:
             if score >= 0.7:
                 reasoning_parts.append(
-                    f"✓ {name.replace('_', ' ').title()}: {score:.0%}"
+                    f"\u2713 {name.replace('_', ' ').title()}: {score:.0%}"
                 )
             elif score >= 0.5:
                 reasoning_parts.append(
@@ -392,53 +582,36 @@ class PhaseDetector:
                 )
             else:
                 reasoning_parts.append(
-                    f"✗ {name.replace('_', ' ').title()}: {score:.0%}"
+                    f"\u2717 {name.replace('_', ' ').title()}: {score:.0%}"
                 )
 
         reasoning = " | ".join(reasoning_parts)
-
         is_pipeline = overall_confidence >= self.min_confidence
 
         return is_pipeline, overall_confidence, reasoning
 
     def _check_phase_ordering(self, phase_groups: list[PhaseMatch]) -> float:
-        """Check if phases appear in expected sequential order.
-
-        Args:
-            phase_groups: List of phase groups
-
-        Returns:
-            Score between 0.0 and 1.0
-        """
+        """Check if phases appear in expected sequential order."""
         if len(phase_groups) < 2:
             return 1.0
 
-        # Count how many phase transitions are in correct order
         correct_transitions = 0
         total_transitions = len(phase_groups) - 1
 
         for i in range(total_transitions):
             current_priority = self.patterns[phase_groups[i].phase].priority
             next_priority = self.patterns[phase_groups[i + 1].phase].priority
-
             if next_priority >= current_priority:
                 correct_transitions += 1
 
         return correct_transitions / total_transitions if total_transitions > 0 else 1.0
 
     def _check_phase_repetition(self, phase_groups: list[PhaseMatch]) -> float:
-        """Check for phase repetition (back-and-forth between phases).
-
-        Args:
-            phase_groups: List of phase groups
-
-        Returns:
-            Penalty score between 0.0 (no repetition) and 1.0 (high repetition)
-        """
+        """Check for phase repetition (back-and-forth between phases)."""
         if len(phase_groups) < 2:
             return 0.0
 
-        seen_phases = set()
+        seen_phases: set[Phase] = set()
         repetitions = 0
 
         for group in phase_groups:
@@ -446,29 +619,31 @@ class PhaseDetector:
                 repetitions += 1
             seen_phases.add(group.phase)
 
-        # Normalize by number of groups
         return min(repetitions / len(phase_groups), 1.0)
 
     def _generate_recommendation(
         self, is_pipeline: bool, phase_groups: list[PhaseMatch]
     ) -> str:
-        """Generate recommendation based on phase detection.
-
-        Args:
-            is_pipeline: Whether a coherent pipeline was detected
-            phase_groups: Detected phase groups
-
-        Returns:
-            Recommendation string
-        """
+        """Generate recommendation based on phase detection."""
         if is_pipeline:
-            phase_names = " → ".join([g.phase.value.title() for g in phase_groups])
+            phase_names = " \u2192 ".join([g.phase.value.title() for g in phase_groups])
             return (
-                f"✅ Keep together - coherent pipeline detected ({phase_names}). "
+                f"\u2705 Keep together - coherent pipeline detected ({phase_names}). "
                 f"Sequential workflow is naturally coupled."
             )
         else:
             return (
-                "🔀 Consider splitting - no clear pipeline detected. "
+                "\U0001f500 Consider splitting - no clear pipeline detected. "
                 "Tasks may represent mixed functional concerns."
             )
+
+
+__all__ = [
+    "DEFAULT_PATTERNS",
+    "PatternLoader",
+    "Phase",
+    "PhaseDetectionResult",
+    "PhaseDetector",
+    "PhaseMatch",
+    "PhasePattern",
+]

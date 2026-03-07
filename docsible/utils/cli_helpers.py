@@ -134,7 +134,7 @@ class BriefHelpCommand(GroupedHelpCommand):
 
     def _write_brief_help(self, ctx: click.Context, formatter: click.HelpFormatter) -> None:
         """Write brief, beginner-friendly help."""
-        from docsible.help.formatters.brief_help import BriefHelpFormatter
+        from docsible.formatters.help.brief import BriefHelpFormatter
 
         # Determine command name for looking up essential options and examples
         command_name = ctx.info_name or "role"

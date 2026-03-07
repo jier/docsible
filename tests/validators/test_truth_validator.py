@@ -5,8 +5,8 @@ from docsible.analyzers.complexity_analyzer import (
     ComplexityMetrics,
     ComplexityReport,
 )
-from docsible.validators.models import ValidationSeverity, ValidationType
-from docsible.validators.truth import TruthValidator
+from docsible.validation.models import ValidationSeverity, ValidationType
+from docsible.validation.truth import TruthValidator
 
 
 class TestTruthValidation:

@@ -6,8 +6,8 @@ from Ansible task data.
 
 import logging
 
-from docsible.diagram_builders.base import DiagramBuilder
-from docsible.diagram_builders.formatters import (
+from docsible.diagrams.base import DiagramBuilder
+from docsible.diagrams.types.formatters import (
     break_text,
     escape_pipes,
     sanitize_for_id,
