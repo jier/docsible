@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 @click.option(
     "--force", "-f", is_flag=True, help="Overwrite existing .docsible.yml file"
 )
-def init_config(path: str, force: bool):
+def init_config(path: str, force: bool) -> None:
     """Generate an example .docsible.yml configuration file.
 
     This file allows you to customize how docsible interprets your
@@ -24,6 +24,10 @@ def init_config(path: str, force: bool):
     - Directory names for defaults, vars, tasks, meta, handlers, etc.
     - File naming conventions
     - Project-specific structure customizations
+
+    Args:
+        path: Path where to create .docsible.yml
+        force: If True, overwrite existing .docsible.yml file
 
     Example:
         docsible init --path ./my-role

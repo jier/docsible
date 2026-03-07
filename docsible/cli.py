@@ -9,9 +9,14 @@ import sys
 
 import click
 
+from docsible.commands.analyze import analyze_group
 from docsible.commands.check import check
+from docsible.commands.document import document_group
 from docsible.commands.document_role import doc_the_role
-from docsible.commands.init_config import init_config
+from docsible.commands.guide import guide_command
+from docsible.commands.suppress import suppress_group
+from docsible.commands.validate import validate_group
+from docsible.commands.wizard import wizard_init
 
 # Setup logging
 logger = logging.getLogger(__name__)
@@ -61,7 +66,7 @@ def get_version() -> str:
     version=get_version(),
     help=f"Show the module version. Current version: {get_version()}",
 )
-def cli(verbose: bool):
+def cli(verbose: bool) -> None:
     """Docsible - Ansible role and collection documentation generator.
 
     Generate comprehensive documentation for your Ansible roles and collections
@@ -69,10 +74,16 @@ def cli(verbose: bool):
 
     Use 'docsible COMMAND --help' for more information on a specific command.
 
+    \f
+    # Click \f convention: everything below hidden from --help output.
+
+    Args:
+        verbose: Enable verbose logging (DEBUG level)
+
     Examples:
         docsible role --role ./my-role --graph
         docsible init --path ./my-role
-        docsible role --role ./my-role  --check
+        docsible document role ./my-role --preset=team
     """
     setup_logging(verbose)
     logger.debug("Docsible CLI started")
@@ -80,11 +91,16 @@ def cli(verbose: bool):
 
 # Register commands
 cli.add_command(doc_the_role, name="role")
-cli.add_command(init_config, name="init")
+cli.add_command(wizard_init, name="init")
 cli.add_command(check)
+cli.add_command(guide_command, name="guide")
+cli.add_command(suppress_group, name="suppress")
+cli.add_command(document_group, name="document")
+cli.add_command(analyze_group, name="analyze")
+cli.add_command(validate_group, name="validate")
 
 
-def main():
+def main() -> None:
     """Main entry point for the CLI application.
 
     This function is called when docsible is invoked from the command line.

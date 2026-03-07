@@ -8,6 +8,7 @@ that uses the new orchestrator pattern. Enable via environment variable:
 import logging
 import os
 from pathlib import Path
+from typing import Any
 
 import click
 
@@ -45,16 +46,23 @@ def _ensure_str(value: Path | str | None, default: str = "") -> str:
         return default
     return str(value)
 
-def doc_the_role_orchestrated(**kwargs):
+def doc_the_role_orchestrated(**kwargs: Any) -> None:
     """Generate documentation for an Ansible role using orchestrator pattern.
 
     This is the new implementation using RoleOrchestrator that can be enabled
     via the DOCSIBLE_USE_ORCHESTRATOR environment variable.
 
+    Args:
+        **kwargs: All CLI parameters passed as keyword arguments matching
+                  the Click command signature from doc_the_role()
+
     All parameters are passed via **kwargs to match the Click command signature.
     """
     # Import here to avoid circular imports
     from docsible.commands.document_collection import document_collection_roles
+    from docsible.commands.document_role.smart_defaults_integration import (
+        apply_smart_defaults,
+    )
 
     # Apply minimal flag settings (keep existing helper)
     minimal = kwargs.get("minimal", False)
@@ -85,6 +93,70 @@ def doc_the_role_orchestrated(**kwargs):
         kwargs["no_metadata"] = no_metadata
         kwargs["no_handlers"] = no_handlers
         kwargs["simplify_diagrams"] = simplify_diagrams
+
+    # SMART DEFAULTS INTEGRATION
+    # Apply smart defaults based on role complexity (if enabled)
+    enable_smart_defaults = (
+        os.getenv("DOCSIBLE_ENABLE_SMART_DEFAULTS", "true").lower() == "true"
+    )
+
+    role_path = kwargs.get("role_path")
+    collection_path = kwargs.get("collection_path")
+
+    if enable_smart_defaults and role_path and not collection_path:
+        try:
+            from docsible.commands.document_role.helpers import validate_role_path
+
+            # Validate role path first to ensure it exists
+            temp_validated_path = validate_role_path(role_path)
+
+            # Detect which flags user explicitly set
+            # For now, assume all flags that differ from Click defaults were user-set
+            # This is a simple heuristic - could be improved with Click context
+            user_overrides = {}
+
+            # If user set any of these flags, respect them
+            # (In future, use Click context to detect commandline vs default)
+            # For now, treat any non-default value as user override
+            if kwargs.get("generate_graph") is True:  # Click default is False
+                user_overrides["generate_graph"] = kwargs["generate_graph"]
+            if kwargs.get("minimal") is True:  # Click default is False
+                user_overrides["minimal"] = kwargs["minimal"]
+            if kwargs.get("show_dependencies") is True:  # Click default is False
+                user_overrides["show_dependencies"] = kwargs["show_dependencies"]
+
+            # Apply smart defaults for non-overridden options
+            smart_graph, smart_minimal, smart_deps, complexity_report = apply_smart_defaults(
+                temp_validated_path, user_overrides
+            )
+
+            # Store complexity report for reuse by orchestrator (avoid duplicate analysis)
+            if complexity_report:
+                kwargs["_complexity_report"] = complexity_report
+                logger.debug("Cached complexity analysis for reuse by orchestrator")
+
+            # Use smart defaults only if user didn't override
+            if "generate_graph" not in user_overrides:
+                kwargs["generate_graph"] = smart_graph
+                if smart_graph:
+                    logger.info(
+                        "Smart default: Enabling graph generation for this role"
+                    )
+
+            if "minimal" not in user_overrides:
+                kwargs["minimal"] = smart_minimal
+                if smart_minimal:
+                    logger.info("Smart default: Using minimal documentation mode")
+
+            if "show_dependencies" not in user_overrides:
+                kwargs["show_dependencies"] = smart_deps
+                if smart_deps:
+                    logger.info("Smart default: Including dependency information")
+
+        except Exception as e:
+            logger.warning(f"Smart defaults failed: {e}")
+            logger.warning("Continuing with manual configuration")
+            # Continue with original values
 
     # Build context from parameters
     context = RoleCommandContext(
@@ -118,6 +190,10 @@ def doc_the_role_orchestrated(**kwargs):
             include_complexity=kwargs.get("include_complexity", False),
             simplification_report=kwargs.get("simplification_report", False),
             analyze_only=kwargs.get("analyze_only", False),
+            show_info=kwargs.get("show_info", False),
+            recommendations_only=kwargs.get("recommendations_only", False),
+            positive_framing=kwargs.get("positive_framing", True),
+            cached_complexity_report=kwargs.get("_complexity_report"),  # From smart defaults
         ),
         processing=ProcessingConfig(
             comments=kwargs.get("comments", False),
@@ -180,7 +256,9 @@ def doc_the_role_orchestrated(**kwargs):
     except CollectionNotFoundError as e:
         raise click.ClickException(str(e)) from e
     except Exception as e:
-        logger.error(f"Documentation generation failed: {e}")
+        from docsible.help.formatters.contextual_help import ContextualHelpProvider
+        help_msg = ContextualHelpProvider.format_error_with_help(e)
+        logger.error(help_msg)
         raise
 
 

@@ -6,6 +6,8 @@ Provides colorized, formatted console output for reports and analysis.
 
 import logging
 
+import click
+
 from docsible.analyzers import ComplexityCategory, ComplexityReport
 
 logger = logging.getLogger(__name__)
@@ -25,7 +27,7 @@ MAGENTA = "\033[95m"
 
 
 def display_complexity_report(
-    report: ComplexityReport, role_name: str | None = None
+    report: ComplexityReport, role_name: str | None = None, quiet: bool = False
 ) -> None:
     """
     Display a formatted complexity analysis report to console.
@@ -33,43 +35,47 @@ def display_complexity_report(
     Args:
         report: ComplexityReport from analyze_role_complexity()
         role_name: Optional role name for display
+        quiet: If True, suppress output (for programmatic use)
 
     Example:
         >>> report = analyze_role_complexity(role_info)
         >>> display_complexity_report(report, "my_webserver_role")
     """
+    if quiet:
+        return
+
     metrics = report.metrics
 
     # Header
-    print()
-    print(f"{BOLD}{BLUE}╔══════════════════════════════════════════════════════════╗{RESET}")
-    print(f"{BOLD}{BLUE}║         ROLE COMPLEXITY ANALYSIS                         ║{RESET}")
-    print(f"{BOLD}{BLUE}╚══════════════════════════════════════════════════════════╝{RESET}")
-    print()
+    click.echo()
+    click.echo(f"{BOLD}{BLUE}╔══════════════════════════════════════════════════════════╗{RESET}")
+    click.echo(f"{BOLD}{BLUE}║         ROLE COMPLEXITY ANALYSIS                         ║{RESET}")
+    click.echo(f"{BOLD}{BLUE}╚══════════════════════════════════════════════════════════╝{RESET}")
+    click.echo()
 
     if role_name:
-        print(f"{BOLD}Role:{RESET} {role_name}")
-        print()
+        click.echo(f"{BOLD}Role:{RESET} {role_name}")
+        click.echo()
 
     # Metrics Section
-    print(f"{BOLD}{CYAN}📊 Metrics:{RESET}")
-    print(f"  Total Tasks:         {metrics.total_tasks}")
-    print(f"  Task Files:          {metrics.task_files}")
-    print(f"  Handlers:            {metrics.handlers}")
-    print(
+    click.echo(f"{BOLD}{CYAN}📊 Metrics:{RESET}")
+    click.echo(f"  Total Tasks:         {metrics.total_tasks}")
+    click.echo(f"  Task Files:          {metrics.task_files}")
+    click.echo(f"  Handlers:            {metrics.handlers}")
+    click.echo(
         f"  Conditional Tasks:   {metrics.conditional_tasks} ({metrics.conditional_percentage:.0f}% have conditions)"
     )
 
     if metrics.max_tasks_per_file > 0:
-        print(f"  Max Tasks/File:      {metrics.max_tasks_per_file}")
-        print(f"  Avg Tasks/File:      {metrics.avg_tasks_per_file:.1f}")
-    print()
+        click.echo(f"  Max Tasks/File:      {metrics.max_tasks_per_file}")
+        click.echo(f"  Avg Tasks/File:      {metrics.avg_tasks_per_file:.1f}")
+    click.echo()
 
     # Role Composition Section
-    print(f"{BOLD}{MAGENTA}📦 Role Composition (Internal Orchestration):{RESET}")
-    print(f"  Role Dependencies:   {metrics.role_dependencies} (from meta/main.yml)")
-    print(f"  Role Includes:       {metrics.role_includes} (include_role in tasks)")
-    print(f"  Task Includes:       {metrics.task_includes} (include_tasks in tasks)")
+    click.echo(f"{BOLD}{MAGENTA}📦 Role Composition (Internal Orchestration):{RESET}")
+    click.echo(f"  Role Dependencies:   {metrics.role_dependencies} (from meta/main.yml)")
+    click.echo(f"  Role Includes:       {metrics.role_includes} (include_role in tasks)")
+    click.echo(f"  Task Includes:       {metrics.task_includes} (include_tasks in tasks)")
 
     composition_score = metrics.composition_score
     composition_level = (
@@ -82,15 +88,15 @@ def display_complexity_report(
     composition_color = (
         GREEN if composition_score < 4 else YELLOW if composition_score < 8 else RED
     )
-    print(
+    click.echo(
         f"  Composition Score:   {composition_color}{composition_score} ({composition_level}){RESET}"
     )
-    print()
+    click.echo()
 
     # External Integrations Section
     integration_count = len(report.integration_points)
     if integration_count > 0:
-        print(
+        click.echo(
             f"{BOLD}{YELLOW}🔌 External Integrations ({integration_count} detected):{RESET}"
         )
 
@@ -98,7 +104,7 @@ def display_complexity_report(
             credential_icon = (
                 " 🔑 Uses credentials" if integration.uses_credentials else ""
             )
-            print(
+            click.echo(
                 f"  {idx}. {integration.system_name} ({integration.task_count} tasks){credential_icon}"
             )
 
@@ -110,11 +116,11 @@ def display_complexity_report(
                     ", ".join(integration.modules_used[:3])
                     + f" (+{len(integration.modules_used) - 3} more)"
                 )
-            print(f"     {DIM}Modules: {modules_str}{RESET}")
-        print()
+            click.echo(f"     {DIM}Modules: {modules_str}{RESET}")
+        click.echo()
     else:
-        print(f"{BOLD}{GREEN}🔌 External Integrations:{RESET} None detected")
-        print()
+        click.echo(f"{BOLD}{GREEN}🔌 External Integrations:{RESET} None detected")
+        click.echo()
 
     # Complexity Category
     category_color = {
@@ -123,37 +129,37 @@ def display_complexity_report(
         ComplexityCategory.COMPLEX: RED,
     }.get(report.category, RESET)
 
-    print(
+    click.echo(
         f"{BOLD}🎯 Complexity:{RESET} {category_color}{BOLD}{report.category.value.upper()}{RESET}"
     )
-    print()
+    click.echo()
 
     # Task Files Detail (if any)
     if report.task_files_detail and len(report.task_files_detail) > 0:
-        print(f"{BOLD}{CYAN}📁 Task Files Breakdown:{RESET}")
+        click.echo(f"{BOLD}{CYAN}📁 Task Files Breakdown:{RESET}")
         for tf in report.task_files_detail:
             file_name = tf.get("file", "unknown")
             task_count = tf.get("task_count", 0)
-            print(f"  • {file_name}: {task_count} tasks")
-        print()
+            click.echo(f"  • {file_name}: {task_count} tasks")
+        click.echo()
 
     # Recommendations
     if report.recommendations:
-        print(f"{BOLD}{BLUE}💡 Recommendations:{RESET}")
+        click.echo(f"{BOLD}{BLUE}💡 Recommendations:{RESET}")
         for rec in report.recommendations:
-            print(f"  • {rec}")
-        print()
+            click.echo(f"  • {rec}")
+        click.echo()
 
     # Summary line
     if report.category == ComplexityCategory.SIMPLE:
-        print(f"{DIM}→ Recommended: Use sequence diagrams for visualization{RESET}")
+        click.echo(f"{DIM}→ Recommended: Use sequence diagrams for visualization{RESET}")
     elif report.category == ComplexityCategory.MEDIUM:
-        print(
+        click.echo(
             f"{DIM}→ Recommended: Use state transition + component tree diagrams{RESET}"
         )
     else:
-        print(
+        click.echo(
             f"{DIM}→ Recommended: Use architecture diagrams + text documentation{RESET}"
         )
 
-    print()
+    click.echo()

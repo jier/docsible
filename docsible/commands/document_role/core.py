@@ -7,17 +7,6 @@ from pathlib import Path
 import click
 import yaml
 
-from docsible.commands.document_role.helpers import (
-    apply_minimal_flag,
-    generate_dependency_matrix,
-    generate_integration_and_architecture_diagrams,
-    generate_mermaid_diagrams,
-    handle_analyze_only_mode,
-    load_playbook_content,
-    validate_role_path,
-)
-from docsible.exceptions import CollectionNotFoundError
-from docsible.renderers.readme_renderer import ReadmeRenderer
 from docsible.renderers.tag_manager import manage_docsible_file_keys
 from docsible.utils.git import get_repo_info
 from docsible.utils.mermaid import (
@@ -428,283 +417,109 @@ def _display_dry_run_summary(
 
 
 def doc_the_role(
-    role_path,
-    collection_path,
-    playbook,
-    generate_graph,
-    no_backup,
-    no_docsible,
-    dry_run,
-    comments,
-    task_line,
-    md_collection_template,
-    md_role_template,
-    hybrid,
-    no_vars,
-    no_tasks,
-    no_diagrams,
-    simplify_diagrams,
-    no_examples,
-    no_metadata,
-    no_handlers,
-    minimal,
-    complexity_report,
-    include_complexity,
-    simplification_report,
-    show_dependencies,
-    analyze_only,
-    append,
-    output,
-    repository_url,
-    repo_type,
-    repo_branch,
-    validate_markdown,
-    auto_fix,
-    strict_validation,
-):
+    role_path: str | None,
+    collection_path: str | None,
+    playbook: str | None,
+    generate_graph: bool,
+    no_backup: bool,
+    no_docsible: bool,
+    dry_run: bool,
+    comments: bool,
+    task_line: bool,
+    md_collection_template: str | None,
+    md_role_template: str | None,
+    hybrid: bool,
+    no_vars: bool,
+    no_tasks: bool,
+    no_diagrams: bool,
+    simplify_diagrams: bool,
+    no_examples: bool,
+    no_metadata: bool,
+    no_handlers: bool,
+    minimal: bool,
+    complexity_report: bool,
+    include_complexity: bool,
+    simplification_report: bool,
+    show_dependencies: bool,
+    analyze_only: bool,
+    append: bool,
+    output: str,
+    repository_url: str | None,
+    repo_type: str | None,
+    repo_branch: str | None,
+    validate_markdown: bool,
+    auto_fix: bool,
+    strict_validation: bool,
+    show_info: bool = False,
+    recommendations_only: bool = False,
+    positive_framing: bool = True,
+) -> None:
     """Generate documentation for an Ansible role.
 
     This command analyzes an Ansible role and generates comprehensive
     README documentation including variables, tasks, handlers, and
     optional Mermaid diagrams.
 
+    Args:
+        role_path: Path to role directory
+        collection_path: Path to collection directory
+        playbook: Path to playbook file
+        generate_graph: Generate Mermaid diagrams
+        no_backup: Skip backup creation
+        no_docsible: Skip docsible tags
+        dry_run: Show what would be generated without writing
+        comments: Include task comments
+        task_line: Include task line numbers
+        md_collection_template: Custom collection template path
+        md_role_template: Custom role template path
+        hybrid: Use hybrid template format
+        no_vars: Exclude variables section
+        no_tasks: Exclude tasks section
+        no_diagrams: Exclude all diagrams
+        simplify_diagrams: Simplify diagram output
+        no_examples: Exclude examples section
+        no_metadata: Exclude metadata section
+        no_handlers: Exclude handlers section
+        minimal: Generate minimal documentation
+        complexity_report: Show complexity analysis
+        include_complexity: Include complexity in README
+        simplification_report: Show simplification suggestions
+        show_dependencies: Show dependency matrix
+        analyze_only: Only analyze, don't generate docs
+        append: Append to existing README
+        output: Output file path
+        repository_url: Repository URL for links
+        repo_type: Repository type (github, gitlab, etc)
+        repo_branch: Repository branch name
+        validate_markdown: Validate generated markdown
+        auto_fix: Automatically fix markdown issues
+        strict_validation: Fail on validation warnings
+        show_info: Show INFO-level recommendations
+        recommendations_only: Show only recommendations without generating docs
+
     Example:
         docsible role --role ./my-role --graph --hybrid
     """
-    # Feature flag: Use orchestrator if enabled via environment variable
+
     from docsible.commands.document_role.core_orchestrated import (
         doc_the_role_orchestrated,
-        should_use_orchestrator,
     )
 
-    if should_use_orchestrator():
-        # New orchestrator-based implementation
-        return doc_the_role_orchestrated(
-            role_path=role_path,
-            collection_path=collection_path,
-            playbook=playbook,
-            generate_graph=generate_graph,
-            no_backup=no_backup,
-            no_docsible=no_docsible,
-            dry_run=dry_run,
-            comments=comments,
-            task_line=task_line,
-            md_collection_template=md_collection_template,
-            md_role_template=md_role_template,
-            hybrid=hybrid,
-            no_vars=no_vars,
-            no_tasks=no_tasks,
-            no_diagrams=no_diagrams,
-            simplify_diagrams=simplify_diagrams,
-            no_examples=no_examples,
-            no_metadata=no_metadata,
-            no_handlers=no_handlers,
-            minimal=minimal,
-            complexity_report=complexity_report,
-            include_complexity=include_complexity,
-            simplification_report=simplification_report,
-            show_dependencies=show_dependencies,
-            analyze_only=analyze_only,
-            append=append,
-            output=output,
-            repository_url=repository_url,
-            repo_type=repo_type,
-            repo_branch=repo_branch,
-            validate_markdown=validate_markdown,
-            auto_fix=auto_fix,
-            strict_validation=strict_validation,
-        )
 
-    # LEGACY IMPLEMENTATION - DEPRECATED
-    # This code path will be removed in v1.0.0
-    # The orchestrator pattern is now the default implementation
-    logger.warning(
-        "Using legacy implementation (DOCSIBLE_USE_ORCHESTRATOR=false). "
-        "This implementation is deprecated and will be removed in v1.0.0. "
-        "Please report any issues with the orchestrator implementation."
-    )
-
-    # Import here to avoid circular imports
-    from docsible.commands.document_collection import document_collection_roles
-
-    # Apply minimal flag settings
-    (
-        no_vars,
-        no_tasks,
-        no_diagrams,
-        no_examples,
-        no_metadata,
-        no_handlers,
-        simplify_diagrams,
-    ) = apply_minimal_flag(
-        minimal,
-        no_vars,
-        no_tasks,
-        no_diagrams,
-        no_examples,
-        no_metadata,
-        no_handlers,
-        simplify_diagrams,
-    )
-
-    # Determine if documenting a collection or role
-    if collection_path:
-        try:
-            document_collection_roles(
-                collection_path=collection_path,
-                playbook=playbook,
-                graph=generate_graph,
-                no_backup=no_backup,
-                no_docsible=no_docsible,
-                comments=comments,
-                task_line=task_line,
-                md_collection_template=md_collection_template,
-                md_role_template=md_role_template,
-                hybrid=hybrid,
-                no_vars=no_vars,
-                no_tasks=no_tasks,
-                no_diagrams=no_diagrams,
-                simplify_diagrams=simplify_diagrams,
-                no_examples=no_examples,
-                no_metadata=no_metadata,
-                no_handlers=no_handlers,
-                minimal=minimal,
-                append=append,
-                output=output,
-                repository_url=repository_url,
-                repo_type=repo_type,
-                repo_branch=repo_branch,
-            )
-        except CollectionNotFoundError as e:
-            raise click.ClickException(str(e)) from e
-        return
-
-    # Validate role path
-    role_path = validate_role_path(role_path)
-
-    # Load playbook content if provided
-    playbook_content = load_playbook_content(playbook)
-
-    # Build role information
-    role_info = build_role_info(
+    # New orchestrator-based implementation
+    return doc_the_role_orchestrated(
         role_path=role_path,
-        playbook_content=playbook_content,
+        collection_path=collection_path,
+        playbook=playbook,
         generate_graph=generate_graph,
+        no_backup=no_backup,
         no_docsible=no_docsible,
+        dry_run=dry_run,
         comments=comments,
         task_line=task_line,
-        belongs_to_collection=None,  # Set by collection command if needed
-        repository_url=repository_url,
-        repo_type=repo_type,
-        repo_branch=repo_branch,
-    )
-
-    # Analyze complexity for adaptive visualization
-    from docsible.analyzers import analyze_role_complexity
-
-    analysis_report = analyze_role_complexity(
-        role_info, include_patterns=simplification_report, min_confidence=0.7
-    )
-
-    # Display complexity analysis if requested
-    if complexity_report or analyze_only:
-        from docsible.utils.console import display_complexity_report
-
-        display_complexity_report(analysis_report, role_name=role_info.get("name"))
-
-    # If analyze-only mode, display dependency summary and exit without generating docs
-    if analyze_only:
-        handle_analyze_only_mode(role_info, role_info.get("name", "unknown"))
-        return  # Exit without generating documentation
-
-    # Generate Mermaid diagrams if requested
-    diagrams = generate_mermaid_diagrams(
-        generate_graph=generate_graph,
-        role_info=role_info,
-        playbook_content=playbook_content,
-        analysis_report=analysis_report,
-        minimal=minimal,
-        simplify_diagrams=simplify_diagrams,
-    )
-    mermaid_code_per_file = diagrams["mermaid_code_per_file"]
-    sequence_diagram_high_level = diagrams["sequence_diagram_high_level"]
-    sequence_diagram_detailed = diagrams["sequence_diagram_detailed"]
-    state_diagram = diagrams["state_diagram"]
-
-    # Generate integration boundary and architecture diagrams
-    (
-        integration_boundary_diagram,
-        architecture_diagram,
-    ) = generate_integration_and_architecture_diagrams(
-        generate_graph=generate_graph,
-        role_info=role_info,
-        analysis_report=analysis_report,
-    )
-
-    # Generate dependency matrix for complex roles
-    (
-        dependency_matrix,
-        dependency_summary,
-        show_dependency_matrix,
-    ) = generate_dependency_matrix(
-        show_dependencies=show_dependencies,
-        role_info=role_info,
-        analysis_report=analysis_report,
-    )
-
-    # Determine template type
-    template_type = "hybrid" if hybrid else "standard_modular"
-
-    if hybrid and not include_complexity:
-        include_complexity = True
-
-    # Handle dry-run mode
-    if dry_run:
-        _display_dry_run_summary(
-            role_info=role_info,
-            role_path=role_path,
-            output=output,
-            analysis_report=analysis_report,
-            mermaid_code_per_file=mermaid_code_per_file,
-            sequence_diagram_high_level=sequence_diagram_high_level,
-            sequence_diagram_detailed=sequence_diagram_detailed,
-            state_diagram=state_diagram,
-            integration_boundary_diagram=integration_boundary_diagram,
-            architecture_diagram=architecture_diagram,
-            dependency_matrix=dependency_matrix,
-            no_backup=no_backup,
-            no_docsible=no_docsible,
-            generate_graph=generate_graph,
-            hybrid=hybrid,
-            minimal=minimal,
-        )
-        return
-
-    # Render README
-    renderer = ReadmeRenderer(
-        backup=not no_backup,
-        validate=validate_markdown,
-        auto_fix=auto_fix,
-        strict_validation=strict_validation,
-    )
-    readme_path = role_path / output
-
-    renderer.render_role(
-        role_info=role_info,
-        output_path=readme_path,
-        template_type=template_type,
-        custom_template_path=md_role_template,
-        mermaid_code_per_file=mermaid_code_per_file,
-        sequence_diagram_high_level=sequence_diagram_high_level,
-        sequence_diagram_detailed=sequence_diagram_detailed,
-        state_diagram=state_diagram,
-        integration_boundary_diagram=integration_boundary_diagram,
-        architecture_diagram=architecture_diagram,
-        complexity_report=analysis_report,
-        include_complexity=include_complexity,
-        dependency_matrix=dependency_matrix,
-        dependency_summary=dependency_summary,
-        show_dependency_matrix=show_dependency_matrix,
+        md_collection_template=md_collection_template,
+        md_role_template=md_role_template,
+        hybrid=hybrid,
         no_vars=no_vars,
         no_tasks=no_tasks,
         no_diagrams=no_diagrams,
@@ -712,7 +527,22 @@ def doc_the_role(
         no_examples=no_examples,
         no_metadata=no_metadata,
         no_handlers=no_handlers,
+        minimal=minimal,
+        complexity_report=complexity_report,
+        include_complexity=include_complexity,
+        simplification_report=simplification_report,
+        show_dependencies=show_dependencies,
+        analyze_only=analyze_only,
         append=append,
+        output=output,
+        repository_url=repository_url,
+        repo_type=repo_type,
+        repo_branch=repo_branch,
+        validate_markdown=validate_markdown,
+        auto_fix=auto_fix,
+        strict_validation=strict_validation,
+        show_info=show_info,
+        recommendations_only=recommendations_only,
+        positive_framing=positive_framing,
     )
 
-    click.echo(f"✓ Role documentation generated: {readme_path}")

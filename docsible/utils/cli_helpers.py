@@ -114,6 +114,33 @@ class GroupedHelpCommand(click.Command):
                     formatter.write_dl(opts_by_group[group_name])
 
 
+class BriefHelpCommand(GroupedHelpCommand):
+    """Command that shows brief help by default, full help with --help-full.
+
+    Default --help shows only essential options + quick-start examples.
+    --help-full shows the full grouped help (GroupedHelpCommand behavior).
+    """
+
+    def format_help(self, ctx: click.Context, formatter: click.HelpFormatter) -> None:
+        """Show brief help by default, full help if --help-full in argv."""
+        import sys
+
+        if "--help-full" in sys.argv:
+            # Show full grouped help (parent class behavior)
+            super().format_help(ctx, formatter)
+        else:
+            # Show brief help
+            self._write_brief_help(ctx, formatter)
+
+    def _write_brief_help(self, ctx: click.Context, formatter: click.HelpFormatter) -> None:
+        """Write brief, beginner-friendly help."""
+        from docsible.help.formatters.brief_help import BriefHelpFormatter
+
+        # Determine command name for looking up essential options and examples
+        command_name = ctx.info_name or "role"
+        BriefHelpFormatter.write_brief_help(command_name, ctx, formatter)
+
+
 def format_help_section(title: str, items: list[tuple[str, str]]) -> str:
     """Format a help section with title and items.
 

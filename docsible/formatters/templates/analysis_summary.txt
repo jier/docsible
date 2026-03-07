@@ -1,0 +1,6 @@
+📊 Role Analysis:
+   • {complexity_description}
+   • {structure_description}
+   • {readiness_description}
+
+{highlights}

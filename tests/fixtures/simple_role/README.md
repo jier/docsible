@@ -1,5 +1,5 @@
 <!-- DOCSIBLE METADATA
-generated_at: 2025-12-15T16:33:00.840938+00:00Z
+generated_at: 2025-12-26T01:10:48.156560+00:00Z
 docsible_version: 0.8.0
 role_hash: 4ad3ab3507f258e0f2d06dc3f48a8f0d942a8e152566cb7f87b77096525aaf47
 -->
@@ -39,9 +39,9 @@ Description: A simple test role
 
 | Var | Type | Value |
 |-----|------|-------|
-| [simple_var](https://github.com/jier/docsible/blob/claude/modularize-ansible-codebase-01JY3Hhe3hMvzeaTb9dbyMVY/defaults/main.yml#L5) | str | `default_value` |
-| [enable_feature](https://github.com/jier/docsible/blob/claude/modularize-ansible-codebase-01JY3Hhe3hMvzeaTb9dbyMVY/defaults/main.yml#L6) | bool | `True` |
-| [port](https://github.com/jier/docsible/blob/claude/modularize-ansible-codebase-01JY3Hhe3hMvzeaTb9dbyMVY/defaults/main.yml#L7) | int | `8080` |
+| [simple_var](https://github.com/jier/docsible/blob/jier-cli-from-params-to-user-intent/defaults/main.yml#L5) | str | `default_value` |
+| [enable_feature](https://github.com/jier/docsible/blob/jier-cli-from-params-to-user-intent/defaults/main.yml#L6) | bool | `True` |
+| [port](https://github.com/jier/docsible/blob/jier-cli-from-params-to-user-intent/defaults/main.yml#L7) | int | `8080` |
 
 
 
@@ -69,12 +69,18 @@ Description: A simple test role
 
 
 
+
+
+
+
 ### Handlers
 Handlers are triggered by task notifications and typically handle service restarts or configuration reloads.
 
 #### Restart nginx
 - **Module**: `ansible.builtin.service`
 - **File**: `main.yml`
+
+
 
 
 

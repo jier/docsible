@@ -89,7 +89,8 @@ def clean_and_standardize_url(url: str) -> str:
             path = path[:-4]
 
         return urlunparse((final_scheme, netloc, path, "", "", ""))
-    except (ValueError, IndexError):
+    except (ValueError, IndexError) as e:
+        logger.warning(f"Failed to parse git URL '{url}': {e}")
         return ""
 
 

@@ -1,10 +1,21 @@
 """Output-related CLI options for document_role command."""
 
+from collections.abc import Callable
+from typing import TypeVar
+
 import click
 
+F = TypeVar("F", bound=Callable[..., None])
 
-def add_output_options(f):
+
+def add_output_options(f: F) -> F:
     """Add output-related options to the command.
+
+    Args:
+        f: Click command function to decorate
+
+    Returns:
+        Decorated command function with output options added
 
     Options:
     - --output/-o: Output readme file name

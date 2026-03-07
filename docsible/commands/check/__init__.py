@@ -27,12 +27,17 @@ import click
     is_flag=True,
     help="Only output status (no details)",
 )
-def check(role_path, readme, quiet):
+def check(role_path: str, readme: str, quiet: bool) -> None:
     """
     Check if role documentation is up to date.
 
     Exits with code 0 if documentation is current, 1 if outdated or missing.
     Useful for CI/CD pipelines to enforce documentation freshness.
+
+    Args:
+        role_path: Path to Ansible role directory
+        readme: Path to README file
+        quiet: If True, only output status (no details)
 
     Examples:
 

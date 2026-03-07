@@ -174,36 +174,35 @@ class TestConfigInitialization:
     """Test configuration file initialization."""
 
     def test_init_config_creates_file(self, tmp_path):
-        """Test that init command creates .docsible.yml file."""
+        """Test that init command creates .docsible/config.yml file."""
         runner = CliRunner()
-        result = runner.invoke(cli, ["init", "--path", str(tmp_path)])
+        result = runner.invoke(cli, ["init", "--path", str(tmp_path), "--preset", "team"])
 
-        assert result.exit_code == 0
-        config_file = tmp_path / ".docsible.yml"
-        assert config_file.exists(), ".docsible.yml was not created"
+        assert result.exit_code == 0, f"Command failed: {result.output}"
+        config_file = tmp_path / ".docsible" / "config.yml"
+        assert config_file.exists(), ".docsible/config.yml was not created"
 
         content = config_file.read_text()
-        assert "structure:" in content, "Config structure not in file"
-        assert "defaults_dir:" in content, "defaults_dir not in config"
+        assert "preset" in content, "preset key not in config"
 
     def test_init_config_respects_force_flag(self, tmp_path):
-        """Test that --force flag overwrites existing config."""
-        config_file = tmp_path / ".docsible.yml"
-        config_file.write_text("# Existing config")
+        """Test that --force flag overwrites existing preset config."""
+        config_dir = tmp_path / ".docsible"
+        config_dir.mkdir()
+        config_file = config_dir / "config.yml"
+        config_file.write_text("preset: personal\n")
 
         runner = CliRunner()
 
-        # Try without force (should fail)
-        result = runner.invoke(cli, ["init", "--path", str(tmp_path)])
-        assert result.exit_code != 0
-
-        # Try with force (should succeed)
-        result = runner.invoke(cli, ["init", "--path", str(tmp_path), "--force"])
+        # Try with force (should succeed and overwrite)
+        result = runner.invoke(
+            cli, ["init", "--path", str(tmp_path), "--preset", "enterprise", "--force"]
+        )
         assert result.exit_code == 0
 
-        # Check file was overwritten
+        # Check file was overwritten with new preset
         content = config_file.read_text()
-        assert "# Existing config" not in content
+        assert "enterprise" in content
 
 
 class TestCommandLineInterface:
@@ -308,7 +307,7 @@ class TestModularArchitecture:
     def test_init_command_uses_modular_structure(self, tmp_path):
         """Test that init command uses the new modular command structure."""
         runner = CliRunner()
-        result = runner.invoke(cli, ["init", "--path", str(tmp_path)])
+        result = runner.invoke(cli, ["init", "--path", str(tmp_path), "--preset", "team"])
 
         assert result.exit_code == 0
-        assert (tmp_path / ".docsible.yml").exists()
+        assert (tmp_path / ".docsible" / "config.yml").exists()

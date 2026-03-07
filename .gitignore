@@ -162,3 +162,5 @@ cython_debug/
 role_test
 collections_tests
 .vscode
+.DS_Store
+tests/fixtures/*/*.md

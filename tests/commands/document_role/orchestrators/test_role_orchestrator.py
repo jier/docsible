@@ -237,7 +237,9 @@ class TestRoleOrchestrator:
         mock_renderer_class.assert_called_once()
         mock_renderer.render_role.assert_called_once()
         mock_echo.assert_called_once()
-        assert "documentation generated" in mock_echo.call_args[0][0]
+        # With positive_framing=True (default), the PositiveFormatter output is shown
+        echo_output = mock_echo.call_args[0][0]
+        assert "Documentation Generated" in echo_output or "documentation generated" in echo_output
 
     @patch("docsible.commands.document_role.orchestrators.role_orchestrator.click.echo")
     @patch("docsible.renderers.readme_renderer.ReadmeRenderer")

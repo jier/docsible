@@ -9,9 +9,11 @@ from pathlib import Path
 
 import click
 
+from docsible.analyzers.recommendations import generate_all_recommendations
 from docsible.commands.document_role.builders.role_info_builder import RoleInfoBuilder
 from docsible.commands.document_role.formatters.dry_run_formatter import DryRunFormatter
 from docsible.commands.document_role.models import RoleCommandContext
+from docsible.models.recommendation import Recommendation
 
 logger = logging.getLogger(__name__)
 
@@ -66,6 +68,31 @@ class RoleOrchestrator:
 
         # Step 7: Generate dependency matrix
         dependency_data = self._generate_dependencies(role_info, analysis_report)
+
+        # Step 7.5: Generate recommendations (use validated role_path from step 1)
+        recommendations = generate_all_recommendations(role_path)
+
+        if self.context.analysis.apply_suppressions:
+            from docsible.suppression.engine import apply_suppressions
+            recommendations, suppressed = apply_suppressions(
+                recommendations,
+                base_path=role_path,
+            )
+            if suppressed:
+                click.echo(
+                    f"  ({len(suppressed)} recommendation(s) suppressed"
+                    f" — see 'docsible suppress list')"
+                )
+        else:
+            suppressed = []
+
+        if recommendations:
+            self._display_recommendations(recommendations)
+
+        # Step 7.6: Handle recommendations-only mode
+        if self.context.analysis.recommendations_only:
+            # Only show recommendations, don't generate documentation
+            return
 
         # Step 8: Handle dry-run mode
         if self.context.processing.dry_run:
@@ -131,14 +158,24 @@ class RoleOrchestrator:
     def _analyze_complexity(self, role_info: dict):
         """Analyze role complexity.
 
+        Reuses cached analysis from smart defaults if available to avoid
+        duplicate analysis.
+
         Args:
             role_info: Role information dictionary
 
         Returns:
             Complexity analysis report
         """
+        # Check if we have a cached report from smart defaults
+        if self.context.analysis.cached_complexity_report:
+            logger.debug("Reusing complexity analysis from smart defaults (avoiding duplicate)")
+            return self.context.analysis.cached_complexity_report
+
+        # No cached report available, perform fresh analysis
         from docsible.analyzers import analyze_role_complexity
 
+        logger.debug("Performing fresh complexity analysis")
         return analyze_role_complexity(
             role_info,
             include_patterns=self.context.analysis.simplification_report,
@@ -261,6 +298,18 @@ class RoleOrchestrator:
 
         click.echo(summary)
 
+    def _display_recommendations(self, recommendations: list[Recommendation]) -> None:
+        """Display recommendations to user"""
+        from docsible.formatters.recommendation_formatter import RecommendationFormatter
+
+        formatter = RecommendationFormatter()
+        output = formatter.format_recommendations(
+            recommendations=recommendations,
+            show_info=self.context.analysis.show_info
+        )
+
+        click.echo(output)
+
     def _render_documentation(
         self, role_info: dict, role_path: Path, analysis_report, diagrams: dict, dependency_data: dict
     ) -> None:
@@ -324,4 +373,15 @@ class RoleOrchestrator:
             append=self.context.processing.append,
         )
 
-        click.echo(f"✓ Role documentation generated: {readme_path}")
+        # Display positive or neutral success message
+        if self.context.analysis.positive_framing:
+            from docsible.formatters.positive_formatter import PositiveFormatter
+            formatter = PositiveFormatter()
+            success_msg = formatter.format_success(
+                output_file=readme_path,
+                complexity=analysis_report,
+                recommendations=[],  # recommendations already shown separately above
+            )
+            click.echo("\n" + success_msg)
+        else:
+            click.echo(f"✓ Role documentation generated: {readme_path}")

@@ -1,0 +1,23 @@
+rules:
+  # Security patterns → CRITICAL
+  - pattern: "vault.*not.*encrypted"
+    severity: critical
+    category: security
+
+  - pattern: "password.*exposed"
+    severity: critical
+    category: security
+
+  # Quality patterns → WARNING
+  - pattern: "no task descriptions"
+    severity: warning
+    category: documentation
+
+  - pattern: "complex.*without.*documentation"
+    severity: warning
+    category: maintainability
+
+  # Enhancement patterns → INFO
+  - pattern: "consider adding examples"
+    severity: info
+    category: enhancement
