@@ -8,7 +8,7 @@ import pytest
 import yaml
 from click.testing import CliRunner
 
-from docsible.cli import init_config
+from docsible.commands.init_config import init_config
 
 
 @pytest.fixture

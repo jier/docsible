@@ -13,6 +13,9 @@ This guide explains how to configure Docsible to work with various Ansible proje
 - [Output Control](#output-control)
 - [Getting Help](#getting-help)
 - [Suppression System](#suppression-system)
+- [Preset System](#preset-system)
+- [Intent-Based Commands](#intent-based-commands)
+- [Interactive Wizard (docsible init)](#interactive-wizard-docsible-init)
 - [Migration Guide](#migration-guide)
 
 ## Overview
@@ -1461,10 +1464,13 @@ docsible [GLOBAL_OPTIONS] COMMAND [COMMAND_OPTIONS]
 ```
 
 Available commands:
-- `role` - Generate documentation for Ansible roles or collections
-- `init` - Create a `.docsible.yml` configuration file
+- `document` - Generate documentation for Ansible roles or collections
+- `analyze` - Analyze a role without generating documentation
+- `validate` - Validate documentation without writing any files
+- `init` - Create a `.docsible/config.yml` configuration file via interactive wizard
 - `guide` - Show an interactive guide on a given topic
 - `suppress` - Manage suppression rules for recommendations
+- `role` - *(deprecated)* Generate documentation (use `document` instead)
 
 ### Main Command: `docsible role`
 
@@ -1857,6 +1863,158 @@ $ docsible role --role .
 ```
 
 Use `--no-suppress` is planned for future releases to bypass suppressions in CI.
+
+---
+
+## Preset System
+
+Presets bundle common option combinations for different use cases. Apply with `--preset` on any documentation command.
+
+### Built-in Presets
+
+| Preset | Use Case | Key Behaviours |
+|--------|----------|----------------|
+| `personal` | Solo / learning | Minimal output, no graphs, fast |
+| `team` | Team collaboration | Smart defaults, auto-fix, comments |
+| `enterprise` | Production / compliance | All reports, strict validation, always graphs |
+| `consultant` | Client deliverables | Maximum detail, all diagrams, task lines |
+
+### Usage
+
+```bash
+# Apply a preset
+docsible document role . --preset=team
+
+# Preset + override: enterprise settings but no diagrams
+docsible document role . --preset=enterprise --no-graph
+
+# Store preset in project config (applied automatically on every run)
+docsible init --preset=team
+docsible document role .    # picks up preset from .docsible/config.yml
+```
+
+### Preset Settings Reference
+
+| Setting | `personal` | `team` | `enterprise` | `consultant` |
+|---------|-----------|--------|-------------|-------------|
+| `--minimal` | ✅ | — | — | — |
+| `--graph` | — | smart | ✅ | ✅ |
+| `--validate-markdown` | ✅ | ✅ | ✅ | ✅ |
+| `--strict-validation` | — | — | ✅ | — |
+| `--auto-fix` | — | ✅ | — | — |
+| `--complexity-report` | — | — | ✅ | ✅ |
+| `--show-dependencies` | — | smart | ✅ | ✅ |
+| `--comments` | — | ✅ | ✅ | ✅ |
+| `--task-line` | — | — | ✅ | ✅ |
+| `--include-complexity` | — | — | ✅ | ✅ |
+
+`—` means the preset does not set this option (smart defaults or user choice apply).
+
+### Project Config: `.docsible/config.yml`
+
+```yaml
+preset: team
+overrides:
+  generate_graph: true   # Override: always generate graphs even for simple roles
+ci_cd:
+  platform: github       # Set by docsible init
+```
+
+---
+
+## Intent-Based Commands
+
+Phase 3 introduces intent-organized command groups. The legacy `docsible role` is still supported but deprecated.
+
+### `docsible document role`
+
+Generate documentation (full feature parity with `docsible role`):
+
+```bash
+docsible document role --role .
+docsible document role --role . --graph --preset=enterprise
+docsible document role --role . --preset=team --output docs/README.md
+```
+
+### `docsible analyze role`
+
+Analyze a role without generating documentation. Automatically enables `--complexity-report`:
+
+```bash
+docsible analyze role --role .
+docsible analyze role --role . --simplification-report --show-dependencies
+docsible analyze role --role . --preset=enterprise
+```
+
+### `docsible validate role`
+
+Validate documentation without writing any files (`--dry-run` is implied):
+
+```bash
+docsible validate role --role .
+docsible validate role --role . --no-strict     # relax strict mode
+docsible validate role --role . --preset=enterprise
+```
+
+### Migration from `docsible role`
+
+`docsible role` continues to work but prints a deprecation notice to stderr:
+
+```
+DeprecationWarning: 'docsible role' is deprecated. Use 'docsible document role' instead.
+```
+
+Migration is straightforward — all options are identical:
+
+```bash
+# Before
+docsible role --role . --graph --validate-markdown
+
+# After
+docsible document role --role . --graph --validate-markdown
+```
+
+---
+
+## Interactive Wizard (docsible init)
+
+`docsible init` runs a 3-step wizard to configure your project and optionally set up CI/CD.
+
+```bash
+docsible init                    # Interactive wizard
+docsible init --preset=team      # Skip wizard, use preset directly
+docsible init --force            # Overwrite existing config
+```
+
+### Wizard Steps
+
+**Step 1: Use case**
+```
+Step 1/3: What is your use case?
+  1. Personal projects  (quick docs, minimal output)
+  2. Team collaboration (comprehensive docs, smart graphs)
+  3. Enterprise/prod    (validation, compliance, all reports)
+  4. Consulting         (maximum detail, all diagrams)
+Choice [2]:
+```
+
+**Step 2: Smart defaults**
+```
+Step 2/3: Documentation detail level
+  Enable smart defaults? [Y/n]:
+```
+
+**Step 3: CI/CD Integration**
+```
+Step 3/3: CI/CD Integration
+  Set up CI/CD integration? [y/N]:
+  Select platform:
+    1. GitHub Actions   → .github/workflows/docsible.yml
+    2. GitLab CI        → .gitlab-ci.yml
+    3. Azure DevOps     → azure-pipelines.yml
+```
+
+Writes `.docsible/config.yml` with the chosen settings.
 
 ---
 

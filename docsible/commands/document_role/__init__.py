@@ -1,6 +1,11 @@
 """Simplified document_role command with modularized options."""
 
+import sys
+
 import click
+
+from docsible.presets.registry import PresetRegistry
+from docsible.presets.resolver import resolve_settings
 
 # Import grouped help formatter
 from docsible.utils.cli_helpers import BriefHelpCommand
@@ -30,7 +35,14 @@ from .options import (
 @add_repository_options
 @add_recommendation_options
 @add_framing_options
+@click.option(
+    "--preset",
+    type=click.Choice(PresetRegistry.names()),
+    default=None,
+    help="Apply a built-in preset (personal/team/enterprise/consultant).",
+)
 def doc_the_role(
+    preset,
     role_path: str | None,
     collection_path: str | None,
     playbook: str | None,
@@ -124,44 +136,54 @@ def doc_the_role(
         docsible role --role /path/to/role --minimal
         docsible role --collection /path/to/collection
     """
-    core_doc_the_role(
-        role_path=role_path,
-        collection_path=collection_path,
-        playbook=playbook,
-        generate_graph=generate_graph,
-        no_backup=no_backup,
-        no_docsible=no_docsible,
-        dry_run=dry_run,
-        validate_markdown=validate_markdown,
-        auto_fix=auto_fix,
-        strict_validation=strict_validation,
-        comments=comments,
-        task_line=task_line,
-        md_collection_template=md_collection_template,
-        md_role_template=md_role_template,
-        hybrid=hybrid,
-        no_vars=no_vars,
-        no_tasks=no_tasks,
-        no_diagrams=no_diagrams,
-        simplify_diagrams=simplify_diagrams,
-        no_examples=no_examples,
-        no_metadata=no_metadata,
-        no_handlers=no_handlers,
-        minimal=minimal,
-        complexity_report=complexity_report,
-        include_complexity=include_complexity,
-        simplification_report=simplification_report,
-        show_dependencies=show_dependencies,
-        analyze_only=analyze_only,
-        append=append,
-        output=output,
-        repository_url=repository_url,
-        repo_type=repo_type,
-        repo_branch=repo_branch,
-        show_info=show_info,
-        recommendations_only=recommendations_only,
-        positive_framing=positive_framing,
+    click.echo(
+        "DeprecationWarning: 'docsible role' is deprecated. "
+        "Use 'docsible document role' instead.",
+        file=sys.stderr,
     )
+
+    # Collect all explicit kwargs and apply preset resolution
+    cli_kwargs = {
+        "role_path": role_path,
+        "collection_path": collection_path,
+        "playbook": playbook,
+        "generate_graph": generate_graph,
+        "no_backup": no_backup,
+        "no_docsible": no_docsible,
+        "dry_run": dry_run,
+        "validate_markdown": validate_markdown,
+        "auto_fix": auto_fix,
+        "strict_validation": strict_validation,
+        "comments": comments,
+        "task_line": task_line,
+        "md_collection_template": md_collection_template,
+        "md_role_template": md_role_template,
+        "hybrid": hybrid,
+        "no_vars": no_vars,
+        "no_tasks": no_tasks,
+        "no_diagrams": no_diagrams,
+        "simplify_diagrams": simplify_diagrams,
+        "no_examples": no_examples,
+        "no_metadata": no_metadata,
+        "no_handlers": no_handlers,
+        "minimal": minimal,
+        "complexity_report": complexity_report,
+        "include_complexity": include_complexity,
+        "simplification_report": simplification_report,
+        "show_dependencies": show_dependencies,
+        "analyze_only": analyze_only,
+        "append": append,
+        "output": output,
+        "repository_url": repository_url,
+        "repo_type": repo_type,
+        "repo_branch": repo_branch,
+        "show_info": show_info,
+        "recommendations_only": recommendations_only,
+        "positive_framing": positive_framing,
+    }
+    resolved = resolve_settings(preset_name=preset, cli_overrides=cli_kwargs)
+    cli_kwargs.update(resolved)
+    core_doc_the_role(**cli_kwargs)
 
 
 __all__ = ["doc_the_role", "build_role_info", "extract_playbook_role_dependencies"]
