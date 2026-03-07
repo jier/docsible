@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 import yaml
-from click.testing import CliRunner
+from click.testing import CliRunner, Result
 
 from docsible.commands.suppress import suppress_group
 from docsible.models.suppression import SuppressionRule, SuppressionStore
@@ -23,10 +23,10 @@ def make_rule(**kwargs) -> SuppressionRule:
         "reason": "Examples in separate repo",
     }
     defaults.update(kwargs)
-    return SuppressionRule(**defaults)
+    return SuppressionRule(**defaults)  # type: ignore[arg-type]
 
 
-def invoke(args: list[str]) -> object:
+def invoke(args: list[str]) -> Result:
     """Run a suppress_group command with the given args."""
     runner = CliRunner()
     return runner.invoke(suppress_group, args, catch_exceptions=False)
@@ -48,7 +48,7 @@ def load_yaml_rules(tmp_path: Path) -> list[dict]:
     if not path.exists():
         return []
     data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
-    return data.get("rules", [])
+    return data.get("rules", [])  # type: ignore[no-any-return]
 
 
 # ---------------------------------------------------------------------------

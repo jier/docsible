@@ -27,7 +27,7 @@ class TestPreset:
         p = Preset(name="frozen", description="Immutable", settings={"key": "value"})
         with pytest.raises(Exception):
             # Frozen pydantic models raise ValidationError or TypeError on assignment
-            p.name = "other"
+            p.name = "other"  # type: ignore[misc]
 
     def test_preset_model_config_frozen(self):
         """Confirm the class-level frozen config is set."""
@@ -46,11 +46,11 @@ class TestPreset:
 
     def test_preset_requires_name(self):
         with pytest.raises(ValidationError):
-            Preset(description="No name")
+            Preset(description="No name")  # type: ignore[call-arg]
 
     def test_preset_requires_description(self):
         with pytest.raises(ValidationError):
-            Preset(name="no_desc")
+            Preset(name="no_desc")  # type: ignore[call-arg]
 
 
 class TestDocsiblePresetConfig:

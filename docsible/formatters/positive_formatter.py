@@ -130,7 +130,7 @@ class PositiveFormatter:
     def _format_file_size(self, file_path: Path) -> str:
         if not file_path.exists():
             return "unknown"
-        size_bytes = file_path.stat().st_size
+        size_bytes: float = file_path.stat().st_size
         for unit in ["B", "KB", "MB"]:
             if size_bytes < 1024:
                 return f"{size_bytes:.1f} {unit}"

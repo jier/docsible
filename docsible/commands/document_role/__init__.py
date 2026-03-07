@@ -183,7 +183,7 @@ def doc_the_role(
     }
     resolved = resolve_settings(preset_name=preset, cli_overrides=cli_kwargs)
     cli_kwargs.update(resolved)
-    core_doc_the_role(**cli_kwargs)
+    core_doc_the_role(**cli_kwargs)  # type: ignore[arg-type]
 
 
 __all__ = ["doc_the_role", "build_role_info", "extract_playbook_role_dependencies"]

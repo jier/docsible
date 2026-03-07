@@ -21,7 +21,7 @@ def make_rule(**kwargs) -> SuppressionRule:
         "reason": "Examples in separate repo",
     }
     defaults.update(kwargs)
-    return SuppressionRule(**defaults)
+    return SuppressionRule(**defaults)  # type: ignore[arg-type]
 
 
 # ---------------------------------------------------------------------------

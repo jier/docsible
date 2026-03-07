@@ -72,4 +72,4 @@ class BriefHelpFormatter:
         # Footer
         formatter.write_paragraph()
         formatter.write_text("See all options: docsible role --help-full")
-        formatter.write_text("Learn more: https://docs.docsible.com/getting-started")
+        formatter.write_text("Learn more: https://github.com/docsible/docsible")

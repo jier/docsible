@@ -2,6 +2,7 @@
 
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from typing import Any
 from unittest.mock import MagicMock
 
 import pytest
@@ -23,10 +24,10 @@ def make_rule(**kwargs) -> SuppressionRule:
         "reason": "Examples in separate repo",
     }
     defaults.update(kwargs)
-    return SuppressionRule(**defaults)
+    return SuppressionRule(**defaults)  # type: ignore[arg-type]
 
 
-def make_recommendation(message: str, file_path: str | None = None) -> MagicMock:
+def make_recommendation(message: str, file_path: str | None = None) -> Any:
     """Create a MagicMock that mimics a Recommendation with .message and .file_path."""
     rec = MagicMock()
     rec.message = message
