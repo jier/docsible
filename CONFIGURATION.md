@@ -12,6 +12,7 @@ This guide explains how to configure Docsible to work with various Ansible proje
 - [Examples](#examples)
 - [Output Control](#output-control)
 - [Getting Help](#getting-help)
+- [Suppression System](#suppression-system)
 - [Migration Guide](#migration-guide)
 
 ## Overview
@@ -1463,6 +1464,7 @@ Available commands:
 - `role` - Generate documentation for Ansible roles or collections
 - `init` - Create a `.docsible.yml` configuration file
 - `guide` - Show an interactive guide on a given topic
+- `suppress` - Manage suppression rules for recommendations
 
 ### Main Command: `docsible role`
 
@@ -1753,6 +1755,108 @@ Guides render as formatted markdown in the terminal (requires `rich`; falls back
 | New to docsible | `docsible guide getting-started` |
 | Something isn't working | `docsible guide troubleshooting` |
 | Confused by auto-detection | `docsible guide smart-defaults` |
+
+---
+
+## Suppression System
+
+The suppression system lets you silence specific recommendations (false positives) with a documented reason.
+
+Suppressions are stored in `.docsible/suppress.yml` relative to your role directory or current working directory.
+
+### Commands
+
+#### `docsible suppress add`
+
+Add a new suppression rule:
+
+```bash
+# Basic suppression (case-insensitive substring match)
+docsible suppress add "no examples directory" --reason "Examples maintained in separate repo"
+
+# Scope to specific files (glob pattern)
+docsible suppress add "no examples" --reason "Legacy role" --file "roles/webserver"
+
+# Auto-expire after 90 days
+docsible suppress add "no examples" --reason "Temporary exception" --expires 90
+
+# Use regular expression matching
+docsible suppress add "no (examples|defaults)" --reason "Minimalist role" --regex
+
+# With audit trail
+docsible suppress add "no examples" --reason "Approved exception" --approved-by "team-lead"
+```
+
+Options:
+| Option | Description |
+|--------|-------------|
+| `PATTERN` | Case-insensitive substring to match against recommendation messages |
+| `--reason`, `-r` | Required justification for suppression |
+| `--file`, `-f` | Glob pattern to scope suppression to specific files |
+| `--expires`, `-e` | Auto-expire after N days |
+| `--approved-by` | Name of approver (audit trail) |
+| `--regex` | Treat PATTERN as a regular expression |
+| `--path`, `-p` | Base path for `.docsible/suppress.yml` (default: current directory) |
+
+#### `docsible suppress list`
+
+List all active suppression rules:
+
+```bash
+docsible suppress list
+
+# Include expired rules
+docsible suppress list --show-expired
+```
+
+#### `docsible suppress remove`
+
+Remove a rule by its ID:
+
+```bash
+docsible suppress remove abc123
+```
+
+#### `docsible suppress clean`
+
+Remove all expired rules:
+
+```bash
+docsible suppress clean
+
+# Preview without removing
+docsible suppress clean --dry-run
+```
+
+### Storage Format
+
+Suppressions are stored in `.docsible/suppress.yml`:
+
+```yaml
+rules:
+  - id: abc123
+    pattern: "no examples directory"
+    reason: "Examples maintained in separate docsible-examples repo"
+    file_pattern: "roles/*"
+    created_at: "2026-03-06T10:00:00+00:00"
+    expires_at: "2026-06-04T10:00:00+00:00"
+    approved_by: "team-lead"
+    match_count: 5
+    last_matched: "2026-03-06T15:30:00+00:00"
+    use_regex: false
+```
+
+### Integration with Role Documentation
+
+When running `docsible role`, suppressed recommendations are automatically filtered before display:
+
+```bash
+$ docsible role --role .
+...
+  (2 recommendation(s) suppressed — see 'docsible suppress list')
+```
+
+Use `--no-suppress` is planned for future releases to bypass suppressions in CI.
 
 ---
 
