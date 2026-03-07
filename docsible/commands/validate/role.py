@@ -3,9 +3,14 @@ import click
 
 from docsible.commands.document_role.core import doc_the_role as core_doc_the_role
 from docsible.commands.document_role.options import (
+    add_content_options,
     add_framing_options,
+    add_generation_options,
     add_output_options,
     add_path_options,
+    add_recommendation_options,
+    add_repository_options,
+    add_template_options,
 )
 from docsible.presets.registry import PresetRegistry
 from docsible.presets.resolver import resolve_settings
@@ -14,6 +19,11 @@ from docsible.presets.resolver import resolve_settings
 @click.command(name="role")
 @add_path_options
 @add_output_options
+@add_content_options
+@add_template_options
+@add_generation_options
+@add_repository_options
+@add_recommendation_options
 @add_framing_options
 @click.option(
     "--preset",
