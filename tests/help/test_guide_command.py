@@ -93,7 +93,7 @@ class TestGuideCommandInvocation:
 
     def test_guide_command_is_click_command(self):
         import click
-        assert isinstance(guide_command, click.BaseCommand)
+        assert isinstance(guide_command, click.BaseCommand)  # type: ignore[arg-type]
 
     def test_guide_command_name(self):
         assert guide_command.name == "guide"

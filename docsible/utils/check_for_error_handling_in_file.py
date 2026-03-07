@@ -16,7 +16,7 @@ def check_file(filepath):
             if isinstance(node, ast.Try):
                 # Check if handler has logging
                 for handler in node.handlers:
-                    handler_body = ast.unparse(handler.body) if hasattr(ast, 'unparse') else str(handler.body)
+                    handler_body = ast.unparse(ast.Module(body=handler.body, type_ignores=[])) if hasattr(ast, 'unparse') else str(handler.body)
                     
                     # Check if using print, click.echo, or logger
                     has_logging = any(keyword in handler_body for keyword in [
@@ -28,7 +28,7 @@ def check_file(filepath):
                                      isinstance(handler.body[0], ast.Pass))
                     
                     if not has_logging and not is_silent_pass:
-                        exc_type = handler.type.id if hasattr(handler.type, 'id') else 'Exception'
+                        exc_type = handler.type.id if handler.type is not None and hasattr(handler.type, 'id') else 'Exception'
                         issues.append((node.lineno, exc_type, 'no_logging'))
         
         return issues

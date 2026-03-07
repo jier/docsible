@@ -53,14 +53,14 @@ class QualityRecommendationGenerator:
 
         return recommendations
     
-    def _find_undocumented_vars(self, role_path: Path) -> list[Recommendation]:
+    def _find_undocumented_vars(self, role_path: Path) -> list[str]:
 
         """Find variables that are defined but not documented.
 
         Returns:
             List of variable names without documentation comments
         """
-        undocumented = []
+        undocumented: list[str] = []
         
         # Check defaults/main.yml
         defaults_file = role_path / "defaults" / "main.yml"

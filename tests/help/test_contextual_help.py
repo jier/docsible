@@ -28,6 +28,7 @@ class TestContextualHelpProviderGetHelp:
     def test_get_help_for_role_not_found_contains_guidance(self):
         help_text = ContextualHelpProvider.get_help("RoleNotFoundError")
         # Should contain actionable guidance
+        assert help_text is not None
         assert len(help_text.strip()) > 0
 
     def test_get_help_for_file_not_found_returns_string(self):

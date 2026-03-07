@@ -52,7 +52,7 @@ class SecurityRecommendationGenerator:
 
     def _check_exposed_secrets(self, role_path: Path) -> list[Recommendation]:
         """Check for secrets in logs or debug output."""
-        recommendations = []
+        recommendations: list[Recommendation] = []
 
         tasks_dir = role_path / "tasks"
         if not tasks_dir.exists():
@@ -113,7 +113,7 @@ class SecurityRecommendationGenerator:
     
     def _check_unsafe_permissions(self, role_path: Path) -> list[Recommendation]:
         """Check for unsafe file permissions in tasks."""
-        recommendations = []
+        recommendations: list[Recommendation] = []
         
         tasks_dir = role_path / "tasks"
         if not tasks_dir.exists():

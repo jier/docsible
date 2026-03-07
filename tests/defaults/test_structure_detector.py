@@ -288,6 +288,7 @@ class TestStructureDetector:
         detector = StructureDetector()
         result = detector.detect(Path("tests/fixtures/simple_role"))
 
+        assert result.metadata is not None
         assert "scanned_directories" in result.metadata
         scanned = result.metadata["scanned_directories"]
         assert "tasks" in scanned

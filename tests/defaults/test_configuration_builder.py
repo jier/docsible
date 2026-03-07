@@ -86,7 +86,7 @@ class TestConfigurationBuilder:
     def test_none_decision_is_ignored(self):
         """Test that None decisions are safely ignored."""
         builder = ConfigurationBuilder()
-        config = builder.add_decision(None).build()
+        config = builder.add_decision(None).build()  # type: ignore[arg-type]
 
         assert len(config.decisions) == 0
 
