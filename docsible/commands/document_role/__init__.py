@@ -72,6 +72,11 @@ def doc_the_role(
 
     Supports standard roles, collections, AWX projects, and monorepos.
     Use .docsible.yml to configure custom directory structures.
+    Run with --help-full to see all available options.
+
+    \f
+    # Click convention: \f (form-feed) truncates --help output here.
+    # Everything below is visible in source but never rendered to the terminal.
 
     Args:
         role_path: Path to role directory
@@ -109,24 +114,14 @@ def doc_the_role(
         repo_branch: Repository branch name
         show_info: Show INFO-level recommendations
         recommendations_only: Show only recommendations without generating docs
+        positive_framing: Use positive output framing
 
     Examples:
-        # Document a role
         docsible role --role /path/to/role
-
-        # Document with diagrams
         docsible role --role /path/to/role --graph
-
-        # Analyze role complexity without generating docs
         docsible role --role /path/to/role --analyze-only
-
-        # Include complexity analysis and dependency matrix
         docsible role --role /path/to/role --complexity-report --show-dependencies
-
-        # Minimal documentation
         docsible role --role /path/to/role --minimal
-
-        # Collection documentation
         docsible role --collection /path/to/collection
     """
     core_doc_the_role(

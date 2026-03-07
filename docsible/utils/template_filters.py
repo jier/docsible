@@ -20,7 +20,7 @@ def escape_table_cell(
     - Pipe characters (|) - breaks table columns
     - Newlines (\n, \r\n) - breaks table rows
     - Backticks (`) - breaks inline code blocks
-    - Backslashes (\) - escape sequences
+    - Backslashes (\\) - escape sequences
     - Very long values - makes tables unreadable
 
     Args:

@@ -34,11 +34,12 @@ class BriefHelpFormatter:
         pieces = ctx.command.collect_usage_pieces(ctx)
         formatter.write_usage(ctx.command_path, " ".join(pieces) if pieces else "")
 
-        # Description
+        # Description — show only the first paragraph (short summary)
         if ctx.command.help:
+            first_paragraph = ctx.command.help.split("\n\n")[0].strip()
             formatter.write_paragraph()
             with formatter.indentation():
-                formatter.write_text(ctx.command.help)
+                formatter.write_text(first_paragraph)
 
         # Quick start examples
         examples = BriefHelpFormatter.QUICK_EXAMPLES.get(command_name, [])
