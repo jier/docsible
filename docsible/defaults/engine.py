@@ -4,13 +4,14 @@ import logging
 from pathlib import Path
 from typing import Any
 
+from docsible.analyzers.complexity_analyzer.defaults_detector import ComplexityDetector
+from docsible.analyzers.complexity_analyzer.models import ComplexityCategory as Category
 from docsible.defaults.builder import ConfigurationBuilder
 from docsible.defaults.config import DocumentationConfig
 from docsible.defaults.decisions.base import DecisionContext
 from docsible.defaults.decisions.dependencies_rule import DependenciesDecisionRule
 from docsible.defaults.decisions.graph_rule import GraphDecisionRule
 from docsible.defaults.decisions.minimal_rule import MinimalModeRule
-from docsible.defaults.detectors.complexity import Category, ComplexityDetector
 from docsible.defaults.detectors.structure import StructureDetector
 
 logger = logging.getLogger(__name__)

@@ -260,7 +260,9 @@ After each phase: run full test suite (`python -m pytest -q`) and mypy to verify
 
 | Item | Description | Status |
 |------|-------------|--------|
+| A | Consolidate complexity analysis → `analyzers/complexity_analyzer/defaults_detector.py` | ✅ Complete |
 | B | Consolidate diagram generation → `diagrams/` | ✅ Complete |
+| C | Remove `document_role/core.py`, make `core_orchestrated.py` sole implementation | ✅ Complete |
 | D | Clean up `utils/` → `utils/template/`, `utils/validators/` | ✅ Complete |
 | E | Centralize formatters → `formatters/text/`, `formatters/help/` | ✅ Complete |
 | F | Rename `validators/` → `validation/` | ✅ Complete |
@@ -269,4 +271,4 @@ After each phase: run full test suite (`python -m pytest -q`) and mypy to verify
 | I | Merge `phase_detector/` into `complexity_analyzer/phase.py` | ✅ Complete |
 | J | Document model colocation pattern | ✅ Decision documented |
 
-**Final validation (2026-03-07):** 990 tests passed · 0 mypy errors · ruff clean
+**Final validation (2026-03-08):** All items complete. Re-run `python -m pytest -q` after implementation to confirm test count.

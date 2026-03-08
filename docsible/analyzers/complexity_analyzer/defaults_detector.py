@@ -1,13 +1,16 @@
-"""Complexity detection for Ansible roles."""
+"""Complexity detection adapter for the SmartDefaultsEngine.
+
+This module provides the SmartDefaultsEngine interface for the complexity analyzer.
+It adapts the complexity_analyzer output to the DetectionResult interface used
+by the defaults engine.
+"""
 
 import logging
-from enum import Enum
 from pathlib import Path
 from typing import Any
 
 from pydantic import BaseModel, Field
 
-from docsible.analyzers.complexity_analyzer.models import ComplexityMetrics
 from docsible.constants import (
     MAX_TASK_FILES,
     MAX_TASKS,
@@ -17,14 +20,9 @@ from docsible.constants import (
 )
 from docsible.defaults.detectors.base import DetectionResult, Detector
 
+from .models import ComplexityCategory, ComplexityMetrics
+
 logger = logging.getLogger(__name__)
-
-
-class Category(Enum):
-    SIMPLE = "simple"
-    MEDIUM = "medium"
-    COMPLEX = "complex"
-    ENTERPRISE = "enterprise"
 
 
 class ComplexityFindings(BaseModel):
@@ -37,7 +35,7 @@ class ComplexityFindings(BaseModel):
     - Documentation: Self-documenting structure
     """
 
-    category: Category
+    category: ComplexityCategory
     total_tasks: int = Field(ge=0, description="Total task in file")
     task_files: int = Field(ge=0, description="Task files in role folder")
     total_vars: int = Field(ge=0, description="Total vars in used in this role")
@@ -50,12 +48,12 @@ class ComplexityFindings(BaseModel):
     @property
     def is_simple(self) -> bool:
         """Convenience method for decision rules."""
-        return self.category == Category.SIMPLE
+        return self.category == ComplexityCategory.SIMPLE
 
     @property
     def is_complex(self) -> bool:
         """Convenience method for decision rules."""
-        return self.category in (Category.COMPLEX, Category.ENTERPRISE)
+        return self.category in (ComplexityCategory.COMPLEX, ComplexityCategory.ENTERPRISE)
 
     @property
     def requires_visualization(self) -> bool:
@@ -103,18 +101,18 @@ class ComplexityDetector(Detector):
             metrics = report.metrics
             category = report.category
 
-            # Map ComplexityCategory to our Category enum
+            # Map ComplexityCategory enum values
             # Note: ComplexityCategory.value is lowercase ("simple"), .name is uppercase ("SIMPLE")
             category_map = {
-                "SIMPLE": Category.SIMPLE,
-                "MEDIUM": Category.MEDIUM,
-                "COMPLEX": Category.COMPLEX,
-                "ENTERPRISE": Category.ENTERPRISE,
+                "SIMPLE": ComplexityCategory.SIMPLE,
+                "MEDIUM": ComplexityCategory.MEDIUM,
+                "COMPLEX": ComplexityCategory.COMPLEX,
+                "ENTERPRISE": ComplexityCategory.ENTERPRISE,
             }
 
             # Transform to our detection format
             findings = ComplexityFindings(
-                category=category_map.get(category.name, Category.MEDIUM),
+                category=category_map.get(category.name, ComplexityCategory.MEDIUM),
                 total_tasks=metrics.total_tasks,
                 task_files=metrics.task_files,  # Already an int, not a list
                 total_vars=0,  # ComplexityMetrics doesn't track variables
@@ -200,7 +198,7 @@ class ComplexityDetector(Detector):
     def _default_findings(self) -> dict[str, Any]:
         """Safe defaults when detection fails."""
         return ComplexityFindings(
-            category=Category.MEDIUM,  # Conservative default
+            category=ComplexityCategory.MEDIUM,  # Conservative default
             total_tasks=0,
             task_files=0,
             total_vars=0,

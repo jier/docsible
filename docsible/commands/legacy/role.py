@@ -8,7 +8,7 @@ import sys
 
 import click
 
-from docsible.commands.document_role.core import doc_the_role as core_doc_the_role
+from docsible.commands.document_role.core_orchestrated import doc_the_role as core_doc_the_role
 from docsible.commands.document_role.options import (
     add_content_options,
     add_framing_options,
@@ -181,7 +181,7 @@ def doc_the_role(
     }
     resolved = resolve_settings(preset_name=preset, cli_overrides=cli_kwargs)
     cli_kwargs.update(resolved)
-    core_doc_the_role(**cli_kwargs)  # type: ignore[arg-type]
+    core_doc_the_role(**cli_kwargs)
 
 
 __all__ = ["doc_the_role"]

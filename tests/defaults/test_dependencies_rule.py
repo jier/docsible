@@ -1,6 +1,6 @@
 from docsible.defaults.decisions.base import DecisionContext
 from docsible.defaults.decisions.dependencies_rule import DependenciesDecisionRule
-from docsible.defaults.detectors.complexity import Category
+from docsible.analyzers.complexity_analyzer.models import ComplexityCategory as Category
 
 
 class TestDependenciesDecisionRule:
