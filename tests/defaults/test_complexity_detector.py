@@ -2,7 +2,8 @@ from pathlib import Path
 
 import pytest
 
-from docsible.defaults.detectors.complexity import Category, ComplexityDetector
+from docsible.analyzers.complexity_analyzer.defaults_detector import ComplexityDetector
+from docsible.analyzers.complexity_analyzer.models import ComplexityCategory as Category
 
 
 class TestComplexityDetector:

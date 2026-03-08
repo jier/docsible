@@ -5,7 +5,7 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
-from docsible.defaults.detectors.complexity import Category
+from docsible.analyzers.complexity_analyzer.models import ComplexityCategory as Category
 
 
 class DecisionContext(BaseModel):

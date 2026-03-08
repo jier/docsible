@@ -12,6 +12,7 @@ class ComplexityCategory(str, Enum):
     SIMPLE = "simple"  # 1-10 tasks
     MEDIUM = "medium"  # 11-25 tasks
     COMPLEX = "complex"  # 25+ tasks
+    ENTERPRISE = "enterprise"  # Large-scale enterprise roles
 
 
 class IntegrationType(str, Enum):

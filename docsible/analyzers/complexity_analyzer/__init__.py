@@ -22,6 +22,8 @@ from .analyzers import (
     analyze_role_complexity_cached,
     classify_complexity,
 )
+from .defaults_detector import ComplexityDetector as DefaultsComplexityDetector
+from .defaults_detector import ComplexityFindings
 from .hotspots import detect_conditional_hotspots
 from .inflections import detect_inflection_points
 from .integrations import IntegrationDetector, detect_integrations
@@ -58,4 +60,7 @@ __all__ = [
     "detect_conditional_hotspots",
     "detect_inflection_points",
     "generate_recommendations",
+    # SmartDefaultsEngine adapter
+    "ComplexityFindings",
+    "DefaultsComplexityDetector",
 ]
