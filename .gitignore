@@ -163,4 +163,5 @@ role_test
 collections_tests
 .vscode
 .DS_Store
+.docsible/
 tests/fixtures/*/*.md
