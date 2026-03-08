@@ -1,0 +1,69 @@
+---
+# title: Edge-case tasks
+# description: Exercises block/rescue/always, include_role, and import_role code paths
+
+- name: Include a reusable role via include_role
+  ansible.builtin.include_role:
+    name: common
+    tasks_from: setup.yml
+  vars:
+    common_env: production
+
+- name: Import a role statically via import_role
+  ansible.builtin.import_role:
+    name: base_os
+  vars:
+    base_os_packages:
+      - curl
+      - git
+
+- name: Deploy application with error handling
+  block:
+    - name: Pull application archive
+      ansible.builtin.get_url:
+        url: "https://releases.example.com/{{ app_name }}/{{ app_version }}.tar.gz"
+        dest: "/tmp/{{ app_name }}-{{ app_version }}.tar.gz"
+        checksum: "sha256:{{ app_checksum }}"
+
+    - name: Extract archive
+      ansible.builtin.unarchive:
+        src: "/tmp/{{ app_name }}-{{ app_version }}.tar.gz"
+        dest: "{{ app_install_dir }}"
+        remote_src: true
+        owner: "{{ app_user }}"
+        group: "{{ app_group }}"
+
+    - name: Run database migrations
+      ansible.builtin.command:
+        cmd: "{{ app_install_dir }}/bin/migrate"
+      environment:
+        DATABASE_URL: "postgresql://{{ db_host }}/{{ db_name }}"
+      notify: Restart application service
+
+  rescue:
+    - name: Log deployment failure
+      ansible.builtin.debug:
+        msg: "Deployment of {{ app_name }} {{ app_version }} failed — rolling back"
+
+    - name: Restore previous symlink
+      ansible.builtin.file:
+        src: "{{ app_install_dir }}.previous"
+        dest: "{{ app_install_dir }}.current"
+        state: link
+      when: app_rollback_enabled | bool
+
+  always:
+    - name: Clean up temporary archive
+      ansible.builtin.file:
+        path: "/tmp/{{ app_name }}-{{ app_version }}.tar.gz"
+        state: absent
+
+- name: Verify service is healthy
+  ansible.builtin.uri:
+    url: "http://localhost:{{ app_port }}/healthz"
+    status_code: 200
+  retries: 5
+  delay: 3
+  register: health_check
+  until: health_check.status == 200
+  when: app_health_check_enabled | bool

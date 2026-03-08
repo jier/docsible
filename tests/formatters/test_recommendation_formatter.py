@@ -1,6 +1,6 @@
 import pytest
 
-from docsible.formatters.recommendation_formatter import RecommendationFormatter
+from docsible.formatters.text.recommendation import RecommendationFormatter
 from docsible.models.recommendation import Recommendation
 from docsible.models.severity import Severity
 

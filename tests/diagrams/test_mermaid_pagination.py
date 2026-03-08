@@ -2,7 +2,7 @@
 
 from typing import Any
 
-from docsible.utils.mermaid.pagination import (
+from docsible.diagrams.mermaid.pagination import (
     get_diagram_complexity_warning,
     paginate_tasks,
     should_paginate_diagram,

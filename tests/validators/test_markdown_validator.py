@@ -1,7 +1,7 @@
 """Tests for MarkdownValidator - raw markdown formatting validation."""
 
-from docsible.validators.markdown_validator import MarkdownValidator
-from docsible.validators.models import ValidationSeverity, ValidationType
+from docsible.validation.markdown_validator import MarkdownValidator
+from docsible.validation.models import ValidationSeverity, ValidationType
 
 
 class TestWhitespaceValidation:

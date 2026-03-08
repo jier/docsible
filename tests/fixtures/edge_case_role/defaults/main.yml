@@ -1,0 +1,38 @@
+---
+# title: Edge-case Role Default Variables
+# description: Operator-facing defaults with a range of types and nesting levels
+
+app_name: myapp
+app_version: "2.0.0"
+app_port: 8080
+app_user: myapp
+app_group: myapp
+app_checksum: ""
+
+# Rollback behaviour
+app_rollback_enabled: true
+app_health_check_enabled: true
+
+# Database connection
+db_host: localhost
+db_port: 5432
+db_name: myapp_db
+db_user: myapp
+db_password: ""
+
+# Tuning knobs
+app_worker_count: 4
+app_log_level: info
+app_log_format: json
+
+# TLS settings
+tls_enabled: false
+tls_cert_path: /etc/ssl/certs/myapp.crt
+tls_key_path: /etc/ssl/private/myapp.key
+
+# List of extra environment variables injected into the service unit
+app_extra_env: []
+# Example:
+# app_extra_env:
+#   - name: SENTRY_DSN
+#     value: "https://..."

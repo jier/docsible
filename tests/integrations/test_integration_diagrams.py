@@ -1,7 +1,7 @@
 """Tests for enhanced diagram generation for new integration types."""
 
 from docsible.analyzers.complexity_analyzer import IntegrationPoint, IntegrationType
-from docsible.utils.integration_diagram import generate_integration_boundary
+from docsible.diagrams.types.integration import generate_integration_boundary
 
 
 def test_diagram_with_cloud_integration():

@@ -7,7 +7,7 @@ from docsible.analyzers.complexity_analyzer import (
     IntegrationPoint,
     IntegrationType,
 )
-from docsible.validators.value import ValueValidator
+from docsible.validation.value import ValueValidator
 
 
 class TestValueValidation:

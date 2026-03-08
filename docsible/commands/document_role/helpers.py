@@ -7,10 +7,10 @@ from typing import Any
 import click
 import yaml
 
-from docsible.utils.mermaid import (
+from docsible.diagrams.mermaid import (
     generate_mermaid_role_tasks_per_file,
 )
-from docsible.utils.mermaid_sequence import (
+from docsible.diagrams.sequence import (
     generate_mermaid_sequence_playbook_high_level,
     generate_mermaid_sequence_role_detailed,
 )
@@ -128,7 +128,7 @@ def handle_analyze_only_mode(role_info: dict[str, Any], role_name: str) -> None:
 
     # Show dependency statistics if available
     if role_info.get("tasks"):
-        from docsible.utils.dependency_matrix import (
+        from docsible.diagrams.types.dependency_matrix import (
             analyze_task_dependencies,
             generate_dependency_summary,
         )
@@ -279,7 +279,7 @@ def generate_integration_and_architecture_diagrams(
     # Integration boundary diagram
     if analysis_report.integration_points:
         try:
-            from docsible.utils.integration_diagram import (
+            from docsible.diagrams.types.integration import (
                 generate_integration_boundary,
                 should_generate_integration_diagram,
             )
@@ -296,7 +296,7 @@ def generate_integration_and_architecture_diagrams(
 
     # Component architecture diagram for complex roles
     try:
-        from docsible.utils.architecture_diagram import (
+        from docsible.diagrams.types.architecture import (
             generate_component_architecture,
             should_generate_architecture_diagram,
         )
@@ -332,7 +332,7 @@ def generate_dependency_matrix(
     show_dependency_matrix = False
 
     try:
-        from docsible.utils.dependency_matrix import (
+        from docsible.diagrams.types.dependency_matrix import (
             analyze_task_dependencies,
             generate_dependency_matrix_markdown,
             generate_dependency_summary,

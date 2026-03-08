@@ -1,0 +1,13 @@
+aap_hub: ''
+automation_kind: deploy
+category: application
+critical: 'false'
+description: Edge-case role for testing block/rescue/always, include_role, and import_role code paths
+dt_dev: ''
+dt_prod: ''
+dt_update: ''
+requester: test-suite
+subCategory: deployment
+time_saving: '10'
+users: platform-team
+version: '1.0.0'

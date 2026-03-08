@@ -1,0 +1,17 @@
+---
+- name: Restart application service
+  ansible.builtin.systemd:
+    name: "{{ app_name }}"
+    state: restarted
+    daemon_reload: true
+
+- name: Reload nginx
+  ansible.builtin.service:
+    name: nginx
+    state: reloaded
+  listen: reload webserver
+
+- name: Flush application cache
+  ansible.builtin.command:
+    cmd: "{{ app_install_dir }}/bin/cache-clear"
+  listen: clear app cache

@@ -7,11 +7,11 @@ from docsible.analyzers.complexity_analyzer import (
     ComplexityMetrics,
     ComplexityReport,
 )
-from docsible.validators.doc_validator import (
+from docsible.validation.doc_validator import (
     DocumentationValidator,
     validate_documentation,
 )
-from docsible.validators.models import (
+from docsible.validation.models import (
     ValidationIssue,
     ValidationResult,
     ValidationSeverity,

@@ -1,7 +1,7 @@
 """Tests for integration boundary diagram generation."""
 
 from docsible.analyzers.complexity_analyzer import IntegrationPoint, IntegrationType
-from docsible.utils.integration_diagram import (
+from docsible.diagrams.types.integration import (
     generate_integration_boundary,
     should_generate_integration_diagram,
 )

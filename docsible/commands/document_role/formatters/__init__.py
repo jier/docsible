@@ -1,5 +1,4 @@
-"""Formatters for document_role command output."""
-
-from .dry_run_formatter import DryRunFormatter
+"""Backward-compatibility shim. Import from docsible.formatters.text instead."""
+from docsible.formatters.text.dry_run import DryRunFormatter
 
 __all__ = ["DryRunFormatter"]

@@ -7,7 +7,7 @@ from docsible.analyzers.complexity_analyzer import (
     IntegrationPoint,
     IntegrationType,
 )
-from docsible.utils.architecture_diagram import (
+from docsible.diagrams.types.architecture import (
     generate_component_architecture,
     should_generate_architecture_diagram,
 )

@@ -2,9 +2,9 @@
 
 import logging
 
-from docsible.validators.markdown_fixer import MarkdownFixer
-from docsible.validators.markdown_validator import MarkdownValidator
-from docsible.validators.models import ValidationSeverity
+from docsible.validation.markdown_fixer import MarkdownFixer
+from docsible.validation.markdown_validator import MarkdownValidator
+from docsible.validation.models import ValidationSeverity
 
 logger = logging.getLogger(__name__)
 

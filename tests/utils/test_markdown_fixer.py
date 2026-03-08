@@ -1,6 +1,6 @@
 """Tests for MarkdownFixer - automatic markdown formatting fixes."""
 
-from docsible.validators.markdown_fixer import MarkdownFixer
+from docsible.validation.markdown_fixer import MarkdownFixer
 
 
 class TestTabFixes:

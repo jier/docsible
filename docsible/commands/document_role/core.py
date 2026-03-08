@@ -7,11 +7,11 @@ from pathlib import Path
 import click
 import yaml
 
-from docsible.renderers.tag_manager import manage_docsible_file_keys
-from docsible.utils.git import get_repo_info
-from docsible.utils.mermaid import (
+from docsible.diagrams.mermaid import (
     generate_mermaid_playbook,
 )
+from docsible.renderers.tag_manager import manage_docsible_file_keys
+from docsible.utils.git import get_repo_info
 from docsible.utils.project_structure import ProjectStructure
 from docsible.utils.special_tasks_keys import process_special_task_keys
 from docsible.utils.yaml import (

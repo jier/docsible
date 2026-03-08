@@ -3,8 +3,8 @@
 import logging
 from typing import Any
 
+from docsible.analyzers.complexity_analyzer.phase import PhaseDetector
 from docsible.analyzers.concerns.registry import ConcernRegistry
-from docsible.analyzers.phase_detector import PhaseDetector
 
 from ..models import FileComplexityDetail, IntegrationPoint
 

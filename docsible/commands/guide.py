@@ -3,7 +3,7 @@ from pathlib import Path
 
 import click
 
-GUIDES_DIR = Path(__file__).parent.parent / "help" / "guides"
+GUIDES_DIR = Path(__file__).parent.parent / "helpers" / "guides"
 
 AVAILABLE_TOPICS = ["getting-started", "troubleshooting", "smart-defaults"]
 
