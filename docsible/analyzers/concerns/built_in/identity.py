@@ -1,6 +1,7 @@
 """Identity and permission concern detector."""
 
 from docsible.analyzers.concerns.base import ConcernDetector
+from docsible.analyzers.shared.module_taxonomy import IDENTITY_MODULES
 
 
 class IdentityPermissionConcern(ConcernDetector):
@@ -20,23 +21,9 @@ class IdentityPermissionConcern(ConcernDetector):
 
     @property
     def module_patterns(self) -> list:
-        return [
-            # User/Group management
-            "user",
-            "group",
-            "authorized_key",
-            # Permissions
-            "acl",
-            # SELinux
-            "selinux",
-            "seboolean",
-            "seport",
-            "sefcontext",
-            # Windows
-            "win_user",
-            "win_group",
-            "win_acl",
-        ]
+        # SELinux modules are identity-specific and not in the shared taxonomy
+        selinux_modules = ["selinux", "seboolean", "seport", "sefcontext"]
+        return sorted(IDENTITY_MODULES) + selinux_modules
 
     @property
     def suggested_filename(self) -> str:

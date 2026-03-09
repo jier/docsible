@@ -50,4 +50,12 @@ def add_recommendation_options(f: F) -> F:
         help="Show all findings including INFO-level. Removes the default 5-recommendation cap.",
     )(f)
 
+    f = click.option(
+        "--no-suppress",
+        "no_suppress",
+        is_flag=True,
+        default=False,
+        help="Bypass .docsible/suppress.yml and show all recommendations including suppressed ones.",
+    )(f)
+
     return f

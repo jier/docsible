@@ -17,6 +17,7 @@ This document covers all configuration options for Docsible: the `.docsible/conf
   - [Repository Flags](#repository-flags)
   - [Framing Flags](#framing-flags)
 - [CI/CD Integration](#cicd-integration)
+- [Suppression Rules](#suppression-rules)
 - [Team Workflow](#team-workflow)
 
 ---
@@ -160,6 +161,7 @@ These flags control how findings (INFO / WARNING / CRITICAL) are collected and d
 | `--recommendations-only` | off | Show recommendations without generating documentation |
 | `--show-info` | off | Show INFO-level recommendations (hidden by default) |
 | `--advanced-patterns` | off | Show all findings including INFO-level; removes the default 5-recommendation cap |
+| `--no-suppress` | off | Bypass `.docsible/suppress.yml` and show all recommendations including suppressed ones |
 | `--output-format [text\|json]` | `text` | Output format for findings; `json` emits machine-readable JSON |
 
 #### `--advanced-patterns` behaviour
@@ -325,6 +327,101 @@ See `examples/ci_pipeline/pre-commit-config.yaml` for the full hook configuratio
 | Enforce team quality standards | `warning` |
 | Enforce all recommendations | `info` |
 | Documentation-only (never fail) | `none` |
+
+---
+
+## Suppression Rules
+
+Suppression rules let you silence specific recommendations that are known false positives or deliberately accepted for your project. Rules are stored in `.docsible/suppress.yml` inside the `.docsible` directory alongside `config.yml`.
+
+### File location and format
+
+```yaml
+# .docsible/suppress.yml
+rules:
+  - id: ab12cd34
+    pattern: "no example playbook"
+    reason: "Examples live in a separate repository"
+    file_pattern: null        # optional: scope to a glob (e.g. "roles/webserver")
+    use_regex: false          # true = treat pattern as a regular expression
+    expires_at: "2026-06-01T00:00:00+00:00"  # optional: auto-expires on this date
+    approved_by: "alice"      # optional: audit trail
+    match_count: 3
+    last_matched: "2026-03-01T10:00:00+00:00"
+    created_at: "2026-01-15T09:00:00+00:00"
+```
+
+The file is managed by the `docsible suppress` command group — you do not need to edit it by hand.
+
+### CLI commands
+
+| Command | Description |
+|---|---|
+| `docsible suppress add <pattern> --reason <text>` | Add a new suppression rule |
+| `docsible suppress list` | List all active (non-expired) rules |
+| `docsible suppress remove <id>` | Remove a rule by its ID |
+| `docsible suppress clean` | Delete all expired rules |
+
+#### `suppress add` options
+
+| Option | Short | Description |
+|---|---|---|
+| `--reason TEXT` | `-r` | **Required.** Justification for suppressing this recommendation |
+| `--file TEXT` | `-f` | Scope rule to files matching a glob pattern (e.g., `roles/webserver`) |
+| `--expires N` | `-e` | Auto-expire the rule after N days |
+| `--approved-by TEXT` | — | Record an approver name for audit purposes |
+| `--regex` | — | Treat the pattern as a regular expression instead of a substring |
+| `--path TEXT` | `-p` | Base path for locating `.docsible/suppress.yml` (default: current directory) |
+
+Pattern matching is case-insensitive substring by default. Pass `--regex` to use a full regular expression.
+
+```bash
+# Suppress a specific finding indefinitely
+docsible suppress add "no example playbook" --reason "Examples in separate repo"
+
+# Suppress with an expiry date (good for temporary waivers)
+docsible suppress add "no example playbook" --reason "Legacy role" --expires 90
+
+# Suppress scoped to a specific role directory
+docsible suppress add "no example playbook" --reason "Legacy" --file "roles/webserver"
+
+# Use a regex pattern
+docsible suppress add "task\s+name.*missing" --reason "Naming enforced in pre-commit" --regex
+```
+
+#### `suppress list` options
+
+| Option | Description |
+|---|---|
+| `--show-expired` | Include expired rules in the listing (hidden by default) |
+| `--path TEXT` | Base path for locating `.docsible/suppress.yml` |
+
+#### `suppress clean` options
+
+| Option | Description |
+|---|---|
+| `--dry-run` | Show what would be removed without making changes |
+| `--path TEXT` | Base path for locating `.docsible/suppress.yml` |
+
+Only rules with a past `expires_at` date are removed. Rules with no expiry are never touched by `clean`.
+
+### Bypassing suppression
+
+Pass `--no-suppress` to `docsible document role` or `docsible analyze role` to see all recommendations regardless of any rules in `suppress.yml`. This is useful for auditing or reviewing whether existing rules are still needed.
+
+```bash
+docsible document role --role . --no-suppress
+docsible analyze role --role . --no-suppress
+```
+
+### Committing suppress.yml
+
+Commit `.docsible/suppress.yml` to version control alongside `config.yml` so that all team members and CI runners apply the same suppressions automatically.
+
+```bash
+git add .docsible/suppress.yml
+git commit -m "chore: suppress known false-positive in legacy webserver role"
+```
 
 ---
 

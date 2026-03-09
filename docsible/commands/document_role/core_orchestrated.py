@@ -591,6 +591,7 @@ def doc_the_role(**kwargs: Any) -> None:
             max_recommendations=kwargs.get("max_recommendations", 5),
             advanced_patterns=kwargs.get("advanced_patterns", False),
             output_format=kwargs.get("output_format", "text"),
+            apply_suppressions=not kwargs.get("no_suppress", False),
             cached_complexity_report=kwargs.get("_complexity_report"),  # From smart defaults
         ),
         processing=ProcessingConfig(

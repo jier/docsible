@@ -1,6 +1,7 @@
 """Filesystem management concern detector."""
 
 from docsible.analyzers.concerns.base import ConcernDetector
+from docsible.analyzers.shared.module_taxonomy import FILE_MODULES
 
 
 class FilesystemManagementConcern(ConcernDetector):
@@ -20,24 +21,8 @@ class FilesystemManagementConcern(ConcernDetector):
 
     @property
     def module_patterns(self) -> list:
-        return [
-            # File/Directory operations
-            "file",
-            "find",
-            "stat",
-            # Filesystem
-            "filesystem",
-            "mount",
-            # LVM
-            "lvg",
-            "lvol",
-            # Partitions
-            "parted",
-            "disk",
-            # Windows
-            "win_file",
-            "win_disk_facts",
-        ]
+        # disk and win_disk_facts are filesystem-specific and not in the shared taxonomy
+        return sorted(FILE_MODULES) + ["disk", "win_disk_facts"]
 
     @property
     def suggested_filename(self) -> str:

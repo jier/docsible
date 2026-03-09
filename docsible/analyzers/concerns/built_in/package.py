@@ -1,6 +1,7 @@
 """Package installation concern detector."""
 
 from docsible.analyzers.concerns.base import ConcernDetector
+from docsible.analyzers.shared.module_taxonomy import PACKAGE_MODULES
 
 
 class PackageInstallationConcern(ConcernDetector):
@@ -20,27 +21,7 @@ class PackageInstallationConcern(ConcernDetector):
 
     @property
     def module_patterns(self) -> list:
-        return [
-            # System packages
-            "apt",
-            "apt_repository",
-            "yum",
-            "dnf",
-            "package",
-            "zypper",
-            "pacman",
-            "homebrew",
-            # Language-specific packages
-            "pip",
-            "pip3",
-            "npm",
-            "gem",
-            "composer",
-            "maven",
-            # Container images
-            "docker_image",
-            "podman_image",
-        ]
+        return sorted(PACKAGE_MODULES)
 
     @property
     def suggested_filename(self) -> str:

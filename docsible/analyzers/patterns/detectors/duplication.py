@@ -13,6 +13,11 @@ from docsible.analyzers.patterns.models import (
     SeverityLevel,
     SimplificationSuggestion,
 )
+from docsible.analyzers.shared.module_taxonomy import (
+    FILE_MODULES,
+    PACKAGE_MODULES,
+    SERVICE_MODULES,
+)
 
 
 class DuplicationDetector(BasePatternDetector):
@@ -62,14 +67,16 @@ class DuplicationDetector(BasePatternDetector):
         """
         suggestions: list[SimplificationSuggestion] = []
 
-        # Package management modules to check
-        package_modules = ["apt", "yum", "dnf", "package", "pip", "npm"]
+        # Short family names used for suggestion text and per-family grouping.
+        # Membership is checked against PACKAGE_MODULES from the shared taxonomy.
+        package_module_families = ["apt", "yum", "dnf", "package", "pip", "npm"]
 
-        for pkg_module in package_modules:
-            # Match both short name and FQCN variants
-            fqcn_variants = {pkg_module, f"ansible.builtin.{pkg_module}"}
+        for pkg_module in package_module_families:
+            # Match this family: all entries in the shared taxonomy that contain
+            # the short name (covers both "apt" and "ansible.builtin.apt" etc.)
+            family_modules = {m for m in PACKAGE_MODULES if pkg_module in m}
             all_tasks = self._flatten_tasks(role_info)
-            tasks = [t for t in all_tasks if t.get("module") in fqcn_variants]
+            tasks = [t for t in all_tasks if t.get("module") in family_modules]
 
             # Threshold: 5+ separate package tasks suggests opportunity
             if len(tasks) > 5:
@@ -117,11 +124,9 @@ class DuplicationDetector(BasePatternDetector):
         """
         suggestions: list[SimplificationSuggestion] = []
 
-        fqcn_service = {"service", "ansible.builtin.service"}
-        fqcn_systemd = {"systemd", "ansible.builtin.systemd", "ansible.builtin.systemd_service"}
         all_tasks = self._flatten_tasks(role_info)
-        service_tasks = [t for t in all_tasks if t.get("module") in fqcn_service]
-        systemd_tasks = [t for t in all_tasks if t.get("module") in fqcn_systemd]
+        service_tasks = [t for t in all_tasks if t.get("module") in SERVICE_MODULES]
+        systemd_tasks: list[dict] = []  # Already included in SERVICE_MODULES; kept for clarity
 
         all_service_tasks = service_tasks + systemd_tasks
 
@@ -172,9 +177,10 @@ class DuplicationDetector(BasePatternDetector):
         """
         suggestions: list[SimplificationSuggestion] = []
 
-        fqcn_file = {"file", "ansible.builtin.file"}
+        # Only match the "file" module family for directory/file operations
+        file_family_modules = {m for m in FILE_MODULES if "file" in m}
         all_tasks = self._flatten_tasks(role_info)
-        file_tasks = [t for t in all_tasks if t.get("module") in fqcn_file]
+        file_tasks = [t for t in all_tasks if t.get("module") in file_family_modules]
 
         if len(file_tasks) > 5:
             # Group by state (directory, file, etc.)

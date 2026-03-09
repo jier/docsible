@@ -12,6 +12,14 @@ from pathlib import Path
 
 from pydantic import BaseModel, Field
 
+from docsible.analyzers.shared.module_taxonomy import (
+    CONFIG_MODULES,
+    FILE_MODULES,
+    PACKAGE_MODULES,
+    SERVICE_MODULES,
+    VERIFY_MODULES,
+)
+
 logger = logging.getLogger(__name__)
 
 
@@ -98,15 +106,8 @@ DEFAULT_PATTERNS: dict[Phase, PhasePattern] = {
         priority=1,  # Typically first
     ),
     Phase.INSTALL: PhasePattern(
-        modules={
-            "apt",
-            "yum",
-            "dnf",
-            "pip",
-            "npm",
-            "package",
-            "gem",
-            "docker_image",
+        # Seed from shared taxonomy, then add phase-specific extras
+        modules=set(PACKAGE_MODULES) | {
             "get_url",
             "git",
             "unarchive",
@@ -123,16 +124,8 @@ DEFAULT_PATTERNS: dict[Phase, PhasePattern] = {
         priority=2,
     ),
     Phase.CONFIGURE: PhasePattern(
-        modules={
-            "template",
-            "copy",
-            "lineinfile",
-            "blockinfile",
-            "file",
-            "replace",
-            "ini_file",
-            "xml",
-        },
+        # Seed from shared taxonomy, then add file module for config file placement
+        modules=set(CONFIG_MODULES) | set(FILE_MODULES),
         name_keywords=[
             "configure",
             "config",
@@ -149,12 +142,14 @@ DEFAULT_PATTERNS: dict[Phase, PhasePattern] = {
         priority=4,
     ),
     Phase.ACTIVATE: PhasePattern(
-        modules={"service", "systemd", "supervisorctl", "docker_container"},
+        # Seed from shared taxonomy, then add docker_container which is phase-specific
+        modules=set(SERVICE_MODULES) | {"docker_container"},
         name_keywords=["start", "enable", "activate", "restart", "reload"],
         priority=5,
     ),
     Phase.VERIFY: PhasePattern(
-        modules={"uri", "wait_for", "assert", "ping", "command", "shell"},
+        # Seed from shared taxonomy (already includes uri, wait_for, assert, ping, command, shell)
+        modules=set(VERIFY_MODULES),
         name_keywords=[
             "verify",
             "test",
