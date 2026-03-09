@@ -41,9 +41,7 @@ def analyze_file_complexity(
         # Count conditionals
         conditional_tasks = [t for t in tasks if t.get("when")]
         conditional_count = len(conditional_tasks)
-        conditional_percentage = (
-            (conditional_count / len(tasks)) * 100 if tasks else 0.0
-        )
+        conditional_percentage = (conditional_count / len(tasks)) * 100 if tasks else 0.0
 
         # Detect integrations in this file
         has_integrations = False
@@ -207,8 +205,12 @@ def _generate_detailed_concern(
         # No specific concern, check if file is complex
         if task_count > 30:
             return _build_complexity_message(
-                task_count, conditional_count, conditional_percentage,
-                has_integrations, integration_types, unique_modules
+                task_count,
+                conditional_count,
+                conditional_percentage,
+                has_integrations,
+                integration_types,
+                unique_modules,
             )
         return None
 

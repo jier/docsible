@@ -31,9 +31,6 @@ def generate_all_recommendations(role_path: Path) -> list[Recommendation]:
     all_recommendations.extend(enhancement_gen.analyze_role(role_path))
 
     # Sort by severity (critical first)
-    all_recommendations.sort(
-        key=lambda r: r.severity.priority,
-        reverse=True
-    )
+    all_recommendations.sort(key=lambda r: r.severity.priority, reverse=True)
 
     return all_recommendations

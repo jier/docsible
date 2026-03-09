@@ -1,7 +1,7 @@
 "Sinmplifcation of suggestion string for maintanability purposes"
 
+
 class Suggestion:
-    
     @staticmethod
     def complex_conditionals() -> str:
         return (
@@ -33,7 +33,7 @@ class Suggestion:
             "  when: complex_condition\n"
             "```"
         )
-    
+
     @staticmethod
     def deep_include_chains() -> str:
         return (
@@ -51,7 +51,7 @@ class Suggestion:
             "```\n\n"
             "Keep hierarchy shallow (2-3 levels max) for easier debugging."
         )
-    
+
     @staticmethod
     def excessive_set_fact() -> str:
         return (
@@ -78,5 +78,5 @@ class Suggestion:
             "# Just use:\n"
             '- debug: msg="{{ name | upper }}"\n'
             "```\n\n"
-                            "Reserve set_fact for truly dynamic values that change during playbook execution."
+            "Reserve set_fact for truly dynamic values that change during playbook execution."
         )

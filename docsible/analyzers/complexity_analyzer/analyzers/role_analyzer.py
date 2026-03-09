@@ -25,6 +25,7 @@ except ImportError:
     PATTERN_ANALYSIS_AVAILABLE = False
     PatternAnalysisReport = None  # type: ignore
 
+
 @cache_by_dir_mtime
 def analyze_role_complexity_cached(
     role_path: Path,
@@ -92,7 +93,7 @@ def analyze_role_complexity_cached(
         repo_type=repo_type,
         repo_branch=repo_branch,
     )
-    
+
     # Analyze complexity (expensive operation)
     return analyze_role_complexity(
         role_info=role_info,
@@ -187,9 +188,7 @@ def analyze_role_complexity(
     # Calculate max and average tasks per file
     tasks_per_file = [len(tf.get("tasks", [])) for tf in tasks_data]
     max_tasks_per_file = max(tasks_per_file) if tasks_per_file else 0
-    avg_tasks_per_file = (
-        sum(tasks_per_file) / len(tasks_per_file) if tasks_per_file else 0.0
-    )
+    avg_tasks_per_file = sum(tasks_per_file) / len(tasks_per_file) if tasks_per_file else 0.0
 
     # Detect external integrations
     integration_points = detect_integrations(role_info)
@@ -255,9 +254,7 @@ def analyze_role_complexity(
     if include_patterns and PATTERN_ANALYSIS_AVAILABLE:
         try:
             logger.info("Running pattern analysis...")
-            pattern_report = analyze_role_patterns(
-                role_info, min_confidence=min_confidence
-            )
+            pattern_report = analyze_role_patterns(role_info, min_confidence=min_confidence)
             logger.info(
                 f"Pattern analysis complete: {pattern_report.total_patterns} patterns found "
                 f"(health score: {pattern_report.overall_health_score:.1f}/100)"

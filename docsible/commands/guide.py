@@ -1,4 +1,5 @@
 """Guide command for interactive help and tutorials."""
+
 from pathlib import Path
 
 import click

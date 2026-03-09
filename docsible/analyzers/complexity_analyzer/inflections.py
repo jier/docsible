@@ -33,11 +33,7 @@ def detect_inflection_points(
     for hotspot in hotspots:
         # Find the task file
         task_file_info = next(
-            (
-                tf
-                for tf in role_info.get("tasks", [])
-                if tf.get("file") == hotspot.file_path
-            ),
+            (tf for tf in role_info.get("tasks", []) if tf.get("file") == hotspot.file_path),
             None,
         )
 
@@ -53,9 +49,7 @@ def detect_inflection_points(
 
             if var_name in when_clause:
                 # Count downstream tasks using same variable
-                downstream = sum(
-                    1 for t in tasks[idx + 1 :] if var_name in str(t.get("when", ""))
-                )
+                downstream = sum(1 for t in tasks[idx + 1 :] if var_name in str(t.get("when", "")))
 
                 # Only report significant inflection points
                 if downstream >= 3:

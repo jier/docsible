@@ -56,30 +56,27 @@ def generate_recommendations(
     recommendations = []
 
     # Delegate to focused helper functions
-    recommendations.extend(_generate_file_recommendations(
-        metrics, category, file_details, role_info,
-        repository_url, repo_type, repo_branch
-    ))
+    recommendations.extend(
+        _generate_file_recommendations(
+            metrics, category, file_details, role_info, repository_url, repo_type, repo_branch
+        )
+    )
 
-    recommendations.extend(_generate_hotspot_recommendations(
-        hotspots, repository_url, repo_type, repo_branch
-    ))
+    recommendations.extend(
+        _generate_hotspot_recommendations(hotspots, repository_url, repo_type, repo_branch)
+    )
 
-    recommendations.extend(_generate_inflection_recommendations(
-        inflection_points
-    ))
+    recommendations.extend(_generate_inflection_recommendations(inflection_points))
 
-    recommendations.extend(_generate_integration_recommendations(
-        integration_points, file_details
-    ))
+    recommendations.extend(_generate_integration_recommendations(integration_points, file_details))
 
-    recommendations.extend(_generate_composition_recommendations(
-        metrics
-    ))
+    recommendations.extend(_generate_composition_recommendations(metrics))
 
-    recommendations.extend(_generate_credential_recommendations(
-        integration_points, repository_url, repo_type, repo_branch
-    ))
+    recommendations.extend(
+        _generate_credential_recommendations(
+            integration_points, repository_url, repo_type, repo_branch
+        )
+    )
 
     # Fallback for simple roles (if no other recommendations)
     if not recommendations:
@@ -93,6 +90,7 @@ def generate_recommendations(
 # ============================================================================
 # Helper Functions - Each focused on one recommendation area
 # ============================================================================
+
 
 def _generate_file_recommendations(
     metrics: ComplexityMetrics,
@@ -148,11 +146,7 @@ def _generate_file_recommendations(
     # God file detection
     if largest_file.is_god_file:
         task_file_info = next(
-            (
-                tf
-                for tf in role_info.get("tasks", [])
-                if tf.get("file") == largest_file.file_path
-            ),
+            (tf for tf in role_info.get("tasks", []) if tf.get("file") == largest_file.file_path),
             None,
         )
 
@@ -235,8 +229,7 @@ def _generate_hotspot_recommendations(
     if hotspots:
         for hotspot in hotspots[:2]:  # Top 2 hotspots
             file_link = _generate_file_link(
-                hotspot.file_path, None,
-                repository_url, repo_type, repo_branch
+                hotspot.file_path, None, repository_url, repo_type, repo_branch
             )
             rec = [
                 f"🔀 {file_link}: {hotspot.affected_tasks} tasks depend on '{hotspot.conditional_variable}'",
@@ -296,6 +289,7 @@ def _generate_integration_recommendations(
 
     # Group integrations by type
     from collections import defaultdict
+
     integrations_by_type = defaultdict(list)
     for ip in integration_points:
         integrations_by_type[ip.type.value].append(ip)
@@ -378,9 +372,7 @@ def _generate_credential_recommendations(
     recommendations = []
 
     if any(ip.uses_credentials for ip in integration_points):
-        cred_systems = [
-            ip.system_name for ip in integration_points if ip.uses_credentials
-        ]
+        cred_systems = [ip.system_name for ip in integration_points if ip.uses_credentials]
         rec = [
             f"🔐 Credentials required for {', '.join(cred_systems)}",
             "   WHY: Hardcoded credentials pose security risks and complicate credential rotation",
@@ -397,6 +389,7 @@ def _generate_credential_recommendations(
 # ============================================================================
 # Utility Functions
 # ============================================================================
+
 
 def _generate_file_link(
     file_path: str,

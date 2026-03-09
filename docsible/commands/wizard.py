@@ -1,4 +1,5 @@
 """Interactive setup wizard — docsible init."""
+
 from pathlib import Path
 from typing import Any
 
@@ -11,7 +12,10 @@ from docsible.presets.registry import PresetRegistry
 
 @click.command(name="init")
 @click.option(
-    "--path", "-p", "base_path", default=".",
+    "--path",
+    "-p",
+    "base_path",
+    default=".",
     help="Base path for .docsible/config.yml (default: current directory)",
 )
 @click.option(
@@ -84,11 +88,15 @@ def _run_wizard(base_path: Path) -> DocsiblePresetConfig:
 
     # Step 2: Smart defaults
     click.echo("\nStep 2/3: Documentation detail level")
-    smart = click.confirm("  Enable smart defaults (auto-adjust based on role complexity)?", default=True)
+    smart = click.confirm(
+        "  Enable smart defaults (auto-adjust based on role complexity)?", default=True
+    )
     overrides: dict[str, Any] = {}
     if not smart:
         overrides["generate_graph"] = click.confirm("  Always generate diagrams?", default=False)
-        overrides["show_dependencies"] = click.confirm("  Always show dependency matrix?", default=False)
+        overrides["show_dependencies"] = click.confirm(
+            "  Always show dependency matrix?", default=False
+        )
 
     # Step 3: CI/CD
     click.echo("\nStep 3/3: CI/CD Integration")

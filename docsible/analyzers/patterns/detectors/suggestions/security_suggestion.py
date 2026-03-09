@@ -1,7 +1,7 @@
 "Sinmplifcation of suggestion string for maintanability purposes"
 
+
 class Suggestion:
-    
     @staticmethod
     def exposed_secrets(var_type: str) -> str:
         return (
@@ -27,7 +27,7 @@ class Suggestion:
             "```\n\n"
             "Never commit plain-text secrets to version control!"
         )
-    
+
     @staticmethod
     def missing_no_log() -> str:
         return (
@@ -49,7 +49,7 @@ class Suggestion:
             "- Calling APIs with tokens\n"
             "- Handling any sensitive data"
         )
-    
+
     @staticmethod
     def insecure_permission() -> str:
         return (
@@ -78,7 +78,7 @@ class Suggestion:
             "```\n\n"
             "**Never use 0777 (world-writable) in production!**"
         )
-    
+
     @staticmethod
     def shell_injection_risks() -> str:
         return (

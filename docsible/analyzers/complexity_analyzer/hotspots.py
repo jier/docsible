@@ -31,11 +31,7 @@ def detect_conditional_hotspots(
     for file_detail in conditional_files:
         # Find the corresponding task file data
         task_file_info = next(
-            (
-                tf
-                for tf in role_info.get("tasks", [])
-                if tf.get("file") == file_detail.file_path
-            ),
+            (tf for tf in role_info.get("tasks", []) if tf.get("file") == file_detail.file_path),
             None,
         )
 

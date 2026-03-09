@@ -69,17 +69,11 @@ class SimplificationSuggestion(BaseModel):
 
     category: PatternCategory = Field(description="Category this pattern belongs to")
 
-    severity: SeverityLevel = Field(
-        description="Severity level: info, warning, or critical"
-    )
+    severity: SeverityLevel = Field(description="Severity level: info, warning, or critical")
 
-    description: str = Field(
-        description="Human-readable description of the issue", min_length=1
-    )
+    description: str = Field(description="Human-readable description of the issue", min_length=1)
 
-    example: str = Field(
-        default="", description="Code example showing the problematic pattern"
-    )
+    example: str = Field(default="", description="Code example showing the problematic pattern")
 
     suggestion: str = Field(
         description="Recommended refactoring approach with code examples", min_length=1
@@ -89,9 +83,7 @@ class SimplificationSuggestion(BaseModel):
         default_factory=list, description="List of files affected by this pattern"
     )
 
-    impact: str = Field(
-        description="Expected impact of applying the suggestion", min_length=1
-    )
+    impact: str = Field(description="Expected impact of applying the suggestion", min_length=1)
 
     line_numbers: list[int] | None = Field(
         default=None, description="Specific line numbers where pattern appears"
@@ -146,9 +138,7 @@ class PatternAnalysisReport(BaseModel):
         default_factory=list, description="All detected patterns and suggestions"
     )
 
-    total_patterns: int = Field(
-        default=0, ge=0, description="Total number of patterns detected"
-    )
+    total_patterns: int = Field(default=0, ge=0, description="Total number of patterns detected")
 
     by_severity: dict[str, int] = Field(
         default_factory=dict, description="Count of patterns grouped by severity"

@@ -206,9 +206,7 @@ class DuplicationDetector(BasePatternDetector):
 
         return suggestions
 
-    def _detect_similar_tasks(
-        self, role_info: dict[str, Any]
-    ) -> list[SimplificationSuggestion]:
+    def _detect_similar_tasks(self, role_info: dict[str, Any]) -> list[SimplificationSuggestion]:
         """Detect tasks with similar names suggesting duplication.
 
         Example: Tasks named "Configure X", "Configure Y", "Configure Z"

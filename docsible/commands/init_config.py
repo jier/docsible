@@ -12,9 +12,7 @@ logger = logging.getLogger(__name__)
 
 @click.command(name="init")
 @click.option("--path", "-p", default=".", help="Path where to create .docsible.yml")
-@click.option(
-    "--force", "-f", is_flag=True, help="Overwrite existing .docsible.yml file"
-)
+@click.option("--force", "-f", is_flag=True, help="Overwrite existing .docsible.yml file")
 def init_config(path: str, force: bool) -> None:
     """Generate an example .docsible.yml configuration file.
 
@@ -37,9 +35,7 @@ def init_config(path: str, force: bool) -> None:
 
     if config_path.exists() and not force:
         click.echo(f"❌ Configuration file already exists at {config_path}")
-        raise click.ClickException(
-            "Configuration file already exists. Use --force to overwrite."
-        )
+        raise click.ClickException("Configuration file already exists. Use --force to overwrite.")
 
     try:
         with open(config_path, "w", encoding="utf-8") as f:
