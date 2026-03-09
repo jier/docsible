@@ -66,7 +66,10 @@ class DuplicationDetector(BasePatternDetector):
         package_modules = ["apt", "yum", "dnf", "package", "pip", "npm"]
 
         for pkg_module in package_modules:
-            tasks = self._get_tasks_by_module(role_info, pkg_module)
+            # Match both short name and FQCN variants
+            fqcn_variants = {pkg_module, f"ansible.builtin.{pkg_module}"}
+            all_tasks = self._flatten_tasks(role_info)
+            tasks = [t for t in all_tasks if t.get("module") in fqcn_variants]
 
             # Threshold: 5+ separate package tasks suggests opportunity
             if len(tasks) > 5:
@@ -114,8 +117,11 @@ class DuplicationDetector(BasePatternDetector):
         """
         suggestions: list[SimplificationSuggestion] = []
 
-        service_tasks = self._get_tasks_by_module(role_info, "service")
-        systemd_tasks = self._get_tasks_by_module(role_info, "systemd")
+        fqcn_service = {"service", "ansible.builtin.service"}
+        fqcn_systemd = {"systemd", "ansible.builtin.systemd", "ansible.builtin.systemd_service"}
+        all_tasks = self._flatten_tasks(role_info)
+        service_tasks = [t for t in all_tasks if t.get("module") in fqcn_service]
+        systemd_tasks = [t for t in all_tasks if t.get("module") in fqcn_systemd]
 
         all_service_tasks = service_tasks + systemd_tasks
 
@@ -124,7 +130,7 @@ class DuplicationDetector(BasePatternDetector):
             by_state = defaultdict(list)
             for task in all_service_tasks:
                 # Try to extract state from task args or name
-                state = task.get("state", "unknown")
+                state = task.get("args", {}).get("state", "unknown")
                 by_state[state].append(task)
 
             # Check each state group
@@ -166,13 +172,15 @@ class DuplicationDetector(BasePatternDetector):
         """
         suggestions: list[SimplificationSuggestion] = []
 
-        file_tasks = self._get_tasks_by_module(role_info, "file")
+        fqcn_file = {"file", "ansible.builtin.file"}
+        all_tasks = self._flatten_tasks(role_info)
+        file_tasks = [t for t in all_tasks if t.get("module") in fqcn_file]
 
         if len(file_tasks) > 5:
             # Group by state (directory, file, etc.)
             by_state = defaultdict(list)
             for task in file_tasks:
-                state = task.get("state", "unknown")
+                state = task.get("args", {}).get("state", "unknown")
                 by_state[state].append(task)
 
             # Check directory creation specifically
