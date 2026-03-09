@@ -56,9 +56,7 @@ class TemplateLoader:
         self.env.filters.update(TEMPLATE_FILTERS)
 
         # Register global helper functions
-        self.env.globals["get_diagram_complexity_warning"] = (
-            get_diagram_complexity_warning
-        )
+        self.env.globals["get_diagram_complexity_warning"] = get_diagram_complexity_warning
 
         logger.debug(f"Initialized TemplateLoader with search paths: {search_paths}")
 
@@ -105,9 +103,7 @@ class TemplateLoader:
 
         template_name = template_map.get(template_type)
         if not template_name:
-            logger.warning(
-                f"Unknown template type '{template_type}', falling back to 'standard'"
-            )
+            logger.warning(f"Unknown template type '{template_type}', falling back to 'standard'")
             template_name = template_map["standard"]
 
         return self.get_template(template_name)

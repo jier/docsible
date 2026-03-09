@@ -18,6 +18,7 @@ from .parser import get_multiline_indicator
 
 logger = logging.getLogger(__name__)
 
+
 @cache_by_file_mtime
 def load_yaml_generic(filepath: str | Path) -> dict[str, Any] | None:
     """Load YAML file and return parsed data.
@@ -67,9 +68,7 @@ def load_yaml_file_custom(file_path):
         parent_line_tracker = {"line": 0}
 
         for key, value in data.items():
-            _process_yaml_value(
-                key, value, lines, result, parent_line_tracker
-            )
+            _process_yaml_value(key, value, lines, result, parent_line_tracker)
 
         return result
 
@@ -116,6 +115,7 @@ def load_yaml_files_from_dir_custom(dir_path):
 # Helper Functions - Each focused on one aspect of YAML processing
 # ============================================================================
 
+
 def _read_and_parse_yaml(file_path: str) -> tuple[list[str], dict[str, Any] | None]:
     """Read file lines and parse YAML content.
 
@@ -134,7 +134,9 @@ def _read_and_parse_yaml(file_path: str) -> tuple[list[str], dict[str, Any] | No
     return lines, data
 
 
-def _extract_metadata_from_comments(lines: list[str], line_idx: int | None) -> dict[str, str | None]:
+def _extract_metadata_from_comments(
+    lines: list[str], line_idx: int | None
+) -> dict[str, str | None]:
     """Extract metadata from comments preceding a given line.
 
     Supports: title, required, choices, description, type, description-lines
@@ -220,8 +222,7 @@ def _extract_multiline_description(lines: list[str], start_idx: int) -> str:
 
         # Start collecting after description-lines tag
         if line_content.startswith("#") and (
-            "description-lines:" in normalized_line
-            or "description_lines:" in line_content.lower()
+            "description-lines:" in normalized_line or "description_lines:" in line_content.lower()
         ):
             start_collecting = True
             continue
@@ -281,7 +282,9 @@ def _find_key_line_number(
 
             if dictvalue is None:
                 # Regular dict
-                if line_stripped.startswith(f"{dictkey}:") or line_stripped.startswith(f"- {dictkey}:"):
+                if line_stripped.startswith(f"{dictkey}:") or line_stripped.startswith(
+                    f"- {dictkey}:"
+                ):
                     return idx
             else:
                 # Inline dict
@@ -380,9 +383,7 @@ def _process_yaml_value(
         parent_line_tracker: Mutable dict tracking current line
     """
     # Find line number
-    line_idx = _find_key_line_number(
-        key, value, lines, parent_line_tracker["line"], result
-    )
+    line_idx = _find_key_line_number(key, value, lines, parent_line_tracker["line"], result)
 
     current_line = line_idx if line_idx is not None else parent_line_tracker["line"]
     parent_line_tracker["line"] = current_line

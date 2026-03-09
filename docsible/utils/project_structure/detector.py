@@ -56,9 +56,7 @@ def is_awx_project(root_path: Path) -> bool:
     # - roles/ directory
     # - inventory/ or inventories/ directory
     has_roles = (root_path / "roles").is_dir()
-    has_inventory = (root_path / "inventory").exists() or (
-        root_path / "inventories"
-    ).exists()
+    has_inventory = (root_path / "inventory").exists() or (root_path / "inventories").exists()
 
     return has_roles and has_inventory
 
@@ -140,24 +138,25 @@ def find_collection_markers(
     """
     search = search_path or root_path
     markers = []
-    for root, _ , files in os.walk(search):
+    for root, _, files in os.walk(search):
         for marker_file in defaults["collection_marker_files"]:
             if marker_file in files:
                 markers.append(Path(root) / marker_file)
 
     return markers
 
+
 def _scan_roles_directory(roles_dir: Path) -> list[Path]:
     """Scan a directory for valid role sub-directories"""
 
     if not roles_dir.exists():
         return []
-    return [
-        item for item in roles_dir.iterdir()
-        if item.is_dir() and is_valid_role(item)
-    ]
+    return [item for item in roles_dir.iterdir() if item.is_dir() and is_valid_role(item)]
 
-def find_roles(root_path: Path, project_type: str, get_roles_dir_func: Callable[[], Path]) -> list[Path]:
+
+def find_roles(
+    root_path: Path, project_type: str, get_roles_dir_func: Callable[[], Path]
+) -> list[Path]:
     """Find all role directories in the project.
 
     Args:
@@ -172,15 +171,15 @@ def find_roles(root_path: Path, project_type: str, get_roles_dir_func: Callable[
         [Path("/project/roles/role1"), Path("/project/roles/role2")]
     """
 
-    strategies  = {
-        "role": lambda: [root_path], #single role = return root
+    strategies = {
+        "role": lambda: [root_path],  # single role = return root
         # For collections, roles are in the roles/ directory
         "collection": lambda: _scan_roles_directory(get_roles_dir_func()),
         # For monorepos, scan for roles in the configured/detected roles directory
         "monorepo": lambda: _scan_roles_directory(get_roles_dir_func()),
         "awx": lambda: _scan_roles_directory(root_path / "roles"),
         # For multi-role repos, roles are in roles/ at root (like collections, but no galaxy.yml)
-        "multi-role": lambda: _scan_roles_directory(root_path / "roles")
+        "multi-role": lambda: _scan_roles_directory(root_path / "roles"),
     }
 
     # Execute the appropriate strategy

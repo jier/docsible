@@ -11,9 +11,7 @@ from .formatter import infer_transitions
 logger = logging.getLogger(__name__)
 
 
-def generate_state_diagram(
-    role_info: dict[str, Any], role_name: str | None = None
-) -> str | None:
+def generate_state_diagram(role_info: dict[str, Any], role_name: str | None = None) -> str | None:
     """
     Generate a Mermaid state transition diagram for a role.
 
@@ -109,9 +107,7 @@ def generate_state_diagram(
     return "\n".join(lines)
 
 
-def should_generate_state_diagram(
-    role_info: dict[str, Any], complexity_category: str
-) -> bool:
+def should_generate_state_diagram(role_info: dict[str, Any], complexity_category: str) -> bool:
     """
     Determine if a state diagram should be generated for this role.
 

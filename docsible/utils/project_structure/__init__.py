@@ -116,9 +116,7 @@ class ProjectStructure:
 
     def get_defaults_dir(self, role_path: Path | None = None) -> Path:
         """Get the defaults directory for a role."""
-        return paths.get_defaults_dir(
-            self.root_path, self.config, self.DEFAULTS, role_path
-        )
+        return paths.get_defaults_dir(self.root_path, self.config, self.DEFAULTS, role_path)
 
     def get_vars_dir(self, role_path: Path | None = None) -> Path:
         """Get the vars directory for a role."""
@@ -126,27 +124,19 @@ class ProjectStructure:
 
     def get_tasks_dir(self, role_path: Path | None = None) -> Path:
         """Get the tasks directory for a role."""
-        return paths.get_tasks_dir(
-            self.root_path, self.config, self.DEFAULTS, role_path
-        )
+        return paths.get_tasks_dir(self.root_path, self.config, self.DEFAULTS, role_path)
 
     def get_library_dir(self, role_path: Path | None = None) -> Path:
         """Get the library directory for a role (custom modules)."""
-        return paths.get_library_dir(
-            self.root_path, self.config, self.DEFAULTS, role_path
-        )
+        return paths.get_library_dir(self.root_path, self.config, self.DEFAULTS, role_path)
 
     def get_lookup_plugins_dir(self, role_path: Path | None = None) -> Path:
         """Get the lookup_plugins directory for a role."""
-        return paths.get_lookup_plugins_dir(
-            self.root_path, self.config, self.DEFAULTS, role_path
-        )
+        return paths.get_lookup_plugins_dir(self.root_path, self.config, self.DEFAULTS, role_path)
 
     def get_templates_dir(self, role_path: Path | None = None) -> Path:
         """Get the templates directory for a role."""
-        return paths.get_templates_dir(
-            self.root_path, self.config, self.DEFAULTS, role_path
-        )
+        return paths.get_templates_dir(self.root_path, self.config, self.DEFAULTS, role_path)
 
     def get_meta_dir(self, role_path: Path | None = None) -> Path:
         """Get the meta directory for a role."""
@@ -157,20 +147,14 @@ class ProjectStructure:
         Get the meta/main.yml or meta/main.yaml file for a role.
         Returns None if not found.
         """
-        return paths.get_meta_file(
-            self.root_path, self.config, self.DEFAULTS, role_path
-        )
+        return paths.get_meta_file(self.root_path, self.config, self.DEFAULTS, role_path)
 
-    def get_argument_specs_file(
-        self, role_path: Path | None = None
-    ) -> Path | None:
+    def get_argument_specs_file(self, role_path: Path | None = None) -> Path | None:
         """
         Get the meta/argument_specs.yml or .yaml file for a role.
         Returns None if not found.
         """
-        return paths.get_argument_specs_file(
-            self.root_path, self.config, self.DEFAULTS, role_path
-        )
+        return paths.get_argument_specs_file(self.root_path, self.config, self.DEFAULTS, role_path)
 
     def get_roles_dir(self, collection_path: Path | None = None) -> Path:
         """Get the roles directory for a collection or monorepo."""
@@ -193,9 +177,7 @@ class ProjectStructure:
         Returns:
             List of paths to galaxy.yml/yaml files
         """
-        return detector.find_collection_markers(
-            self.root_path, self.DEFAULTS, search_path
-        )
+        return detector.find_collection_markers(self.root_path, self.DEFAULTS, search_path)
 
     def find_roles(self, search_path: Path | None = None) -> list[Path]:
         """Find all role directories in the project.
@@ -206,9 +188,7 @@ class ProjectStructure:
         Returns:
             List of Path objects pointing to role directories
         """
-        return detector.find_roles(
-            self.root_path, self.project_type, lambda: self.get_roles_dir()
-        )
+        return detector.find_roles(self.root_path, self.project_type, lambda: self.get_roles_dir())
 
     def _is_valid_role(self, path: Path) -> bool:
         """Check if a directory is a valid Ansible role.
@@ -230,9 +210,7 @@ class ProjectStructure:
         Returns:
             Path to test playbook, or None if not found
         """
-        return paths.get_test_playbook(
-            self.root_path, self.config, self.DEFAULTS, role_path
-        )
+        return paths.get_test_playbook(self.root_path, self.config, self.DEFAULTS, role_path)
 
     def get_yaml_extensions(self) -> list[str]:
         """Get list of supported YAML file extensions.

@@ -102,15 +102,11 @@ def get_task_comments(file_path: str) -> list[dict[str, str]]:
                         k == 0 or task_name_value_and_inline_comment[k - 1] != "\\"
                     ):
                         in_double_quote = not in_double_quote
-                    elif (
-                        char_code == "#" and not in_single_quote and not in_double_quote
-                    ):
+                    elif char_code == "#" and not in_single_quote and not in_double_quote:
                         name_part_end_index = k  # Found start of a true inline comment
                         break
 
-                task_name_raw = task_name_value_and_inline_comment[
-                    :name_part_end_index
-                ].strip()
+                task_name_raw = task_name_value_and_inline_comment[:name_part_end_index].strip()
 
             except IndexError as e:
                 # Malformed - name: line, skip
@@ -210,9 +206,7 @@ def get_task_line_ranges(file_path):
         if stripped_line.startswith("- name:"):
             # If we were tracking a previous task, end it
             if current_task_start is not None:
-                task_ranges.append(
-                    (current_task_start, idx)
-                )  # End at line before this one
+                task_ranges.append((current_task_start, idx))  # End at line before this one
 
             # Start tracking new task (1-indexed)
             current_task_start = idx + 1

@@ -52,9 +52,7 @@ def infer_transitions(phases: list[PhaseInfo]) -> list[StateTransition]:
         if from_phase in available_phases and to_phase in available_phases:
             # Check if the 'to' phase has conditions
             to_phase_info = next((p for p in phases if p.phase == to_phase), None)
-            actual_condition = (
-                condition if to_phase_info and to_phase_info.has_conditions else None
-            )
+            actual_condition = condition if to_phase_info and to_phase_info.has_conditions else None
 
             transitions.append(
                 StateTransition(
