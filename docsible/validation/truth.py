@@ -8,7 +8,9 @@ from .models import ValidationIssue, ValidationSeverity, ValidationType
 class TruthValidator(BaseValidator):
     type = ValidationType.TRUTH
 
-    def validate(self, documentation: str, role_info: dict[str, Any] | None, complexity_report: Any | None) -> tuple[list[ValidationIssue], dict[str, Any]]:
+    def validate(
+        self, documentation: str, role_info: dict[str, Any] | None, complexity_report: Any | None
+    ) -> tuple[list[ValidationIssue], dict[str, Any]]:
         """
         Validate documentation accuracy against actual role structure.
 
@@ -49,9 +51,7 @@ class TruthValidator(BaseValidator):
             return issues, metrics
 
         # Verify task count accuracy
-        actual_tasks = sum(
-            len(tf.get("tasks", [])) for tf in role_info.get("tasks", [])
-        )
+        actual_tasks = sum(len(tf.get("tasks", [])) for tf in role_info.get("tasks", []))
         metrics["actual_tasks"] = actual_tasks
 
         # Extract task count claims from documentation

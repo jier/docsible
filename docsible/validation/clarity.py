@@ -8,7 +8,9 @@ from .models import ValidationIssue, ValidationSeverity, ValidationType
 class ClarityValidator(BaseValidator):
     type = ValidationType.CLARITY
 
-    def validate(self, documentation, role_info, complexity_report) -> tuple[list[ValidationIssue], dict[str, Any]]:
+    def validate(
+        self, documentation, role_info, complexity_report
+    ) -> tuple[list[ValidationIssue], dict[str, Any]]:
         """
         Validate documentation clarity and readability.
 
@@ -35,9 +37,7 @@ class ClarityValidator(BaseValidator):
         ]
         found_sections = []
         for section in required_sections:
-            if re.search(
-                rf"^#+\s+{section}", documentation, re.MULTILINE | re.IGNORECASE
-            ):
+            if re.search(rf"^#+\s+{section}", documentation, re.MULTILINE | re.IGNORECASE):
                 found_sections.append(section)
 
         metrics["sections_found"] = len(found_sections)

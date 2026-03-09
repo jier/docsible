@@ -23,11 +23,7 @@ class DocumentationValidator:
     - Value: Usefulness, actionable information
     """
 
-    def __init__(
-        self,
-        min_score: float = 70.0,
-        validators: list[BaseValidator] | None = None
-    ):
+    def __init__(self, min_score: float = 70.0, validators: list[BaseValidator] | None = None):
         """
         Initialize validator with pluggable validators.
 
@@ -65,9 +61,7 @@ class DocumentationValidator:
 
         # Run all validators (Open/Closed Principle!)
         for validator in self.validators:
-            issues, metrics = validator.validate(
-                documentation, role_info, complexity_report
-            )
+            issues, metrics = validator.validate(documentation, role_info, complexity_report)
             all_issues.extend(issues)
 
             # Store metrics by validation type
@@ -88,6 +82,7 @@ class DocumentationValidator:
             issues=all_issues,
             metrics=all_metrics,
         )
+
 
 def validate_documentation(
     documentation: str,
