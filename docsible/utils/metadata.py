@@ -31,9 +31,7 @@ class GenerationMetadata(BaseModel):
         role_hash: SHA256 hash of all role YAML files (64 chars)
     """
 
-    generated_at: datetime = Field(
-        description="UTC timestamp when documentation was generated"
-    )
+    generated_at: datetime = Field(description="UTC timestamp when documentation was generated")
     docsible_version: str = Field(description="Version of Docsible used for generation")
     role_hash: str = Field(
         description="SHA256 hash of role files (64 characters)",
@@ -170,6 +168,7 @@ def compute_role_hash(role_path: Path) -> str:
 
     # Sort files for consistent hashing across platforms
     from pathlib import Path
+
     all_files: list[Path] = []
     for pattern in patterns:
         all_files.extend(role_path.glob(pattern))

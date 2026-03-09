@@ -79,15 +79,9 @@ def display_complexity_report(
 
     composition_score = metrics.composition_score
     composition_level = (
-        "Low"
-        if composition_score < 4
-        else "Medium"
-        if composition_score < 8
-        else "High"
+        "Low" if composition_score < 4 else "Medium" if composition_score < 8 else "High"
     )
-    composition_color = (
-        GREEN if composition_score < 4 else YELLOW if composition_score < 8 else RED
-    )
+    composition_color = GREEN if composition_score < 4 else YELLOW if composition_score < 8 else RED
     click.echo(
         f"  Composition Score:   {composition_color}{composition_score} ({composition_level}){RESET}"
     )
@@ -96,14 +90,10 @@ def display_complexity_report(
     # External Integrations Section
     integration_count = len(report.integration_points)
     if integration_count > 0:
-        click.echo(
-            f"{BOLD}{YELLOW}🔌 External Integrations ({integration_count} detected):{RESET}"
-        )
+        click.echo(f"{BOLD}{YELLOW}🔌 External Integrations ({integration_count} detected):{RESET}")
 
         for idx, integration in enumerate(report.integration_points, 1):
-            credential_icon = (
-                " 🔑 Uses credentials" if integration.uses_credentials else ""
-            )
+            credential_icon = " 🔑 Uses credentials" if integration.uses_credentials else ""
             click.echo(
                 f"  {idx}. {integration.system_name} ({integration.task_count} tasks){credential_icon}"
             )
@@ -154,12 +144,8 @@ def display_complexity_report(
     if report.category == ComplexityCategory.SIMPLE:
         click.echo(f"{DIM}→ Recommended: Use sequence diagrams for visualization{RESET}")
     elif report.category == ComplexityCategory.MEDIUM:
-        click.echo(
-            f"{DIM}→ Recommended: Use state transition + component tree diagrams{RESET}"
-        )
+        click.echo(f"{DIM}→ Recommended: Use state transition + component tree diagrams{RESET}")
     else:
-        click.echo(
-            f"{DIM}→ Recommended: Use architecture diagrams + text documentation{RESET}"
-        )
+        click.echo(f"{DIM}→ Recommended: Use architecture diagrams + text documentation{RESET}")
 
     click.echo()

@@ -1,6 +1,5 @@
 """CLI helper utilities for improved help formatting."""
 
-
 from typing import Any
 
 import click
@@ -100,8 +99,7 @@ class GroupedHelpCommand(click.Command):
                 ):
                     opts_by_group["🔍 Analysis & Complexity"].append(rv)
                 elif any(
-                    x in opt_name
-                    for x in ["--repository-url", "--repo-type", "--repo-branch"]
+                    x in opt_name for x in ["--repository-url", "--repo-type", "--repo-branch"]
                 ):
                     opts_by_group["🔗 Repository Integration"].append(rv)
                 else:
