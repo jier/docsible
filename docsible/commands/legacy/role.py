@@ -80,6 +80,7 @@ def doc_the_role(
     fail_on: str,
     advanced_patterns: bool,
     output_format: str,
+    no_suppress: bool,
 ) -> None:
     """Generate documentation for an Ansible role.
 
@@ -183,6 +184,7 @@ def doc_the_role(
         "fail_on": fail_on,
         "advanced_patterns": advanced_patterns,
         "output_format": output_format,
+        "no_suppress": no_suppress,
     }
     resolved = resolve_settings(preset_name=preset, cli_overrides=cli_kwargs)
     cli_kwargs.update(resolved)

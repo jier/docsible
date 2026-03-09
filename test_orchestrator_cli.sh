@@ -189,6 +189,9 @@ run_test "--advanced-patterns flag accepted" \
 run_test "--advanced-patterns with complex role" \
     "docsible document role --role tests/fixtures/complex_role --advanced-patterns --dry-run"
 
+run_test "--no-suppress flag accepted" \
+    "docsible document role --role tests/fixtures/clean_role --no-suppress --dry-run"
+
 # --- New feature tests: --output-format json ---
 
 run_test "--output-format text (default)" \
