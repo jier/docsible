@@ -1,0 +1,4 @@
+---
+db_password: "plaintext_password_here"
+api_key: "secret_api_key_12345"
+user_input: ""

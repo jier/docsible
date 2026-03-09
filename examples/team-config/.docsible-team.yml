@@ -1,0 +1,9 @@
+preset: team
+fail_on: warning
+essential_only: false
+max_recommendations: 10
+overrides:
+  graph: true
+  hybrid: true
+ci_cd:
+  strict_validation: true

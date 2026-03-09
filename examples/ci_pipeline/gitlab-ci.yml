@@ -1,0 +1,16 @@
+docsible:check:
+  stage: test
+  image: python:3.12
+  script:
+    - pip install docsible
+    - docsible validate role --role . --fail-on warning
+  allow_failure: false
+
+docsible:document:
+  stage: deploy
+  image: python:3.12
+  script:
+    - pip install docsible
+    - docsible document role --role . --no-backup --preset team
+  only:
+    - main
