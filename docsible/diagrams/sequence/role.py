@@ -91,10 +91,7 @@ def _detect_state_support(role_info: dict[str, Any]) -> bool:
                 return True
             # Check description
             description = state_info.get("description", "")
-            if (
-                "present" in str(description).lower()
-                and "absent" in str(description).lower()
-            ):
+            if "present" in str(description).lower() and "absent" in str(description).lower():
                 return True
 
     # Check vars for state variable
@@ -128,9 +125,7 @@ def _detect_state_support(role_info: dict[str, Any]) -> bool:
     return False
 
 
-def _generate_simplified_sequence_diagram(
-    role_info: dict[str, Any], include_handlers: bool
-) -> str:
+def _generate_simplified_sequence_diagram(role_info: dict[str, Any], include_handlers: bool) -> str:
     """
     Generate simplified sequence diagram for large/complex roles.
     Shows only high-level structure: role → task files → handlers.
@@ -158,9 +153,7 @@ def _generate_simplified_sequence_diagram(
     if supports_states:
         # Show alternative flows for present/absent
         diagram += "    alt state: present\n"
-        diagram += (
-            f"    Playbook->>+{role_participant}: Execute role (ensure present)\n"
-        )
+        diagram += f"    Playbook->>+{role_participant}: Execute role (ensure present)\n"
         diagram += f"    activate {role_participant}\n"
     else:
         diagram += f"    Playbook->>+{role_participant}: Execute role\n"
@@ -193,9 +186,7 @@ def _generate_simplified_sequence_diagram(
 
     # Execute handlers if any were notified
     if include_handlers and handlers:
-        diagram += (
-            f"    Note over {role_participant},Handlers: Execute notified handlers\n"
-        )
+        diagram += f"    Note over {role_participant},Handlers: Execute notified handlers\n"
         diagram += f"    {role_participant}->>+Handlers: Flush handlers\n"
         diagram += f"    Note over Handlers: {len(handlers)} handlers\n"
         diagram += f"    Handlers-->>-{role_participant}: Handlers complete\n\n"
@@ -216,18 +207,14 @@ def _generate_simplified_sequence_diagram(
             if not tasks:
                 continue
             task_count = len(tasks)
-            diagram += (
-                f"    {role_participant}->>{role_participant}: Execute {task_file}\n"
-            )
+            diagram += f"    {role_participant}->>{role_participant}: Execute {task_file}\n"
             diagram += f"    Note right of {role_participant}: {task_count} tasks\n"
 
         diagram += f"    deactivate {role_participant}\n"
         diagram += f"    {role_participant}-->>-Playbook: Role complete\n"
         diagram += "    end\n"
 
-    diagram += (
-        f"\n    Note over Playbook: Simplified view - {len(tasks_data)} task files"
-    )
+    diagram += f"\n    Note over Playbook: Simplified view - {len(tasks_data)} task files"
     if supports_states:
         diagram += " (supports present/absent)"
     diagram += "\n"
@@ -235,9 +222,7 @@ def _generate_simplified_sequence_diagram(
     return diagram
 
 
-def _generate_full_sequence_diagram(
-    role_info: dict[str, Any], include_handlers: bool
-) -> str:
+def _generate_full_sequence_diagram(role_info: dict[str, Any], include_handlers: bool) -> str:
     """
     Generate detailed sequence diagram showing role → tasks → handlers interaction.
 
@@ -349,9 +334,7 @@ def _generate_full_sequence_diagram(
                 diagram += f"    {task_file_participant}->>{include_participant}: {task_module}: {include_file}\n"
                 diagram += f"    activate {include_participant}\n"
                 diagram += f"    Note over {include_participant}: {task_display}\n"
-                diagram += (
-                    f"    {include_participant}-->>{task_file_participant}: Complete\n"
-                )
+                diagram += f"    {include_participant}-->>{task_file_participant}: Complete\n"
                 diagram += f"    deactivate {include_participant}\n"
 
             # Handle include_role/import_role
@@ -362,15 +345,15 @@ def _generate_full_sequence_diagram(
                 "ansible.builtin.import_role",
             ]:
                 included_role = task.get("name", task.get("role", "unknown"))
-                role_include_participant = sanitize_participant_name(
-                    f"Role_{included_role}"
-                )
+                role_include_participant = sanitize_participant_name(f"Role_{included_role}")
 
                 if role_include_participant not in participants:
                     diagram += f"    participant {role_include_participant}\n"
                     participants.add(role_include_participant)
 
-                diagram += f"    {task_file_participant}->>{role_include_participant}: {task_module}\n"
+                diagram += (
+                    f"    {task_file_participant}->>{role_include_participant}: {task_module}\n"
+                )
                 diagram += f"    activate {role_include_participant}\n"
                 diagram += f"    Note over {role_include_participant}: {task_display}\n"
                 diagram += f"    {role_include_participant}-->>{task_file_participant}: Complete\n"
@@ -378,9 +361,7 @@ def _generate_full_sequence_diagram(
 
             # Handle block structures
             elif task_module == "block":
-                diagram += (
-                    f"    Note over {task_file_participant}: Block: {task_display}\n"
-                )
+                diagram += f"    Note over {task_file_participant}: Block: {task_display}\n"
                 diagram += f"    {task_file_participant}->>{task_file_participant}: Execute block\n"
 
                 # Check for rescue
@@ -391,11 +372,15 @@ def _generate_full_sequence_diagram(
 
                 # Check for always
                 if "always" in task:
-                    diagram += f"    {task_file_participant}->>{task_file_participant}: Execute always\n"
+                    diagram += (
+                        f"    {task_file_participant}->>{task_file_participant}: Execute always\n"
+                    )
 
             # Regular task
             else:
-                diagram += f"    {task_file_participant}->>{task_file_participant}: {task_display}\n"
+                diagram += (
+                    f"    {task_file_participant}->>{task_file_participant}: {task_display}\n"
+                )
                 diagram += f"    Note right of {task_file_participant}: {task_module}\n"
 
             # Check for handler notification
@@ -412,30 +397,24 @@ def _generate_full_sequence_diagram(
 
         # Show remaining tasks count if there are more than max_detailed_tasks
         if remaining_tasks > 0:
-            diagram += f"    Note over {task_file_participant}: ... and {remaining_tasks} more tasks\n"
+            diagram += (
+                f"    Note over {task_file_participant}: ... and {remaining_tasks} more tasks\n"
+            )
             diagram += "\n"
 
-        diagram += (
-            f"    {task_file_participant}-->>-{role_participant}: Tasks complete\n\n"
-        )
+        diagram += f"    {task_file_participant}-->>-{role_participant}: Tasks complete\n\n"
 
     # Execute handlers if any were notified
     if include_handlers and handlers:
-        diagram += (
-            f"    Note over {role_participant},Handlers: Execute notified handlers\n"
-        )
+        diagram += f"    Note over {role_participant},Handlers: Execute notified handlers\n"
         diagram += f"    {role_participant}->>+Handlers: Flush handlers\n"
 
         for handler in handlers[:3]:  # Show first 3 handlers to avoid clutter
             handler_name = handler.get("name", "Handler")
-            diagram += (
-                f"    Handlers->>Handlers: {sanitize_note_text(handler_name, 40)}\n"
-            )
+            diagram += f"    Handlers->>Handlers: {sanitize_note_text(handler_name, 40)}\n"
 
         if len(handlers) > 3:
-            diagram += (
-                f"    Note over Handlers: ... and {len(handlers) - 3} more handlers\n"
-            )
+            diagram += f"    Note over Handlers: ... and {len(handlers) - 3} more handlers\n"
 
         diagram += f"    Handlers-->>-{role_participant}: Handlers complete\n\n"
 

@@ -37,29 +37,29 @@ class RecommendationFormatter:
 
         # Critical first
         if Severity.CRITICAL in grouped:
-            lines.extend(self._format_severity_group(
-                Severity.CRITICAL,
-                grouped[Severity.CRITICAL],
-                "Must fix before production"
-            ))
+            lines.extend(
+                self._format_severity_group(
+                    Severity.CRITICAL, grouped[Severity.CRITICAL], "Must fix before production"
+                )
+            )
             lines.append("")
 
         # Then warnings
         if Severity.WARNING in grouped:
-            lines.extend(self._format_severity_group(
-                Severity.WARNING,
-                grouped[Severity.WARNING],
-                "Should fix for quality"
-            ))
+            lines.extend(
+                self._format_severity_group(
+                    Severity.WARNING, grouped[Severity.WARNING], "Should fix for quality"
+                )
+            )
             lines.append("")
 
         # Finally info (if enabled)
         if show_info and Severity.INFO in grouped:
-            lines.extend(self._format_severity_group(
-                Severity.INFO,
-                grouped[Severity.INFO],
-                "Consider for enhancement"
-            ))
+            lines.extend(
+                self._format_severity_group(
+                    Severity.INFO, grouped[Severity.INFO], "Consider for enhancement"
+                )
+            )
             lines.append("")
 
         # Summary
@@ -70,8 +70,7 @@ class RecommendationFormatter:
         return "\n".join(lines)
 
     def _group_by_severity(
-        self,
-        recommendations: Sequence[Recommendation]
+        self, recommendations: Sequence[Recommendation]
     ) -> dict[Severity, list[Recommendation]]:
         """Group recommendations by severity level."""
         grouped: dict[Severity, list[Recommendation]] = {}

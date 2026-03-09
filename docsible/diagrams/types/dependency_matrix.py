@@ -20,12 +20,8 @@ class TaskDependency(BaseModel):
     task_name: str = Field(description="Name of the task")
     module: str = Field(description="Ansible module used by this task")
     file: str = Field(description="Task file location (e.g., main.yml)")
-    requires: list[str] = Field(
-        default_factory=list, description="Variable/fact dependencies"
-    )
-    triggers: list[str] = Field(
-        default_factory=list, description="Handlers triggered by this task"
-    )
+    requires: list[str] = Field(default_factory=list, description="Variable/fact dependencies")
+    triggers: list[str] = Field(default_factory=list, description="Handlers triggered by this task")
     error_handling: str = Field(
         default="None", description="Error handling strategy (rescue/always/None)"
     )
@@ -192,9 +188,7 @@ def _extract_facts_set(task: dict[str, Any]) -> list[str]:
 # ============================================================================
 
 
-def analyze_task_dependencies(
-    tasks: list[dict[str, Any]], task_file: str
-) -> list[TaskDependency]:
+def analyze_task_dependencies(tasks: list[dict[str, Any]], task_file: str) -> list[TaskDependency]:
     """
     Analyze task dependencies from role task data.
 
@@ -404,9 +398,7 @@ def generate_dependency_matrix_markdown(
 # ============================================================================
 
 
-def should_generate_dependency_matrix(
-    role_info: dict[str, Any], complexity_report: Any
-) -> bool:
+def should_generate_dependency_matrix(role_info: dict[str, Any], complexity_report: Any) -> bool:
     """
     Determine if dependency matrix should be generated.
 
@@ -459,9 +451,7 @@ def generate_dependency_summary(dependencies: list[TaskDependency]) -> dict[str,
     total_tasks = len(dependencies)
     tasks_with_requirements = sum(1 for d in dependencies if d.requires)
     tasks_with_triggers = sum(1 for d in dependencies if d.triggers)
-    tasks_with_error_handling = sum(
-        1 for d in dependencies if d.error_handling != "None"
-    )
+    tasks_with_error_handling = sum(1 for d in dependencies if d.error_handling != "None")
     tasks_setting_facts = sum(1 for d in dependencies if d.sets_facts)
 
     return {

@@ -30,7 +30,9 @@ class PositiveFormatter:
             lines.extend(self._format_enhancements(enhancements))
             lines.append("")
         else:
-            lines.append("🎉 Excellent! No enhancement opportunities - role follows all best practices!")
+            lines.append(
+                "🎉 Excellent! No enhancement opportunities - role follows all best practices!"
+            )
             lines.append("")
         lines.extend(self._format_next_steps(output_file, complexity))
         return "\n".join(lines)

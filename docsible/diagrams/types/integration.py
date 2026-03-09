@@ -91,15 +91,9 @@ def generate_integration_boundary(integration_points: list) -> str | None:
     lines.append("    classDef dbStyle fill:#f3e5f5,stroke:#4a148c,stroke-width:2px")
     lines.append("    classDef vaultStyle fill:#fff3e0,stroke:#e65100,stroke-width:2px")
     lines.append("    classDef cloudStyle fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px")
-    lines.append(
-        "    classDef networkStyle fill:#fce4ec,stroke:#c2185b,stroke-width:2px"
-    )
-    lines.append(
-        "    classDef containerStyle fill:#e0f2f1,stroke:#00695c,stroke-width:2px"
-    )
-    lines.append(
-        "    classDef monitoringStyle fill:#fff9c4,stroke:#f57f17,stroke-width:2px"
-    )
+    lines.append("    classDef networkStyle fill:#fce4ec,stroke:#c2185b,stroke-width:2px")
+    lines.append("    classDef containerStyle fill:#e0f2f1,stroke:#00695c,stroke-width:2px")
+    lines.append("    classDef monitoringStyle fill:#fff9c4,stroke:#f57f17,stroke-width:2px")
 
     return "\n".join(lines)
 
