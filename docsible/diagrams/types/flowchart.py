@@ -58,9 +58,7 @@ class FlowchartBuilder(DiagramBuilder):
             safe_title = sanitize_for_title(title)
             self.add_line(f"    %% {safe_title}")
 
-    def add_task(
-        self, task_name: str, task_id: str | None = None, shape: str = "rectangle"
-    ) -> str:
+    def add_task(self, task_name: str, task_id: str | None = None, shape: str = "rectangle") -> str:
         """Add a task node to the flowchart.
 
         Args:

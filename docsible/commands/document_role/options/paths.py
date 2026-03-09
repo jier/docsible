@@ -22,9 +22,7 @@ def add_path_options(f: F) -> F:
     - --collection/-c: Path to the Ansible collection directory
     - --playbook/-p: Path to the playbook file
     """
-    f = click.option(
-        "--playbook", "-p", default=None, help="Path to the playbook file."
-    )(f)
+    f = click.option("--playbook", "-p", default=None, help="Path to the playbook file.")(f)
     f = click.option(
         "--collection",
         "-c",

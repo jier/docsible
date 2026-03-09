@@ -114,8 +114,7 @@ class ReadmeRenderer:
 
         # Step 2: Load template
         template = self.template_processor.get_role_template(
-            template_type=template_type,
-            custom_path=custom_template_path
+            template_type=template_type, custom_path=custom_template_path
         )
 
         # Step 3: Render template

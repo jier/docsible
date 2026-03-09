@@ -14,6 +14,7 @@ from docsible.analyzers.complexity_analyzer import (
     IntegrationPoint,
     analyze_role_complexity,
 )
+from docsible.analyzers.task_analysis_facade import TaskFileAnalysis, analyze_task_file
 
 __all__ = [
     "ComplexityCategory",
@@ -21,4 +22,6 @@ __all__ = [
     "ComplexityReport",
     "IntegrationPoint",
     "analyze_role_complexity",
+    "TaskFileAnalysis",
+    "analyze_task_file",
 ]

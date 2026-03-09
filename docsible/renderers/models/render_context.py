@@ -28,12 +28,10 @@ class RenderContext(BaseModel):
 
     # Template configuration
     template_type: str = Field(
-        default="standard",
-        description="Template type ('standard', 'hybrid', 'hybrid_modular')"
+        default="standard", description="Template type ('standard', 'hybrid', 'hybrid_modular')"
     )
     custom_template_path: str | None = Field(
-        default=None,
-        description="Optional custom template file path"
+        default=None, description="Optional custom template file path"
     )
 
     # Diagrams
@@ -46,9 +44,7 @@ class RenderContext(BaseModel):
     sequence_diagram_detailed: str | None = Field(
         default=None, description="Detailed sequence diagram"
     )
-    state_diagram: str | None = Field(
-        default=None, description="State transition diagram"
-    )
+    state_diagram: str | None = Field(default=None, description="State transition diagram")
     integration_boundary_diagram: str | None = Field(
         default=None, description="Integration boundary diagram"
     )
@@ -57,9 +53,7 @@ class RenderContext(BaseModel):
     )
 
     # Dependencies
-    dependency_matrix: str | None = Field(
-        default=None, description="Dependency matrix diagram"
-    )
+    dependency_matrix: str | None = Field(default=None, description="Dependency matrix diagram")
     dependency_summary: dict[str, Any] | None = Field(
         default=None, description="Dependency analysis summary"
     )
@@ -68,9 +62,7 @@ class RenderContext(BaseModel):
     )
 
     # Complexity
-    complexity_report: Any | None = Field(
-        default=None, description="Complexity analysis results"
-    )
+    complexity_report: Any | None = Field(default=None, description="Complexity analysis results")
     include_complexity: bool | None = Field(
         default=None, description="Include complexity report in output"
     )
@@ -86,15 +78,15 @@ class RenderContext(BaseModel):
 
     # Output mode
     append: bool = Field(
-        default=False,
-        description="Append to existing README instead of replacing"
+        default=False, description="Append to existing README instead of replacing"
     )
 
     class ConfigDict:
         """Pydantic configuration."""
+
         frozen = False  # Allow modification if needed
         validate_assignment = True  # Validate on attribute assignment
-    
+
     def to_template_dict(self) -> dict[str, Any]:
         """Convert to dictionary for template rendering.
 

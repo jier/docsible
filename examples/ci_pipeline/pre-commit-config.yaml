@@ -1,0 +1,9 @@
+repos:
+  - repo: local
+    hooks:
+      - id: docsible-validate
+        name: Validate Ansible role documentation
+        language: system
+        entry: docsible validate role --role . --fail-on critical
+        pass_filenames: false
+        types: [yaml]

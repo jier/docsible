@@ -100,9 +100,7 @@ def validate_role_structure(role_path: Path, strict: bool = False) -> None:
     Example:
         validate_role_structure(Path("/path/to/role"), strict=True)
     """
-    validate_path(
-        role_path, must_exist=True, must_be_dir=True, description="Role directory"
-    )
+    validate_path(role_path, must_exist=True, must_be_dir=True, description="Role directory")
 
     if strict:
         # Check for at least one standard role directory

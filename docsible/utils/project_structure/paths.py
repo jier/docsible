@@ -213,5 +213,5 @@ def get_yaml_extensions(config: dict[str, Any], defaults: dict[str, Any]) -> lis
     Returns:
         List of YAML extensions (e.g., ['.yml', '.yaml'])
     """
-    
+
     return cast(list[str], config.get("yaml_extensions", defaults["yaml_extensions"]))

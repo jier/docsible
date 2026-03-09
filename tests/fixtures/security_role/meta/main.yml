@@ -1,0 +1,7 @@
+---
+galaxy_info:
+  author: test
+  description: Security test role
+  license: MIT
+  min_ansible_version: "2.9"
+dependencies: []

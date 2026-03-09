@@ -120,9 +120,7 @@ class MaintainabilityDetector(BasePatternDetector):
 
         return suggestions
 
-    def _detect_magic_values(
-        self, role_info: dict[str, Any]
-    ) -> list[SimplificationSuggestion]:
+    def _detect_magic_values(self, role_info: dict[str, Any]) -> list[SimplificationSuggestion]:
         """Detect repeated literal values that should be variables.
 
         Example: Path "/opt/myapp" hardcoded in 10 different tasks
@@ -155,16 +153,12 @@ class MaintainabilityDetector(BasePatternDetector):
 
         # Find literals used 3+ times
         magic_values = {
-            literal: files
-            for literal, files in literal_usage.items()
-            if len(files) >= 3
+            literal: files for literal, files in literal_usage.items() if len(files) >= 3
         }
 
         if magic_values:
             # Show top offenders
-            top_magic = sorted(
-                magic_values.items(), key=lambda x: len(x[1]), reverse=True
-            )[:3]
+            top_magic = sorted(magic_values.items(), key=lambda x: len(x[1]), reverse=True)[:3]
 
             example = "\n".join(
                 [f"'{literal}' used {len(files)} times" for literal, files in top_magic]
@@ -178,9 +172,7 @@ class MaintainabilityDetector(BasePatternDetector):
                     description=f"Found {len(magic_values)} repeated literal values across tasks",
                     example=f"\n{example}\n",
                     suggestion=Suggestion.detect_magic_values(),
-                    affected_files=list(
-                        set([f for files in magic_values.values() for f in files])
-                    ),
+                    affected_files=list(set([f for files in magic_values.values() for f in files])),
                     impact="Improves flexibility and reduces change burden",
                     confidence=0.7,
                 )

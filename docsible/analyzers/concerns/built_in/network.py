@@ -1,6 +1,7 @@
 """Network configuration concern detector."""
 
 from docsible.analyzers.concerns.base import ConcernDetector
+from docsible.analyzers.shared.module_taxonomy import NETWORK_MODULES
 
 
 class NetworkConfigurationConcern(ConcernDetector):
@@ -20,22 +21,8 @@ class NetworkConfigurationConcern(ConcernDetector):
 
     @property
     def module_patterns(self) -> list:
-        return [
-            # Firewall
-            "firewalld",
-            "iptables",
-            "ufw",
-            # Network config
-            "nmcli",
-            "network",
-            "route",
-            "hostname",
-            "dns",
-            # Network devices
-            "cisco",
-            "junos",
-            "vyos",
-        ]
+        # dns is network-specific and not in the shared taxonomy
+        return sorted(NETWORK_MODULES) + ["dns"]
 
     @property
     def suggested_filename(self) -> str:

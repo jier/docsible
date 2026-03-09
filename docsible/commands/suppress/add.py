@@ -14,20 +14,32 @@ from docsible.suppression.store import load_store, resolve_suppress_path, save_s
 @click.argument("pattern")
 @click.option("--reason", "-r", required=True, help="Justification for suppression")
 @click.option(
-    "--file", "-f", "file_pattern", default=None,
+    "--file",
+    "-f",
+    "file_pattern",
+    default=None,
     help="Scope to files matching this glob pattern (e.g., 'roles/webserver')",
 )
 @click.option(
-    "--expires", "-e", "expires_days", default=None, type=int,
+    "--expires",
+    "-e",
+    "expires_days",
+    default=None,
+    type=int,
     help="Auto-expire after N days (omit for no expiry)",
 )
 @click.option("--approved-by", default=None, help="Name of approver (for audit trail)")
 @click.option(
-    "--regex", is_flag=True, default=False,
+    "--regex",
+    is_flag=True,
+    default=False,
     help="Treat PATTERN as a regular expression instead of a substring",
 )
 @click.option(
-    "--path", "-p", "base_path", default=None,
+    "--path",
+    "-p",
+    "base_path",
+    default=None,
     help="Base path for locating .docsible/suppress.yml (default: current directory)",
 )
 def suppress_add(

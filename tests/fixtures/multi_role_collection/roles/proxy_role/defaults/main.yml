@@ -1,0 +1,3 @@
+---
+proxy_port: 8080
+proxy_timeout: 30

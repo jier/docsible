@@ -76,9 +76,7 @@ def escape_table_cell(
     return s.strip()
 
 
-def escape_table_value(
-    value: Any, as_code: bool = True, max_length: int | None = None
-) -> str:
+def escape_table_value(value: Any, as_code: bool = True, max_length: int | None = None) -> str:
     """
     Escape a value for safe rendering in a markdown table cell, optionally with code formatting.
 
@@ -120,9 +118,7 @@ def escape_table_value(
     return escaped
 
 
-def safe_join(
-    items: Any, separator: str = ", ", max_items: int | None = None
-) -> str:
+def safe_join(items: Any, separator: str = ", ", max_items: int | None = None) -> str:
     """
     Safely join items into a string, escaping each item for table cells.
 

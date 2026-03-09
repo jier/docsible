@@ -13,6 +13,11 @@ from docsible.analyzers.patterns.models import (
     SeverityLevel,
     SimplificationSuggestion,
 )
+from docsible.analyzers.shared.module_taxonomy import (
+    FILE_MODULES,
+    PACKAGE_MODULES,
+    SERVICE_MODULES,
+)
 
 
 class DuplicationDetector(BasePatternDetector):
@@ -62,11 +67,16 @@ class DuplicationDetector(BasePatternDetector):
         """
         suggestions: list[SimplificationSuggestion] = []
 
-        # Package management modules to check
-        package_modules = ["apt", "yum", "dnf", "package", "pip", "npm"]
+        # Short family names used for suggestion text and per-family grouping.
+        # Membership is checked against PACKAGE_MODULES from the shared taxonomy.
+        package_module_families = ["apt", "yum", "dnf", "package", "pip", "npm"]
 
-        for pkg_module in package_modules:
-            tasks = self._get_tasks_by_module(role_info, pkg_module)
+        for pkg_module in package_module_families:
+            # Match this family: all entries in the shared taxonomy that contain
+            # the short name (covers both "apt" and "ansible.builtin.apt" etc.)
+            family_modules = {m for m in PACKAGE_MODULES if pkg_module in m}
+            all_tasks = self._flatten_tasks(role_info)
+            tasks = [t for t in all_tasks if t.get("module") in family_modules]
 
             # Threshold: 5+ separate package tasks suggests opportunity
             if len(tasks) > 5:
@@ -114,8 +124,9 @@ class DuplicationDetector(BasePatternDetector):
         """
         suggestions: list[SimplificationSuggestion] = []
 
-        service_tasks = self._get_tasks_by_module(role_info, "service")
-        systemd_tasks = self._get_tasks_by_module(role_info, "systemd")
+        all_tasks = self._flatten_tasks(role_info)
+        service_tasks = [t for t in all_tasks if t.get("module") in SERVICE_MODULES]
+        systemd_tasks: list[dict] = []  # Already included in SERVICE_MODULES; kept for clarity
 
         all_service_tasks = service_tasks + systemd_tasks
 
@@ -124,7 +135,7 @@ class DuplicationDetector(BasePatternDetector):
             by_state = defaultdict(list)
             for task in all_service_tasks:
                 # Try to extract state from task args or name
-                state = task.get("state", "unknown")
+                state = task.get("args", {}).get("state", "unknown")
                 by_state[state].append(task)
 
             # Check each state group
@@ -166,13 +177,16 @@ class DuplicationDetector(BasePatternDetector):
         """
         suggestions: list[SimplificationSuggestion] = []
 
-        file_tasks = self._get_tasks_by_module(role_info, "file")
+        # Only match the "file" module family for directory/file operations
+        file_family_modules = {m for m in FILE_MODULES if "file" in m}
+        all_tasks = self._flatten_tasks(role_info)
+        file_tasks = [t for t in all_tasks if t.get("module") in file_family_modules]
 
         if len(file_tasks) > 5:
             # Group by state (directory, file, etc.)
             by_state = defaultdict(list)
             for task in file_tasks:
-                state = task.get("state", "unknown")
+                state = task.get("args", {}).get("state", "unknown")
                 by_state[state].append(task)
 
             # Check directory creation specifically
@@ -206,9 +220,7 @@ class DuplicationDetector(BasePatternDetector):
 
         return suggestions
 
-    def _detect_similar_tasks(
-        self, role_info: dict[str, Any]
-    ) -> list[SimplificationSuggestion]:
+    def _detect_similar_tasks(self, role_info: dict[str, Any]) -> list[SimplificationSuggestion]:
         """Detect tasks with similar names suggesting duplication.
 
         Example: Tasks named "Configure X", "Configure Y", "Configure Z"

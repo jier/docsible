@@ -39,9 +39,7 @@ def should_paginate_diagram(mermaid_code: str, max_nodes: int = 50) -> bool:
     return should_split
 
 
-def paginate_tasks(
-    tasks: list[dict], tasks_per_page: int = 20
-) -> list[tuple[str, list[dict]]]:
+def paginate_tasks(tasks: list[dict], tasks_per_page: int = 20) -> list[tuple[str, list[dict]]]:
     """
     Split task list into pages for multiple diagrams.
 

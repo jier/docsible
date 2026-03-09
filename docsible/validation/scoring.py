@@ -3,36 +3,35 @@ from typing import Any
 from .models import ValidationIssue, ValidationSeverity
 
 
-def calculate_score(
-         issues: list[ValidationIssue]
-    ) -> float:
-        """
-        Calculate overall quality score (0-100).
+def calculate_score(issues: list[ValidationIssue]) -> float:
+    """
+    Calculate overall quality score (0-100).
 
-        Note: Currently only uses issues for scoring. Metrics could be
-        incorporated in the future for more nuanced scoring (e.g., rewarding
-        comprehensive documentation, penalizing brevity, etc.).
+    Note: Currently only uses issues for scoring. Metrics could be
+    incorporated in the future for more nuanced scoring (e.g., rewarding
+    comprehensive documentation, penalizing brevity, etc.).
 
-        Scoring:
-        - Start at 100
-        - ERROR: -15 points each
-        - WARNING: -5 points each
-        - INFO: -2 points each
-        - Floor at 0
-        """
-        score = 100.0
+    Scoring:
+    - Start at 100
+    - ERROR: -15 points each
+    - WARNING: -5 points each
+    - INFO: -2 points each
+    - Floor at 0
+    """
+    score = 100.0
 
-        for issue in issues:
-            if issue.severity == ValidationSeverity.ERROR:
-                score -= 15.0
-            elif issue.severity == ValidationSeverity.WARNING:
-                score -= 5.0
-            elif issue.severity == ValidationSeverity.INFO:
-                score -= 2.0
+    for issue in issues:
+        if issue.severity == ValidationSeverity.ERROR:
+            score -= 15.0
+        elif issue.severity == ValidationSeverity.WARNING:
+            score -= 5.0
+        elif issue.severity == ValidationSeverity.INFO:
+            score -= 2.0
 
-        return max(0.0, score)
+    return max(0.0, score)
 
-def _calculate_metric_adjustments(metrics: dict[str, Any]) :
+
+def _calculate_metric_adjustments(metrics: dict[str, Any]):
     """
     Calculate score adjustments based on quality metrics.
 

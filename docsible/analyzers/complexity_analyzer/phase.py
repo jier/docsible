@@ -12,6 +12,14 @@ from pathlib import Path
 
 from pydantic import BaseModel, Field
 
+from docsible.analyzers.shared.module_taxonomy import (
+    CONFIG_MODULES,
+    FILE_MODULES,
+    PACKAGE_MODULES,
+    SERVICE_MODULES,
+    VERIFY_MODULES,
+)
+
 logger = logging.getLogger(__name__)
 
 
@@ -48,12 +56,8 @@ class PhaseDetectionResult(BaseModel):
     """Result of phase detection analysis."""
 
     detected_phases: list[PhaseMatch] = Field(default_factory=list)
-    is_coherent_pipeline: bool = Field(
-        description="Whether tasks form a coherent pipeline"
-    )
-    confidence: float = Field(
-        ge=0.0, le=1.0, description="Overall pipeline confidence"
-    )
+    is_coherent_pipeline: bool = Field(description="Whether tasks form a coherent pipeline")
+    confidence: float = Field(ge=0.0, le=1.0, description="Overall pipeline confidence")
     recommendation: str = Field(description="Human-readable recommendation")
     reasoning: str = Field(description="Explanation of the analysis")
 
@@ -102,15 +106,8 @@ DEFAULT_PATTERNS: dict[Phase, PhasePattern] = {
         priority=1,  # Typically first
     ),
     Phase.INSTALL: PhasePattern(
-        modules={
-            "apt",
-            "yum",
-            "dnf",
-            "pip",
-            "npm",
-            "package",
-            "gem",
-            "docker_image",
+        # Seed from shared taxonomy, then add phase-specific extras
+        modules=set(PACKAGE_MODULES) | {
             "get_url",
             "git",
             "unarchive",
@@ -127,16 +124,8 @@ DEFAULT_PATTERNS: dict[Phase, PhasePattern] = {
         priority=2,
     ),
     Phase.CONFIGURE: PhasePattern(
-        modules={
-            "template",
-            "copy",
-            "lineinfile",
-            "blockinfile",
-            "file",
-            "replace",
-            "ini_file",
-            "xml",
-        },
+        # Seed from shared taxonomy, then add file module for config file placement
+        modules=set(CONFIG_MODULES) | set(FILE_MODULES),
         name_keywords=[
             "configure",
             "config",
@@ -153,12 +142,14 @@ DEFAULT_PATTERNS: dict[Phase, PhasePattern] = {
         priority=4,
     ),
     Phase.ACTIVATE: PhasePattern(
-        modules={"service", "systemd", "supervisorctl", "docker_container"},
+        # Seed from shared taxonomy, then add docker_container which is phase-specific
+        modules=set(SERVICE_MODULES) | {"docker_container"},
         name_keywords=["start", "enable", "activate", "restart", "reload"],
         priority=5,
     ),
     Phase.VERIFY: PhasePattern(
-        modules={"uri", "wait_for", "assert", "ping", "command", "shell"},
+        # Seed from shared taxonomy (already includes uri, wait_for, assert, ping, command, shell)
+        modules=set(VERIFY_MODULES),
         name_keywords=[
             "verify",
             "test",
@@ -283,9 +274,7 @@ class PhaseDetector:
         )
     """
 
-    def __init__(
-        self, min_confidence: float = 0.8, patterns_file: str | Path | None = None
-    ):
+    def __init__(self, min_confidence: float = 0.8, patterns_file: str | Path | None = None):
         """Initialize phase detector.
 
         Args:
@@ -553,9 +542,7 @@ class PhaseDetector:
         coverage_score = tasks_in_phases / total_tasks if total_tasks > 0 else 0.0
         signals.append(("phase_coverage", coverage_score))
 
-        avg_phase_confidence = sum(group.confidence for group in phase_groups) / len(
-            phase_groups
-        )
+        avg_phase_confidence = sum(group.confidence for group in phase_groups) / len(phase_groups)
         signals.append(("phase_confidence", avg_phase_confidence))
 
         repetition_penalty = self._check_phase_repetition(phase_groups)
@@ -573,17 +560,11 @@ class PhaseDetector:
         reasoning_parts = []
         for name, score in signals:
             if score >= 0.7:
-                reasoning_parts.append(
-                    f"\u2713 {name.replace('_', ' ').title()}: {score:.0%}"
-                )
+                reasoning_parts.append(f"\u2713 {name.replace('_', ' ').title()}: {score:.0%}")
             elif score >= 0.5:
-                reasoning_parts.append(
-                    f"~ {name.replace('_', ' ').title()}: {score:.0%}"
-                )
+                reasoning_parts.append(f"~ {name.replace('_', ' ').title()}: {score:.0%}")
             else:
-                reasoning_parts.append(
-                    f"\u2717 {name.replace('_', ' ').title()}: {score:.0%}"
-                )
+                reasoning_parts.append(f"\u2717 {name.replace('_', ' ').title()}: {score:.0%}")
 
         reasoning = " | ".join(reasoning_parts)
         is_pipeline = overall_confidence >= self.min_confidence
@@ -621,9 +602,7 @@ class PhaseDetector:
 
         return min(repetitions / len(phase_groups), 1.0)
 
-    def _generate_recommendation(
-        self, is_pipeline: bool, phase_groups: list[PhaseMatch]
-    ) -> str:
+    def _generate_recommendation(self, is_pipeline: bool, phase_groups: list[PhaseMatch]) -> str:
         """Generate recommendation based on phase detection."""
         if is_pipeline:
             phase_names = " \u2192 ".join([g.phase.value.title() for g in phase_groups])

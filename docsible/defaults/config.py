@@ -14,83 +14,56 @@ class DocumentationConfig(BaseModel):
 
     # Graph options
     generate_graph: bool = Field(
-        default=False,
-        description="Generate a dependency or include graph for the role."
+        default=False, description="Generate a dependency or include graph for the role."
     )
     simplify_diagrams: bool = Field(
-        default=False,
-        description="Simplify generated diagrams to reduce visual complexity."
+        default=False, description="Simplify generated diagrams to reduce visual complexity."
     )
-    no_diagrams: bool = Field(
-        default=False,
-        description="Disable diagram generation entirely."
-    )
+    no_diagrams: bool = Field(default=False, description="Disable diagram generation entirely.")
 
     # Content options
-    no_vars: bool = Field(
-        default=False,
-        description="Exclude variables documentation."
-    )
-    no_tasks: bool = Field(
-        default=False,
-        description="Exclude tasks documentation."
-    )
-    no_metadata: bool = Field(
-        default=False,
-        description="Exclude metadata documentation."
-    )
-    no_examples: bool = Field(
-        default=False,
-        description="Exclude examples documentation."
-    )
-    no_handlers: bool = Field(
-        default=False,
-        description="Exclude handlers documentation."
-    )
+    no_vars: bool = Field(default=False, description="Exclude variables documentation.")
+    no_tasks: bool = Field(default=False, description="Exclude tasks documentation.")
+    no_metadata: bool = Field(default=False, description="Exclude metadata documentation.")
+    no_examples: bool = Field(default=False, description="Exclude examples documentation.")
+    no_handlers: bool = Field(default=False, description="Exclude handlers documentation.")
     minimal: bool = Field(
-        default=False,
-        description="Generate minimal documentation with only essential sections."
+        default=False, description="Generate minimal documentation with only essential sections."
     )
 
     # Output options
     output: str = Field(
-        default="README.md",
-        description="Output file path for the generated documentation."
+        default="README.md", description="Output file path for the generated documentation."
     )
     no_backup: bool = Field(
-        default=False,
-        description="Do not create a backup of an existing output file."
+        default=False, description="Do not create a backup of an existing output file."
     )
     append: bool = Field(
         default=False,
-        description="Append documentation to an existing output file instead of overwriting."
+        description="Append documentation to an existing output file instead of overwriting.",
     )
 
     # Reporting options
     complexity_report: bool = Field(
-        default=False,
-        description="Include a complexity analysis report."
+        default=False, description="Include a complexity analysis report."
     )
     simplification_report: bool = Field(
-        default=False,
-        description="Include a report explaining simplification decisions."
+        default=False, description="Include a report explaining simplification decisions."
     )
     show_dependencies: bool = Field(
-        default=False,
-        description="Show role dependencies in the generated documentation."
+        default=False, description="Show role dependencies in the generated documentation."
     )
 
     # Metadata
     decisions: list[Decision] = Field(
-    default_factory=list,
-    description="List of Decision objects that led to this configuration."
+        default_factory=list, description="List of Decision objects that led to this configuration."
     )
 
     confidence: float = Field(
         default=1.0,
         ge=0.0,
         le=1.0,
-        description="Overall confidence score for this configuration (0.0-1.0)."
+        description="Overall confidence score for this configuration (0.0-1.0).",
     )
 
     def to_cli_args(self) -> list[str]:

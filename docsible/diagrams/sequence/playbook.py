@@ -101,17 +101,13 @@ def generate_mermaid_sequence_playbook_high_level(
 
     for play_idx, play in enumerate(playbook):
         hosts = play.get("hosts", "all")
-        diagram += (
-            f"    Note over Playbook: Play {play_idx + 1}: Target hosts={hosts}\n\n"
-        )
+        diagram += f"    Note over Playbook: Play {play_idx + 1}: Target hosts={hosts}\n\n"
 
         # Pre-tasks - show individual tasks
         pre_tasks = play.get("pre_tasks", [])
         if pre_tasks:
             diagram += f"    Note over Playbook: Pre-tasks ({len(pre_tasks)} tasks)\n"
-            diagram = _add_task_details(
-                diagram, pre_tasks, "Playbook", participants, has_handlers
-            )
+            diagram = _add_task_details(diagram, pre_tasks, "Playbook", participants, has_handlers)
             diagram += "\n"
 
         # Role dependencies (if available from meta)
@@ -159,18 +155,14 @@ def generate_mermaid_sequence_playbook_high_level(
         tasks = play.get("tasks", [])
         if tasks:
             diagram += f"    Note over Playbook: Tasks ({len(tasks)} tasks)\n"
-            diagram = _add_task_details(
-                diagram, tasks, "Playbook", participants, has_handlers
-            )
+            diagram = _add_task_details(diagram, tasks, "Playbook", participants, has_handlers)
             diagram += "\n"
 
         # Post-tasks - show individual tasks
         post_tasks = play.get("post_tasks", [])
         if post_tasks:
             diagram += f"    Note over Playbook: Post-tasks ({len(post_tasks)} tasks)\n"
-            diagram = _add_task_details(
-                diagram, post_tasks, "Playbook", participants, has_handlers
-            )
+            diagram = _add_task_details(diagram, post_tasks, "Playbook", participants, has_handlers)
             diagram += "\n"
 
         # Handlers
@@ -226,9 +218,7 @@ def _add_task_details(
                     continue
 
                 role_name_clean = sanitize_participant_name(str(role_name))
-                diagram += (
-                    f"    {executor}->>+{role_name_clean}: {role_action}: {role_name}\n"
-                )
+                diagram += f"    {executor}->>+{role_name_clean}: {role_action}: {role_name}\n"
                 diagram += f"    {role_name_clean}-->>-{executor}: Complete\n"
 
                 # Check for notifications
@@ -246,14 +236,10 @@ def _add_task_details(
             if task_action in task:
                 task_file = task[task_action]
                 if isinstance(task_file, str):
-                    diagram += (
-                        f"    {executor}->>{executor}: {task_action}: {task_file}\n"
-                    )
+                    diagram += f"    {executor}->>{executor}: {task_action}: {task_file}\n"
                 elif isinstance(task_file, dict):
                     file_name = task_file.get("file", "unknown")
-                    diagram += (
-                        f"    {executor}->>{executor}: {task_action}: {file_name}\n"
-                    )
+                    diagram += f"    {executor}->>{executor}: {task_action}: {file_name}\n"
 
                 # Check for notifications
                 if "notify" in task and has_handlers:

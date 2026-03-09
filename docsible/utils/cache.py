@@ -21,6 +21,7 @@ T = TypeVar("T")
 # Cache Configuration
 # ============================================================================
 
+
 class CacheConfig:
     """Global cache configuration.
 
@@ -29,12 +30,12 @@ class CacheConfig:
     """
 
     # Maximum cache sizes
-    YAML_CACHE_SIZE = 1000      # ~100MB for 1000 average YAML files
-    ANALYSIS_CACHE_SIZE = 200   # ~50MB for 200 role analyses
-    PATH_CACHE_SIZE = 512       # ~1MB for path operations
+    YAML_CACHE_SIZE = 1000  # ~100MB for 1000 average YAML files
+    ANALYSIS_CACHE_SIZE = 200  # ~50MB for 200 role analyses
+    PATH_CACHE_SIZE = 512  # ~1MB for path operations
 
     # Enable/disable caching globally
-    CACHING_ENABLED = True      # Can be disabled for debugging
+    CACHING_ENABLED = True  # Can be disabled for debugging
 
     @classmethod
     def from_env(cls) -> None:
@@ -54,10 +55,9 @@ class CacheConfig:
             cls.ANALYSIS_CACHE_SIZE = int(analysis_size)
 
 
-def configure_caches(*,
-                     yaml_size: int | None = None,
-                     analysis_size: int | None = None,
-                     enabled: bool | None = None) -> None:
+def configure_caches(
+    *, yaml_size: int | None = None, analysis_size: int | None = None, enabled: bool | None = None
+) -> None:
     """Configure all caches globally.
 
     Args:
@@ -160,9 +160,7 @@ def cache_by_file_mtime(func: Callable[[Path], T]) -> Callable[[Path], T]:
             current_mtime: Current modification time
         """
         keys_to_remove = [
-            key
-            for key in cache_dict.keys()
-            if key[0] == file_path and key[1] != current_mtime
+            key for key in cache_dict.keys() if key[0] == file_path and key[1] != current_mtime
         ]
         for key in keys_to_remove:
             del cache_dict[key]
@@ -285,9 +283,7 @@ def cache_by_dir_mtime(func: Callable[..., T]) -> Callable[..., T]:
         hash_str = "|".join(f"{path}:{mtime}" for path, mtime in file_mtimes)
         return hashlib.md5(hash_str.encode()).hexdigest()[:16]
 
-    def _clean_old_dir_entries(
-        cache_dict: dict[tuple[str, str, str], T], dir_path: str
-    ) -> None:
+    def _clean_old_dir_entries(cache_dict: dict[tuple[str, str, str], T], dir_path: str) -> None:
         """Remove old cache entries for the same directory path.
 
         Keeps only the most recent entry for each (path, args) combination.
@@ -423,7 +419,7 @@ def clear_all_caches() -> None:
 
     # Clear YAML caches
     for cache_wrapper in _YAML_CACHES:
-        if hasattr(cache_wrapper, 'cache_clear'):
+        if hasattr(cache_wrapper, "cache_clear"):
             cache_wrapper.cache_clear()
 
     logger.info("All caches cleared")
@@ -449,10 +445,10 @@ def get_cache_stats() -> dict[str, Any]:
     total_yaml_entries = 0
 
     for cache_wrapper in _YAML_CACHES:
-        if hasattr(cache_wrapper, 'cache_info'):
+        if hasattr(cache_wrapper, "cache_info"):
             info = cache_wrapper.cache_info()
             yaml_cache_stats.append(info)
-            total_yaml_entries += info.get('size', 0)
+            total_yaml_entries += info.get("size", 0)
 
     return {
         "caching_enabled": CacheConfig.CACHING_ENABLED,

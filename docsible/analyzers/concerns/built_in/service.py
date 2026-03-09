@@ -1,6 +1,7 @@
 """Service management concern detector."""
 
 from docsible.analyzers.concerns.base import ConcernDetector
+from docsible.analyzers.shared.module_taxonomy import SERVICE_MODULES
 
 
 class ServiceManagementConcern(ConcernDetector):
@@ -20,14 +21,7 @@ class ServiceManagementConcern(ConcernDetector):
 
     @property
     def module_patterns(self) -> list:
-        return [
-            "service",
-            "systemd",
-            "sysvinit",
-            "supervisorctl",
-            # Windows
-            "win_service",
-        ]
+        return sorted(SERVICE_MODULES)
 
     @property
     def suggested_filename(self) -> str:

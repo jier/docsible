@@ -132,9 +132,7 @@ def get_repo_info(path: str | Path) -> dict[str, str]:
             timeout=timeout,
         )
         if is_repo_check.stdout.strip() != "true":
-            raise NotGitRepositoryError(
-                f"Path is not inside a Git work tree: {dir_path}"
-            )
+            raise NotGitRepositoryError(f"Path is not inside a Git work tree: {dir_path}")
 
         raw_url = subprocess.run(
             ["git", "-C", dir_path, "config", "--get", "remote.origin.url"],

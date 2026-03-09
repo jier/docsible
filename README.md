@@ -11,10 +11,12 @@ Project home: https://github.com/docsible/docsible
 - [Features](#features)
 - [Installation](#installation)
 - [Quick Start](#quick-start)
+- [CI/CD Integration](#cicd-integration)
 - [Command Reference](#command-reference)
   - [docsible init](#docsible-init)
   - [docsible document role](#docsible-document-role)
   - [docsible analyze role](#docsible-analyze-role)
+  - [docsible scan collection](#docsible-scan-collection)
   - [docsible validate role](#docsible-validate-role)
   - [docsible suppress](#docsible-suppress)
   - [docsible guide](#docsible-guide)
@@ -84,6 +86,68 @@ docsible analyze role --role /path/to/role
 # Step 4 — validate markdown without writing files
 docsible validate role --role /path/to/role
 ```
+
+## CI/CD Integration
+
+Docsible integrates with CI/CD pipelines using the `--fail-on` flag to exit with a non-zero code when documentation findings exceed a threshold.
+
+### Quick Start
+
+```bash
+# Fail the pipeline if CRITICAL findings exist (recommended default)
+docsible validate role --role . --fail-on critical
+
+# Fail the pipeline if WARNING or CRITICAL findings exist (team standard)
+docsible validate role --role . --fail-on warning
+
+# Machine-readable output for downstream tools
+docsible analyze role --role . --output-format json
+
+# Gate an entire collection — exit 1 if any role has WARNING or CRITICAL findings
+docsible scan collection . --fail-on warning --output-format json
+```
+
+### `--fail-on` levels
+
+| Level | Exit 1 when... |
+|---|---|
+| `none` | Never (default) |
+| `info` | Any finding exists |
+| `warning` | WARNING or CRITICAL findings exist |
+| `critical` | CRITICAL findings exist |
+
+### `--output-format json`
+
+Use `--output-format json` with `docsible analyze role` for machine-readable output:
+
+```bash
+docsible analyze role --role . --output-format json
+```
+
+Output schema:
+
+```json
+{
+  "role": "my-role",
+  "findings": [
+    { "severity": "WARNING", "message": "No example playbook found", "category": "documentation" }
+  ],
+  "summary": { "total": 3, "critical": 0, "warning": 2, "info": 1 },
+  "truncated": false
+}
+```
+
+### Ready-to-use CI examples
+
+See [`examples/ci_pipeline/`](examples/ci_pipeline/) for complete, ready-to-use configurations:
+
+- **GitHub Actions** — validate on PRs, generate docs on main
+- **GitLab CI** — two-stage test/deploy pipeline
+- **pre-commit** — local hook before every commit
+
+Commit `.docsible/config.yml` to your repository so all team members and CI runners share the same preset and `fail_on` threshold without passing flags every time. See [`examples/team-config/`](examples/team-config/) for a sample team config.
+
+---
 
 ## Command Reference
 
@@ -193,6 +257,15 @@ Preset:
 
 Output Framing:
   --positive / --neutral    Use positive/actionable output framing (default: positive)
+
+Analysis & CI/CD:
+  --fail-on [none|info|warning|critical]
+                            Exit with code 1 if findings at or above this severity exist (default: none)
+  --advanced-patterns       Show all findings including INFO-level; removes the default 5-recommendation cap
+  --output-format [text|json]
+                            Output format for findings (default: text)
+  --recommendations-only    Show recommendations without generating documentation
+  --show-info               Show INFO-level recommendations (hidden by default)
 ```
 
 ### docsible analyze role
@@ -202,6 +275,40 @@ Analyze a role's complexity and surface recommendations without generating or wr
 ```bash
 docsible analyze role --role /path/to/role
 docsible analyze role --role /path/to/role --preset=enterprise
+
+# Show all findings including INFO-level with no recommendation cap
+docsible analyze role --role /path/to/role --advanced-patterns
+
+# Machine-readable JSON output for CI tool integration
+docsible analyze role --role /path/to/role --output-format json
+```
+
+### docsible scan collection
+
+Scan all roles in a collection directory, run analysis on each, and output a summary table sorted by severity. No files are written — analysis only.
+
+```bash
+# Scan all roles in the current collection
+docsible scan collection ./my_collection
+
+# CI/CD gating — exit 1 if any role has WARNING or CRITICAL findings
+docsible scan collection . --fail-on warning --output-format json
+
+# Show only the 5 worst roles
+docsible scan collection ./my_collection --top-n 5
+
+# Preview what would be scanned without running analysis
+docsible scan collection ./my_collection --dry-run
+```
+
+```
+  PATH                        Path to the collection directory
+  --output-format [text|json] Output format for findings (default: text)
+  --fail-on [none|info|warning|critical]
+                              Exit with code 1 if any role has findings at or above this severity (default: none)
+  --top-n N                   Show only the N worst roles in the summary
+  --preset PRESET             Apply a built-in preset (personal/team/enterprise/consultant)
+  --dry-run                   Preview roles that would be scanned without running analysis
 ```
 
 ### docsible validate role
@@ -211,6 +318,15 @@ Validate the documentation for a role without writing any files. Runs in dry-run
 ```bash
 docsible validate role --role /path/to/role
 docsible validate role --role /path/to/role --no-strict
+
+# Exit 1 if CRITICAL findings exist (use in CI pipelines)
+docsible validate role --role /path/to/role --fail-on critical
+
+# Exit 1 if WARNING or CRITICAL findings exist
+docsible validate role --role /path/to/role --fail-on warning
+
+# Strict markdown validation — now correctly exits 1 on WARNING/CRITICAL (was a no-op previously)
+docsible validate role --role /path/to/role --strict-validation
 ```
 
 ### docsible suppress
@@ -262,12 +378,12 @@ Use `docsible document role` for new workflows.
 
 Presets bundle a curated set of flags suited to common use cases. Apply any preset with `--preset` on `document`, `analyze`, `validate`, or `init`.
 
-| Preset | Description |
-|---|---|
-| `personal` | Solo developers — fast, minimal output, no diagrams |
-| `team` | Team collaboration — comprehensive docs, auto-fix, smart defaults |
-| `enterprise` | Production/compliance — full validation, strict mode, all reports |
-| `consultant` | Client deliverables — maximum detail, all diagrams and reports |
+| Preset | Description | `fail_on` | `max_recommendations` |
+|---|---|---|---|
+| `personal` | Solo developers — fast, minimal output, no diagrams | none | 5 |
+| `team` | Team collaboration — comprehensive docs, auto-fix, smart defaults | warning | 10 |
+| `enterprise` | Production/compliance — full validation, strict mode, all reports | critical | unlimited |
+| `consultant` | Client deliverables — maximum detail, all diagrams and reports | warning | 15 |
 
 ```bash
 docsible document role . --preset=personal
@@ -275,6 +391,8 @@ docsible document role . --preset=team
 docsible document role . --preset=enterprise
 docsible document role . --preset=consultant
 ```
+
+Each preset now includes analysis defaults (`fail_on`, `essential_only`, `max_recommendations`) in addition to documentation generation flags. These analysis defaults control CI exit behaviour and how many recommendations are surfaced. See [CONFIGURATION.md](CONFIGURATION.md) for the full preset settings table.
 
 Individual flags passed on the command line override preset defaults.
 

@@ -1,6 +1,7 @@
 """Artifact management concern detector."""
 
 from docsible.analyzers.concerns.base import ConcernDetector
+from docsible.analyzers.shared.module_taxonomy import ARTIFACT_MODULES
 
 
 class ArtifactManagementConcern(ConcernDetector):
@@ -20,24 +21,7 @@ class ArtifactManagementConcern(ConcernDetector):
 
     @property
     def module_patterns(self) -> list:
-        return [
-            # Download/fetch
-            "get_url",
-            "uri",
-            # Archive
-            "unarchive",
-            "archive",
-            # Source control
-            "git",
-            "svn",
-            "hg",
-            # Artifact repositories
-            "maven_artifact",
-            "nexus_artifact",
-            # Windows
-            "win_get_url",
-            "win_unzip",
-        ]
+        return sorted(ARTIFACT_MODULES)
 
     @property
     def suggested_filename(self) -> str:

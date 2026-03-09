@@ -29,6 +29,7 @@ logger = logging.getLogger(__name__)
 # which returns: [{"file": "main.yml", "data": {...with metadata...}}]
 # This preserves file names and metadata (line numbers, types, descriptions from comments).
 
+
 @cache_by_file_mtime
 def _load_yaml_file_with_metadata_cached(path: Path) -> dict | None:
     """Load and parse a YAML file WITH metadata extraction (cached).
@@ -47,7 +48,7 @@ def _load_yaml_file_with_metadata_cached(path: Path) -> dict | None:
     """
     from docsible.utils.yaml.loader import load_yaml_file_custom
 
-    return cast(dict|None, load_yaml_file_custom(path))
+    return cast(dict | None, load_yaml_file_custom(path))
 
 
 def _load_yaml_dir_with_metadata_cached(dir_path: Path) -> list[dict]:
@@ -74,7 +75,7 @@ def _load_yaml_dir_with_metadata_cached(dir_path: Path) -> list[dict]:
 
     def process_yaml_file(full_path: Path, base_dir: Path) -> dict | None:
         """Process a single YAML file and return with file metadata."""
-        if full_path.suffix in ('.yml', '.yaml'):
+        if full_path.suffix in (".yml", ".yaml"):
             file_data = _load_yaml_file_with_metadata_cached(full_path)
             if file_data:
                 relative_path = full_path.relative_to(base_dir)
@@ -261,7 +262,8 @@ class RoleRepository:
         yaml_extensions = self.structure.get_yaml_extensions()
 
         import os
-        for dirpath, _ , filenames in os.walk(str(tasks_dir)):
+
+        for dirpath, _, filenames in os.walk(str(tasks_dir)):
             for task_file in filenames:
                 if any(task_file.endswith(ext) for ext in yaml_extensions):
                     file_path = os.path.join(dirpath, task_file)
@@ -271,6 +273,7 @@ class RoleRepository:
                     if tasks_data:
                         relative_path = os.path.relpath(file_path, str(tasks_dir))
                         from typing import Any
+
                         task_info: dict[str, Any] = {
                             "file": relative_path,
                             "tasks": [],
@@ -319,7 +322,7 @@ class RoleRepository:
 
         import os
 
-        for dirpath, _ , filenames in os.walk(str(handlers_dir)):
+        for dirpath, _, filenames in os.walk(str(handlers_dir)):
             for handler_file in filenames:
                 if any(handler_file.endswith(ext) for ext in yaml_extensions):
                     file_path = os.path.join(dirpath, handler_file)
@@ -348,9 +351,7 @@ class RoleRepository:
                                         "unknown",
                                     ),
                                     "listen": handler.get("listen", []),
-                                    "file": os.path.relpath(
-                                        file_path, str(handlers_dir)
-                                    ),
+                                    "file": os.path.relpath(file_path, str(handlers_dir)),
                                 }
                                 handlers_list.append(handler_info)
 

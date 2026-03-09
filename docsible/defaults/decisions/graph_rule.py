@@ -47,7 +47,7 @@ class GraphDecisionRule(DecisionRule):
                 rationale="User explicitly disabled diagrams via --no-diagrams",
                 confidence=1.0,
                 rule_name="GraphDecisionRule",
-                overrideable=False  # Respect user intent
+                overrideable=False,  # Respect user intent
             )
 
         # 2. Simple role → skip graphs
@@ -60,7 +60,7 @@ class GraphDecisionRule(DecisionRule):
                     "doesn't benefit from diagrams"
                 ),
                 confidence=0.9,
-                rule_name="GraphDecisionRule"
+                rule_name="GraphDecisionRule",
             )
 
         # 3. Complex role → highly recommend graphs
@@ -73,7 +73,7 @@ class GraphDecisionRule(DecisionRule):
                     f"{context.task_file_count} task files) benefits from visualization"
                 ),
                 confidence=0.8,
-                rule_name="GraphDecisionRule"
+                rule_name="GraphDecisionRule",
             )
 
         # 4. Medium role → recommend graphs with moderate confidence
@@ -87,17 +87,14 @@ class GraphDecisionRule(DecisionRule):
                     f"{context.task_file_count} files) benefits from visualization"
                 ),
                 confidence=0.6,  # Lower confidence than complex roles
-                rule_name="GraphDecisionRule"
+                rule_name="GraphDecisionRule",
             )
 
         # 5. Default: very simple role, no graphs
         return Decision(
             option_name="generate_graph",
             value=False,
-            rationale=(
-                f"Very simple role ({context.total_tasks} tasks) "
-                "doesn't require diagrams"
-            ),
+            rationale=(f"Very simple role ({context.total_tasks} tasks) doesn't require diagrams"),
             confidence=0.7,
-            rule_name="GraphDecisionRule"
+            rule_name="GraphDecisionRule",
         )

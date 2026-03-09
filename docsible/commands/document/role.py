@@ -1,4 +1,5 @@
 """docsible document role — new intent-based command."""
+
 import click
 
 from docsible.commands.document_role.core_orchestrated import doc_the_role as core_doc_the_role

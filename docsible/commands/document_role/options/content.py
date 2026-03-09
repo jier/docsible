@@ -41,9 +41,7 @@ def add_content_options(f: F) -> F:
         help="Include complexity analysis section in README",
     )(f)
 
-    f = click.option(
-        "--no-handlers", "no_handlers", is_flag=True, help="Hide handlers section."
-    )(f)
+    f = click.option("--no-handlers", "no_handlers", is_flag=True, help="Hide handlers section.")(f)
     f = click.option(
         "--no-metadata",
         "no_metadata",

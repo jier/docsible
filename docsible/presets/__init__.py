@@ -1,4 +1,5 @@
 """Preset system public API."""
+
 from .config_manager import ConfigManager, DocsiblePresetConfig, resolve_config_path
 from .models import Preset, PresetName
 from .registry import PresetRegistry

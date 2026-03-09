@@ -26,6 +26,34 @@ def apply_suppressions(
     """
     suppress_path = resolve_suppress_path(base_path)
     store = load_store(suppress_path)
+
+    # Warn about expired suppression rules
+    expired = store.expired_rules()
+    if expired:
+        logger.warning(
+            f"  Warning: {len(expired)} suppression rule(s) have expired"
+            f" — run 'docsible suppress clean' to remove.",
+        )
+        for rule in expired:
+            expiry_date = rule.expires_at.date() if rule.expires_at else "unknown"
+            logger.warning(f"    [{rule.id}] \"{rule.pattern}\" expired {expiry_date}")
+
+    # Warn about never-matched rules older than 30 days
+    from datetime import timedelta
+    stale_threshold = datetime.now(timezone.utc) - timedelta(days=30)
+    never_matched = [
+        r for r in store.active_rules()
+        if r.match_count == 0 and r.created_at < stale_threshold
+    ]
+    if never_matched:
+        logger.warning(
+            f"  Warning: {len(never_matched)} suppression rule(s) have never matched any recommendation:",
+        )
+        for rule in never_matched:
+            logger.warning(
+                f"    [{rule.id}] \"{rule.pattern}\" — consider 'docsible suppress remove {rule.id}'",
+            )
+
     active_rules = store.active_rules()
 
     if not active_rules:

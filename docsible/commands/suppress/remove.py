@@ -10,7 +10,10 @@ from docsible.suppression.store import load_store, resolve_suppress_path, save_s
 @click.command(name="remove")
 @click.argument("rule_id")
 @click.option(
-    "--path", "-p", "base_path", default=None,
+    "--path",
+    "-p",
+    "base_path",
+    default=None,
     help="Base path for locating .docsible/suppress.yml",
 )
 def suppress_remove(rule_id: str, base_path: str | None) -> None:

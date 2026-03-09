@@ -1,4 +1,5 @@
 """Brief help formatter for docsible CLI commands."""
+
 import click
 
 
@@ -19,7 +20,9 @@ class BriefHelpFormatter:
     }
 
     @staticmethod
-    def write_brief_help(command_name: str, ctx: click.Context, formatter: click.HelpFormatter) -> None:
+    def write_brief_help(
+        command_name: str, ctx: click.Context, formatter: click.HelpFormatter
+    ) -> None:
         """Write brief help to formatter.
 
         Args:
@@ -54,17 +57,13 @@ class BriefHelpFormatter:
 
         # Essential options only
         essential = BriefHelpFormatter.ESSENTIAL_OPTION_NAMES.get(command_name, set())
-        essential_params = [
-            p for p in ctx.command.get_params(ctx)
-            if p.name in essential
-        ]
+        essential_params = [p for p in ctx.command.get_params(ctx) if p.name in essential]
 
         if essential_params:
             formatter.write_paragraph()
             with formatter.section("Essential Options"):
                 help_records = [
-                    rv for p in essential_params
-                    if (rv := p.get_help_record(ctx)) is not None
+                    rv for p in essential_params if (rv := p.get_help_record(ctx)) is not None
                 ]
                 if help_records:
                     formatter.write_dl(help_records)

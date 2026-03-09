@@ -40,7 +40,7 @@ class MinimalModeRule(DecisionRule):
                     "minimal docs sufficient"
                 ),
                 confidence=0.7,
-                rule_name="MinimalModeRule"
+                rule_name="MinimalModeRule",
             )
 
         # Default: not minimal
@@ -49,14 +49,14 @@ class MinimalModeRule(DecisionRule):
             value=False,
             rationale="Role complexity justifies full documentation",
             confidence=0.6,
-            rule_name="MinimalModeRule"
+            rule_name="MinimalModeRule",
         )
 
     def _should_be_minimal(self, context: DecisionContext) -> bool:
         """Heuristic for when minimal mode is appropriate."""
         return (
-            context.total_tasks <= 5 and
-            not context.has_handlers and
-            not context.uses_advanced_features and
-            context.task_file_count == 1
+            context.total_tasks <= 5
+            and not context.has_handlers
+            and not context.uses_advanced_features
+            and context.task_file_count == 1
         )

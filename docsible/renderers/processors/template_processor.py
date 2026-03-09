@@ -1,4 +1,3 @@
-
 import logging
 import os
 
@@ -29,9 +28,7 @@ class TemplateProcessor:
         self.template_loader = template_loader or TemplateLoader()
 
     def get_role_template(
-        self,
-        template_type: str = "standard",
-        custom_path: str | None = None
+        self, template_type: str = "standard", custom_path: str | None = None
     ) -> Template:
         """Load role template by type or custom path.
 

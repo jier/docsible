@@ -1,6 +1,7 @@
 """Configuration management concern detector."""
 
 from docsible.analyzers.concerns.base import ConcernDetector
+from docsible.analyzers.shared.module_taxonomy import CONFIG_MODULES
 
 
 class ConfigurationConcern(ConcernDetector):
@@ -20,20 +21,7 @@ class ConfigurationConcern(ConcernDetector):
 
     @property
     def module_patterns(self) -> list:
-        return [
-            "template",
-            "copy",
-            "lineinfile",
-            "blockinfile",
-            "replace",
-            "assemble",
-            "ini_file",
-            "xml",
-            # Windows
-            "win_template",
-            "win_copy",
-            "win_lineinfile",
-        ]
+        return sorted(CONFIG_MODULES)
 
     @property
     def suggested_filename(self) -> str:

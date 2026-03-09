@@ -73,9 +73,7 @@ def document_collection_roles(
 
     collection_path_obj = Path(collection_path)
     if not collection_path_obj.exists():
-        raise CollectionNotFoundError(
-            f"Collection directory does not exist: {collection_path}"
-        )
+        raise CollectionNotFoundError(f"Collection directory does not exist: {collection_path}")
 
     if not collection_path_obj.is_dir():
         raise CollectionNotFoundError(f"Path is not a directory: {collection_path}")
@@ -99,9 +97,7 @@ def document_collection_roles(
     collection_markers = project_structure.find_collection_markers()
 
     if not collection_markers:
-        logger.warning(
-            f"No collection marker files (galaxy.yml/yaml) found in {collection_path}"
-        )
+        logger.warning(f"No collection marker files (galaxy.yml/yaml) found in {collection_path}")
         return
 
     # Process each collection found
@@ -143,9 +139,7 @@ def document_collection_roles(
                         with open(role_playbook_path, encoding="utf-8") as f:
                             playbook_content = f.read()
                     except FileNotFoundError:
-                        logger.warning(
-                            f"Playbook not found for {role_name}: {role_playbook_path}"
-                        )
+                        logger.warning(f"Playbook not found for {role_name}: {role_playbook_path}")
                     except Exception as e:
                         logger.error(f"Error loading playbook for {role_name}: {e}")
 

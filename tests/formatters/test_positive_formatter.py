@@ -450,12 +450,12 @@ class TestFormatNextSteps:
         assert isinstance(lines, list)
         assert all(isinstance(l, str) for l in lines)
 
-    def test_contains_learn_more_url(self, tmp_path):
+    def test_next_steps_returns_list_of_strings(self, tmp_path):
         output_file = tmp_path / "README.md"
         formatter = PositiveFormatter()
         lines = formatter._format_next_steps(output_file, make_medium_report())
-        combined = "\n".join(lines)
-        assert "docsible.com" in combined or "https://" in combined
+        assert isinstance(lines, list)
+        assert all(isinstance(line, str) for line in lines)
 
 
 # ---------------------------------------------------------------------------

@@ -46,15 +46,15 @@ def process_tasks(
     for i, task in enumerate(tasks):
         has_rescue = False
         task_name = extract_task_name_from_module(task, i)
-        task_module_include_tasks = task.get(
-            "ansible.builtin.include_tasks"
-        ) or task.get("include_tasks", False)
+        task_module_include_tasks = task.get("ansible.builtin.include_tasks") or task.get(
+            "include_tasks", False
+        )
         task_module_import_tasks = task.get("ansible.builtin.import_tasks") or task.get(
             "import_tasks", False
         )
-        task_module_import_playbook = task.get(
-            "ansible.builtin.import_playbook"
-        ) or task.get("import_playbook", False)
+        task_module_import_playbook = task.get("ansible.builtin.import_playbook") or task.get(
+            "import_playbook", False
+        )
         task_module_include_role = task.get("ansible.builtin.include_role") or task.get(
             "include_role", False
         )
@@ -73,9 +73,7 @@ def process_tasks(
         if when_condition:
             if isinstance(when_condition, list):
                 when_condition = " AND ".join(when_condition)
-            sanitized_when_condition = (
-                f"**{sanitize_for_condition(str(when_condition)).strip()}**"
-            )
+            sanitized_when_condition = f"**{sanitize_for_condition(str(when_condition)).strip()}**"
             if "When:" not in sanitized_task_title:
                 sanitized_task_title += f"<br>When: {sanitized_when_condition}"
         if block:
@@ -127,9 +125,7 @@ def process_tasks(
                 sanitized_include_tasks_name = sanitize_for_mermaid_id(
                     f"{task_name}_{check_style_included_tasks}_{i}"
                 )
-                sanitized_include_tasks_title = sanitize_for_title(
-                    f"{check_style_included_tasks}"
-                )
+                sanitized_include_tasks_title = sanitize_for_title(f"{check_style_included_tasks}")
                 mermaid_data += f"\n  {last_node}-->|Include task| {sanitized_include_tasks_name}[{sanitized_task_title}<br>include_task: {sanitized_include_tasks_title}]:::includeTasks"
                 last_node = sanitized_include_tasks_name
 
@@ -143,9 +139,7 @@ def process_tasks(
                 sanitized_imported_tasks_name = sanitize_for_mermaid_id(
                     f"{task_name}_{check_style_imported_tasks}_{i}"
                 )
-                sanitized_imported_tasks_title = sanitize_for_title(
-                    f"{check_style_imported_tasks}"
-                )
+                sanitized_imported_tasks_title = sanitize_for_title(f"{check_style_imported_tasks}")
                 mermaid_data += f"\n  {last_node}-->|Import task| {sanitized_imported_tasks_name}[/{sanitized_task_title}<br>import_task: {sanitized_imported_tasks_title}/]:::importTasks"
                 last_node = sanitized_imported_tasks_name
 
@@ -175,9 +169,7 @@ def process_tasks(
                 sanitized_include_role_name = sanitize_for_mermaid_id(
                     f"{task_name}_{check_style_include_role}_{i}"
                 )
-                sanitized_include_role_title = sanitize_for_title(
-                    check_style_include_role
-                )
+                sanitized_include_role_title = sanitize_for_title(check_style_include_role)
                 mermaid_data += f"\n  {last_node}-->|Include role| {sanitized_include_role_name}({sanitized_task_title}<br>include_role: {sanitized_include_role_title}):::includeRole"
                 last_node = sanitized_include_role_name
 
@@ -191,9 +183,7 @@ def process_tasks(
                 sanitized_import_role_name = sanitize_for_mermaid_id(
                     f"{task_name}_{check_style_import_role}_{i}"
                 )
-                sanitized_import_role_title = sanitize_for_title(
-                    check_style_import_role
-                )
+                sanitized_import_role_title = sanitize_for_title(check_style_import_role)
                 mermaid_data += f"\n  {last_node}-->|Import role| {sanitized_import_role_name}([{sanitized_task_title}<br>import_role: {sanitized_import_role_title}]):::importRole"
                 last_node = sanitized_import_role_name
 
@@ -207,14 +197,14 @@ def process_tasks(
                 sanitized_include_vars_name = sanitize_for_mermaid_id(
                     f"{task_name}_{check_style_include_vars}_{i}"
                 )
-                sanitized_include_vars_title = sanitize_for_title(
-                    check_style_include_vars
-                )
+                sanitized_include_vars_title = sanitize_for_title(check_style_include_vars)
                 mermaid_data += f"\n  {last_node}-->|Include vars| {sanitized_include_vars_name}[{sanitized_task_title}<br>include_vars: {sanitized_include_vars_title}]:::includeVars"
                 last_node = sanitized_include_vars_name
 
             else:
-                mermaid_data += f"\n  {last_node}-->|Task| {sanitized_task_name}[{sanitized_task_title}]:::task"
+                mermaid_data += (
+                    f"\n  {last_node}-->|Task| {sanitized_task_name}[{sanitized_task_title}]:::task"
+                )
                 last_node = sanitized_task_name
 
     if parent_node and not in_rescue_block and not has_rescue:
@@ -264,7 +254,9 @@ def generate_mermaid_playbook(playbook: list[dict[str, Any]]) -> str:
                 role_name = re.sub(r"{{\s*(\w+)\s*}}", r"\1", role_name)
                 sanitized_role_name = sanitize_for_mermaid_id(role_name)
                 sanitized_role_title = sanitize_for_title(role_name)
-                mermaid_data += f"\n  {last_node}-->|Role| {sanitized_role_name}[{sanitized_role_title}]"
+                mermaid_data += (
+                    f"\n  {last_node}-->|Role| {sanitized_role_name}[{sanitized_role_title}]"
+                )
                 last_node = sanitized_role_name
         last_node, mermaid_data = process_tasks(tasks, last_node, mermaid_data)
     return mermaid_data

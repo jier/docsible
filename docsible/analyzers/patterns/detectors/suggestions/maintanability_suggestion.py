@@ -1,7 +1,7 @@
 "Sinmplifcation of suggestion string for maintanability purposes"
 
+
 class Suggestion:
-    
     @staticmethod
     def missing_idempotency() -> str:
         return (
@@ -44,7 +44,7 @@ class Suggestion:
             "  # Automatically idempotent!\n"
             "```"
         )
-    
+
     @staticmethod
     def monolithic_main_file() -> str:
         return (
@@ -79,7 +79,7 @@ class Suggestion:
             "- Better for testing individual components\n"
             "- Clearer separation of concerns"
         )
-    
+
     @staticmethod
     def detect_magic_values() -> str:
         return (
@@ -117,11 +117,11 @@ class Suggestion:
             "- Easy to change paths\n"
             "- Better for multi-environment deployments"
         )
-    
+
     @staticmethod
     def missing_check_mode() -> str:
         return (
-        "Support check mode (ansible-playbook --check):\n\n"
+            "Support check mode (ansible-playbook --check):\n\n"
             "**Problem:**\n"
             "```yaml\n"
             "- name: Get app version\n"
@@ -146,9 +146,9 @@ class Suggestion:
             "  when: app_version.stdout is version('2.0', '<')\n"
             "  # Works in check mode now!\n"
             "```\n\n"
-            "Check mode lets you test playbooks safely without making changes." 
+            "Check mode lets you test playbooks safely without making changes."
         )
-    
+
     @staticmethod
     def missing_failed_when() -> str:
         return (
@@ -183,7 +183,7 @@ class Suggestion:
             "      - ansible_facts.services['app.service'].state == 'running'\n"
             "```"
         )
-    
+
     @staticmethod
     def variable_shadowing() -> str:
         return (

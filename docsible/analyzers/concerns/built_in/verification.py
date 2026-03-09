@@ -1,6 +1,7 @@
 """Verification and health check concern detector."""
 
 from docsible.analyzers.concerns.base import ConcernDetector
+from docsible.analyzers.shared.module_taxonomy import VERIFY_MODULES
 
 
 class VerificationConcern(ConcernDetector):
@@ -20,22 +21,7 @@ class VerificationConcern(ConcernDetector):
 
     @property
     def module_patterns(self) -> list:
-        return [
-            # Assertions and checks
-            "assert",
-            "fail",
-            "wait_for",
-            "ping",
-            # Commands (often used for verification)
-            "command",
-            "shell",
-            # Debug
-            "debug",
-            "pause",
-            # Windows
-            "win_ping",
-            "win_wait_for",
-        ]
+        return sorted(VERIFY_MODULES)
 
     @property
     def suggested_filename(self) -> str:

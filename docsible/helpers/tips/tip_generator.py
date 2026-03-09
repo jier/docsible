@@ -1,4 +1,5 @@
 """Contextual tip generator for docsible."""
+
 import random
 
 

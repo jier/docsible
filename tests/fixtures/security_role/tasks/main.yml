@@ -1,0 +1,9 @@
+---
+- name: Run user command
+  ansible.builtin.shell: "{{ user_input }}"  # shell injection risk
+
+- name: Deploy application
+  ansible.builtin.copy:
+    content: "{{ db_password }}"
+    dest: /etc/app/config
+  # missing no_log: true — sensitive data exposure

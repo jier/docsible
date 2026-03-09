@@ -30,7 +30,9 @@ class PositiveFormatter:
             lines.extend(self._format_enhancements(enhancements))
             lines.append("")
         else:
-            lines.append("🎉 Excellent! No enhancement opportunities - role follows all best practices!")
+            lines.append(
+                "🎉 Excellent! No enhancement opportunities - role follows all best practices!"
+            )
             lines.append("")
         lines.extend(self._format_next_steps(output_file, complexity))
         return "\n".join(lines)
@@ -124,7 +126,7 @@ class PositiveFormatter:
             lines.append("   3. Test with: ansible-playbook --check playbook.yml")
             lines.append("   4. Generate graph with: docsible role --role . --graph")
         lines.append("")
-        lines.append("📚 Learn more: https://docs.docsible.com/getting-started")
+        # TODO: add documentation URL when published
         return lines
 
     def _format_file_size(self, file_path: Path) -> str:

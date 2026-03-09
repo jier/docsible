@@ -1,0 +1,5 @@
+---
+- name: Install proxy
+  package:
+    name: haproxy
+    state: present

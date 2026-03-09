@@ -40,15 +40,11 @@ class ValidationResult(BaseModel):
     issues: list[ValidationIssue] = Field(default_factory=list)
     metrics: dict[str, Any] = Field(default_factory=dict)
 
-    def get_issues_by_type(
-        self, validation_type: ValidationType
-    ) -> list[ValidationIssue]:
+    def get_issues_by_type(self, validation_type: ValidationType) -> list[ValidationIssue]:
         """Get all issues of a specific validation type."""
         return [issue for issue in self.issues if issue.type == validation_type]
 
-    def get_issues_by_severity(
-        self, severity: ValidationSeverity
-    ) -> list[ValidationIssue]:
+    def get_issues_by_severity(self, severity: ValidationSeverity) -> list[ValidationIssue]:
         """Get all issues of a specific severity."""
         return [issue for issue in self.issues if issue.severity == severity]
 

@@ -1,4 +1,5 @@
 """Built-in preset definitions."""
+
 from .models import Preset
 
 _PRESETS: dict[str, Preset] = {
@@ -19,6 +20,9 @@ _PRESETS: dict[str, Preset] = {
             "comments": False,
             "task_line": False,
             "include_complexity": False,
+            "fail_on": "none",
+            "essential_only": True,
+            "max_recommendations": 5,
         },
     ),
     "team": Preset(
@@ -36,6 +40,9 @@ _PRESETS: dict[str, Preset] = {
             "task_line": False,
             "include_complexity": False,
             # generate_graph and show_dependencies intentionally omitted -> smart defaults apply
+            "fail_on": "warning",
+            "essential_only": False,
+            "max_recommendations": 10,
         },
     ),
     "enterprise": Preset(
@@ -55,6 +62,9 @@ _PRESETS: dict[str, Preset] = {
             "comments": True,
             "task_line": True,
             "include_complexity": True,
+            "fail_on": "critical",
+            "essential_only": False,
+            "max_recommendations": None,
         },
     ),
     "consultant": Preset(
@@ -74,6 +84,9 @@ _PRESETS: dict[str, Preset] = {
             "comments": True,
             "task_line": True,
             "include_complexity": True,
+            "fail_on": "warning",
+            "essential_only": False,
+            "max_recommendations": 15,
         },
     ),
 }

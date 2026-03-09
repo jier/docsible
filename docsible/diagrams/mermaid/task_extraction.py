@@ -81,12 +81,7 @@ def extract_task_name_from_module(task: dict[str, Any], task_index: int = 0) -> 
             value = task[key]
             # Extract the file/role name
             if isinstance(value, dict):
-                target = (
-                    value.get("name")
-                    or value.get("file")
-                    or value.get("role")
-                    or str(value)
-                )
+                target = value.get("name") or value.get("file") or value.get("role") or str(value)
             else:
                 target = str(value)
 
@@ -121,9 +116,7 @@ def extract_task_name_from_module(task: dict[str, Any], task_index: int = 0) -> 
                 ]
                 for context_key in context_keys:
                     if context_key in module_params:
-                        context_value = str(module_params[context_key])[
-                            :30
-                        ]  # Limit length
+                        context_value = str(module_params[context_key])[:30]  # Limit length
                         return f"{module_name}: {context_value}"
 
             # Just return the module name

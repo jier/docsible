@@ -17,7 +17,8 @@ from docsible.analyzers.patterns.models import (
 
 class SecurityDetector(BasePatternDetector):
     """Detects security anti-patterns."""
-    #FIXME Should secret indicators not be pluggable?
+
+    # FIXME Should secret indicators not be pluggable?
     # Variable names that often contain secrets
     SECRET_INDICATORS = [
         "password",
@@ -58,9 +59,7 @@ class SecurityDetector(BasePatternDetector):
 
         return suggestions
 
-    def _detect_exposed_secrets(
-        self, role_info: dict[str, Any]
-    ) -> list[SimplificationSuggestion]:
+    def _detect_exposed_secrets(self, role_info: dict[str, Any]) -> list[SimplificationSuggestion]:
         """Find potential secrets in plain text.
 
         Looks for variables with secret-like names that aren't
@@ -85,15 +84,10 @@ class SecurityDetector(BasePatternDetector):
 
             for var_name, var_value in variables.items():
                 # Check if variable name suggests it's a secret
-                if any(
-                    indicator in var_name.lower()
-                    for indicator in self.SECRET_INDICATORS
-                ):
+                if any(indicator in var_name.lower() for indicator in self.SECRET_INDICATORS):
                     # Check if value looks like plain text (not encrypted or templated)
                     value_str = str(var_value)
-                    is_plain = not value_str.startswith(
-                        "{{"
-                    ) and not value_str.startswith("!vault")
+                    is_plain = not value_str.startswith("{{") and not value_str.startswith("!vault")
 
                     if is_plain and len(value_str) > 0:
                         exposed_secrets.append((var_name, value_str))
@@ -101,9 +95,7 @@ class SecurityDetector(BasePatternDetector):
             if exposed_secrets:
                 example_vars = "\n".join(
                     [
-                        f"{name}: {value[:20]}..."
-                        if len(value) > 20
-                        else f"{name}: {value}"
+                        f"{name}: {value[:20]}..." if len(value) > 20 else f"{name}: {value}"
                         for name, value in exposed_secrets[:3]
                     ]
                 )
@@ -124,9 +116,7 @@ class SecurityDetector(BasePatternDetector):
 
         return suggestions
 
-    def _detect_missing_no_log(
-        self, role_info: dict[str, Any]
-    ) -> list[SimplificationSuggestion]:
+    def _detect_missing_no_log(self, role_info: dict[str, Any]) -> list[SimplificationSuggestion]:
         """Find tasks handling secrets without no_log directive.
 
         Tasks that register variables with secret-like names or
@@ -142,17 +132,13 @@ class SecurityDetector(BasePatternDetector):
             has_no_log = task.get("no_log", False)
 
             # Check if task involves secrets
-            involves_secrets = any(
-                indicator in task_name for indicator in self.SECRET_INDICATORS
-            )
+            involves_secrets = any(indicator in task_name for indicator in self.SECRET_INDICATORS)
 
             # Special check for set_fact with secret variables
             if module == "set_fact" and not has_no_log:
                 # Check if any of the set variables look like secrets
                 for key in task.keys():
-                    if any(
-                        indicator in key.lower() for indicator in self.SECRET_INDICATORS
-                    ):
+                    if any(indicator in key.lower() for indicator in self.SECRET_INDICATORS):
                         involves_secrets = True
                         break
 

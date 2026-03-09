@@ -73,7 +73,7 @@ class BasePatternDetector(ABC):
         Returns:
             List of task file dictionaries
         """
-        return cast(list[dict[str, Any]],role_info.get("tasks", []))
+        return cast(list[dict[str, Any]], role_info.get("tasks", []))
 
     def _show_task_snippet(self, tasks: list[dict[str, Any]], limit: int = 2) -> str:
         """Generate example snippet from tasks.
@@ -94,9 +94,7 @@ class BasePatternDetector(ABC):
             lines.append(f"# ... and {len(tasks) - limit} more similar tasks")
         return "\n".join(lines)
 
-    def _show_task(
-        self, task: dict[str, Any], include_module_args: bool = False
-    ) -> str:
+    def _show_task(self, task: dict[str, Any], include_module_args: bool = False) -> str:
         """Generate YAML-like representation of a single task.
 
         Args:
@@ -138,9 +136,7 @@ class BasePatternDetector(ABC):
 
         return dict(counts)
 
-    def _get_tasks_by_module(
-        self, role_info: dict[str, Any], module: str
-    ) -> list[dict[str, Any]]:
+    def _get_tasks_by_module(self, role_info: dict[str, Any], module: str) -> list[dict[str, Any]]:
         """Get all tasks using a specific module.
 
         Args:
@@ -150,11 +146,7 @@ class BasePatternDetector(ABC):
         Returns:
             List of tasks using the specified module
         """
-        return [
-            task
-            for task in self._flatten_tasks(role_info)
-            if task.get("module") == module
-        ]
+        return [task for task in self._flatten_tasks(role_info) if task.get("module") == module]
 
     def _has_attribute(self, task: dict[str, Any], *attrs: str) -> bool:
         """Check if task has any of the specified attributes.

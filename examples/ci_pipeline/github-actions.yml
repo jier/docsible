@@ -1,0 +1,22 @@
+name: Ansible Role Documentation Quality
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  docsible-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install docsible
+        run: pip install docsible
+      - name: Validate role documentation
+        run: docsible validate role --role . --fail-on critical
+      - name: Generate documentation
+        run: docsible document role --role . --no-backup
+        if: github.ref == 'refs/heads/main'

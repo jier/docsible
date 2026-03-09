@@ -8,7 +8,9 @@ from .models import ValidationIssue, ValidationSeverity, ValidationType
 class MaintenanceValidator(BaseValidator):
     type = ValidationType.MAINTENANCE
 
-    def validate(self, documentation: str, role_info: dict[str, Any] | None, complexity_report: Any | None) -> tuple[list[ValidationIssue], dict[str, Any]]:
+    def validate(
+        self, documentation: str, role_info: dict[str, Any] | None, complexity_report: Any | None
+    ) -> tuple[list[ValidationIssue], dict[str, Any]]:
         """
         Validate documentation completeness and maintainability.
 
@@ -26,9 +28,7 @@ class MaintenanceValidator(BaseValidator):
             return issues, metrics
 
         # Check variable documentation coverage
-        defaults_count = sum(
-            len(df.get("data", {})) for df in role_info.get("defaults", [])
-        )
+        defaults_count = sum(len(df.get("data", {})) for df in role_info.get("defaults", []))
         vars_count = sum(len(vf.get("data", {})) for vf in role_info.get("vars", []))
         total_vars = defaults_count + vars_count
 

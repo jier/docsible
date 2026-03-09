@@ -27,9 +27,7 @@ def generate_network_topology(integration_points: list) -> str | None:
         Mermaid diagram code as string, or None if no network integrations
     """
     # Filter for network integrations only
-    network_integrations = [
-        ip for ip in integration_points if ip.type.value == "network"
-    ]
+    network_integrations = [ip for ip in integration_points if ip.type.value == "network"]
 
     if not network_integrations:
         return None
@@ -48,9 +46,7 @@ def generate_network_topology(integration_points: list) -> str | None:
                 ports_str += "..."
             port_info = f"<br/>Ports: {ports_str}"
 
-        lines.append(
-            f'        {node_id}["{integration.system_name}{port_info}"]:::netNode'
-        )
+        lines.append(f'        {node_id}["{integration.system_name}{port_info}"]:::netNode')
 
         # Add module information
         for module in integration.modules_used[:3]:
@@ -84,9 +80,7 @@ def should_generate_network_topology(integration_points: list) -> bool:
         return False
 
     # Check for network integrations
-    network_integrations = [
-        ip for ip in integration_points if ip.type.value == "network"
-    ]
+    network_integrations = [ip for ip in integration_points if ip.type.value == "network"]
 
     # Generate if we have network integrations
     return len(network_integrations) > 0

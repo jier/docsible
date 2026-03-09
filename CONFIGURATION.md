@@ -1,2100 +1,507 @@
-# Docsible Configuration Guide
+# Docsible Configuration Reference
 
-This guide explains how to configure Docsible to work with various Ansible project structures.
+This document covers all configuration options for Docsible: the `.docsible/config.yml` schema, built-in presets, all CLI flags, CI/CD integration, and team workflows.
 
 ## Table of Contents
 
-- [Overview](#overview)
-- [Quick Start](#quick-start)
-- [Configuration Priority](#configuration-priority)
-- [Project Types](#project-types)
-- [Configuration Reference](#configuration-reference)
-- [Examples](#examples)
-- [Output Control](#output-control)
-- [Getting Help](#getting-help)
-- [Suppression System](#suppression-system)
-- [Preset System](#preset-system)
-- [Intent-Based Commands](#intent-based-commands)
-- [Interactive Wizard (docsible init)](#interactive-wizard-docsible-init)
-- [Migration Guide](#migration-guide)
-
-## Overview
-
-Starting with version 0.8.0, Docsible supports flexible project structures through:
-
-1. **Auto-detection**: Automatically detects standard roles, collections, AWX projects, and monorepos
-2. **Configuration files**: Optional `.docsible.yml` to customize paths and settings
-3. **CLI overrides**: Command-line flags take precedence over all other settings
-
-**Backward Compatibility**: Existing projects work without any changes. The default behavior remains the same as previous versions.
-
-## Quick Start
-
-### For Standard Projects (No Configuration Needed)
-
-If your project follows the standard Ansible structure, just run Docsible as usual:
-
-```bash
-# Standard role
-docsible role --role ./my-role
-
-# Standard collection
-docsible  role --collection ./my-collection
-```
-
-### For Custom Structures
-
-1. Generate an example configuration file:
-
-```bash
-docsible init --path /path/to/your/project
-```
-
-2. Edit `.docsible.yml` to match your structure:
-
-```yaml
-structure:
-  roles_dir: 'ansible/roles'  # For monorepos
-  defaults_dir: 'role_defaults'  # If you use custom directory names
-```
-
-3. Run Docsible:
-
-```bash
-docsible role --role ./my-role
-```
-
-## Configuration Priority
-
-Docsible uses a priority system for configuration:
-
-```
-CLI Flags > .docsible.yml > Auto-detection > Built-in Defaults
-```
-
-**Example**:
-- Built-in default for `defaults_dir`: `defaults`
-- Auto-detection finds: `defaults`
-- `.docsible.yml` specifies: `role_defaults`
-- CLI flag specifies: `custom_defaults`
-- **Result**: Uses `custom_defaults`
-
-## Project Types
-
-Docsible automatically detects the following project types:
-
-### 1. Standard Role
-
-**Structure**:
-```
-my-role/
-├── defaults/
-│   └── main.yml
-├── vars/
-│   └── main.yml
-├── tasks/
-│   └── main.yml
-├── meta/
-│   └── main.yml
-└── README.md
-```
-
-**Detection**: Has at least one of: `tasks/`, `defaults/`, `vars/`, `meta/`
-
-### 2. Collection
-
-**Structure**:
-```
-my-collection/
-├── galaxy.yml
-├── roles/
-│   ├── role1/
-│   └── role2/
-└── README.md
-```
-
-**Detection**: Has `galaxy.yml` or `galaxy.yaml` file
-
-### 3. Multi-Role Repository
-
-**Structure**:
-```
-my-roles-repo/
-├── roles/
-│   ├── role1/
-│   │   ├── tasks/
-│   │   └── defaults/
-│   └── role2/
-│       ├── tasks/
-│       └── vars/
-└── README.md
-```
-
-**Detection**: Has `roles/` directory at root, but no `galaxy.yml` (not a formal collection)
-
-**Use Case**: Regular repositories that organize multiple roles in a `roles/` folder without being an official Ansible collection.
-
-**Usage**:
-```bash
-docsible role --collection ./my-roles-repo
-```
-
-### 4. AWX Project
-
-**Structure**:
-```
-awx-project/
-├── roles/
-│   ├── role1/
-│   └── role2/
-├── inventory/
-│   └── hosts
-├── project.yml
-└── README.md
-```
-
-**Detection**: Has **BOTH** `roles/` directory **AND** `inventory/` or `inventories/` directory
-
-### 5. Monorepo
-
-**Structure**:
-```
-monorepo/
-├── ansible/
-│   └── roles/
-│       ├── role1/
-│       └── role2/
-├── playbooks/
-└── README.md
-```
-
-**Detection**: Has roles in nested paths like `ansible/roles/`, `playbooks/roles/`, `automation/roles/`
-
-## Configuration Reference
-
-### Complete `.docsible.yml` Example
-
-```yaml
-structure:
-  # Directory names (relative to role root)
-  defaults_dir: 'defaults'           # Where default variables are stored
-  vars_dir: 'vars'                   # Where role variables are stored
-  tasks_dir: 'tasks'                 # Where task files are located
-  meta_dir: 'meta'                   # Where role metadata is stored
-  handlers_dir: 'handlers'           # Where handlers are located (for collections/monorepos)
-   
-  
-  # Custom modules and plugins
-  library_dir: 'library'                      # Custom Ansible modules
-  lookup_plugins_dir: 'lookup_plugins'        # Custom lookup plugins 
-  templates_dir: 'templates'                  # Where Jinja2 templates are located
-  files_dir: 'files'                          # Where static files are located
-  
-  # Optional Plugin directories
-  filter_plugins_dir: 'filter_plugins'       # Custom filter plugins
-  module_utils_dir: 'module_utils'           # Module utilities
-
-  # For collections and monorepos
-  roles_dir: 'roles'                          # Where roles are located
-
-  # File names (without extensions)
-  meta_file: 'main'                           # Meta file name (meta/main.yml)
-  argument_specs_file: 'argument_specs'       # Argument specs file name
-
-  # Test playbook
-  test_playbook: 'tests/test.yml'             # Default test playbook location
-
-  # File extensions
-  yaml_extensions: ['.yml', '.yaml']          # YAML file extensions to scan
-```
-
-### Configuration Fields
-
-#### Standard Role Directories
-
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `defaults_dir` | string | `defaults` | Directory containing default variables |
-| `vars_dir` | string | `vars` | Directory containing role variables |
-| `tasks_dir` | string | `tasks` | Directory containing task files |
-| `meta_dir` | string | `meta` | Directory containing role metadata |
-| `handlers_dir` | string | `handlers` | Directory containing handlers |
-| `files_dir` | string | `files` | Directory containing static files |
-
-
-#### Custom Modules and Plugins
-
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `library_dir` | string | `library` | Custom Ansible modules (Python files) |
-| `lookup_plugins_dir` | string | `lookup_plugins` | Custom lookup plugins |
-| `templates_dir` | string | `templates` | Jinja2 template files |
-
-#### Multi-Role Projects
-
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `roles_dir` | string | `roles` | Directory containing roles (collections/monorepos) |
-
-#### Metadata Files
-
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `meta_file` | string | `main` | Name of meta file (without extension) |
-
-#### Testing
-
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `test_playbook` | string | `tests/test.yml` | Path to test playbook |
-
-#### File Extensions
-
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `yaml_extensions` | list | `['.yml', '.yaml']` | Supported YAML file extensions |
-
-## Examples
-
-### Example 1: Monorepo with Custom Structure
-
-**Directory Structure**:
-```
-company-automation/
-├── ansible/
-│   └── roles/
-│       ├── webserver/
-│       ├── database/
-│       └── monitoring/
-└── docs/
-```
-
-**Configuration** (`.docsible.yml` in `company-automation/`):
-```yaml
-structure:
-  roles_dir: 'ansible/roles'
-```
-
-**Usage**:
-```bash
-cd company-automation
-docsible role --collection .
-```
-
-### Example 2: Custom Directory Names
-
-**Directory Structure**:
-```
-custom-role/
-├── role_defaults/       # Instead of 'defaults/'
-│   └── main.yml
-├── variables/           # Instead of 'vars/'
-│   └── main.yml
-├── playbooks/           # Instead of 'tasks/'
-│   └── main.yml
-└── metadata/            # Instead of 'meta/'
-    └── main.yml
-```
-
-**Configuration** (`.docsible.yml` in `custom-role/`):
-```yaml
-structure:
-  defaults_dir: 'role_defaults'
-  vars_dir: 'variables'
-  tasks_dir: 'playbooks'
-  meta_dir: 'metadata'
-```
-
-**Usage**:
-```bash
-docsible role --role ./custom-role
-```
-
-### Example 3: Multi-Role Repository
-
-**Directory Structure**:
-```
-ansible-roles/
-├── roles/
-│   ├── webserver/
-│   │   ├── tasks/
-│   │   │   └── main.yml
-│   │   └── defaults/
-│   │       └── main.yml
-│   ├── database/
-│   │   ├── tasks/
-│   │   │   └── main.yml
-│   │   └── vars/
-│   │       └── main.yml
-│   └── loadbalancer/
-│       └── tasks/
-│           └── main.yml
-└── README.md
-```
-
-**Configuration**: Not needed (auto-detected as multi-role repository)
-
-**Usage**:
-```bash
-# Documents all roles in the roles/ directory
-docsible role --collection ./ansible-roles
-```
-
-**Result**: Creates a README.md at the root and individual role documentation in each role directory.
-
-### Example 4: AWX Project
-
-**Directory Structure**:
-```
-awx-project/
-├── roles/
-│   ├── provision/
-│   └── deploy/
-├── inventory/
-│   └── production
-└── project.yml
-```
-
-**Configuration**: Not needed (auto-detected as AWX project)
-
-**Usage**:
-```bash
-docsible role --collection ./awx-project
-```
-
-### Example 5: Multiple Collections in Monorepo
-
-**Directory Structure**:
-```
-ansible-monorepo/
-├── collections/
-│   ├── namespace1.collection1/
-│   │   ├── galaxy.yml
-│   │   └── roles/
-│   └── namespace2.collection2/
-│       ├── galaxy.yml
-│       └── roles/
-└── README.md
-```
-
-**Configuration**: Not needed (auto-detects multiple collections)
-
-**Usage**:
-```bash
-cd ansible-monorepo
-docsible role --collection .
-```
-
-All `galaxy.yml` files will be found and each collection documented.
-
-### Example 6: Support Both .yml and .yaml
-
-By default, Docsible scans both `.yml` and `.yaml` extensions. No configuration needed.
-
-**Supported Files**:
-- `meta/main.yml` ✓
-- `meta/main.yaml` ✓
-- `tasks/install.yml` ✓
-- `tasks/configure.yaml` ✓
-
-### Example 7: Plugin-Heavy Role for External Systems
-
-For roles that interact with external systems using custom modules and plugins:
-
-**Directory Structure**:
-```
-external-api-role/ 
-├── defaults/ 
-│ └── main.yml 
-├── tasks/ 
-│ └── main.yml 
-├── library/ # Custom modules for API interaction 
-│ ├── api_client.py 
-│ └── resource_manager.py 
-├── lookup_plugins/ # Lookups for fetching external data 
-│ └── api_lookup.py 
-└── meta/ 
-└── main.yml
-```
-
-**Configuration** (`.docsible.yml`):
-```yaml
-structure:
-  # Standard directories
-  defaults_dir: 'defaults'
-  vars_dir: 'vars'
-  tasks_dir: 'tasks'
-  meta_dir: 'meta'
-
-  # Plugin directories (where most custom code lives)
-  library_dir: 'library'              # Custom modules
-  lookup_plugins_dir: 'lookup_plugins' # Custom lookups
-  filter_plugins_dir: 'filter_plugins' # Custom filters
-  module_utils_dir: 'module_utils'    # Shared utilities
-
-```
-**Usage**:
-```bash
-docsible role --role ./external-api-role
-```
-Use Case: Roles that execute commands on external systems via APIs rather than managing local files. Common for cloud providers, SaaS platforms, or infrastructure APIs where custom modules and lookups are essential.
-
-## Variable Comment Tags
-
-Docsible extracts metadata from comments in variable files. Both `-` and `_` separators are supported:
-
-### Supported Tags
-
-```yaml
-# title: Database Configuration
-# description: PostgreSQL database settings
-# required: yes
-# choices: postgresql, mysql, mariadb
-# type: string
-database_type: postgresql
-
-# description-lines:
-# This is a multi-line description
-# that spans multiple lines
-# and supports detailed explanations
-# end
-database_host: localhost
-
-# description_lines:
-# Alternative underscore syntax also works
-# for multi-line descriptions
-# end
-database_port: 5432
-```
-
-### Tag Syntax Rules
-
-- **Case-insensitive**: `Title:`, `title:`, `TITLE:` all work
-- **Separator flexibility**: Both `-` and `_` are supported
-  - `description-lines:` ✓
-  - `description_lines:` ✓
-- **Multi-line descriptions**: Use `description-lines:` ... `# end`
-
-## Performance & Caching
-
-### Intelligent Caching System
-
-Docsible includes a built-in caching system that dramatically improves performance on repeated runs. The cache automatically invalidates when files change, ensuring you always get accurate results.
-
-**How It Works:**
-- **File-level caching**: YAML files cached by modification time
-- **Directory-level caching**: Analysis results cached until any file changes
-- **Automatic invalidation**: Cache clears when files are modified
-- **Zero configuration**: Works out of the box with sensible defaults
-
-**Performance Benefits:**
-
-| Operation | First Run | Cached Run | Speedup |
-|-----------|-----------|------------|---------|
-| Role Loading | 400ms | 100ms | 4x faster |
-| Complexity Analysis | 2800ms | 200ms | 14x faster |
-| Pattern Analysis | 5000ms | 50ms | 100x faster |
-
-**Cache Configuration:**
-
-By default, caching is enabled with these limits:
-- YAML cache: 1000 files
-- Analysis cache: 200 roles
-- Path cache: 512 entries
-
-**Disable Caching:**
-
-```bash
-# Via environment variable (persistent)
-export DOCSIBLE_DISABLE_CACHE=1
-docsible role --role ./my-role
-
-# For single command
-DOCSIBLE_DISABLE_CACHE=1 docsible role --role ./my-role
-```
-
-**Advanced Configuration** (`.docsible.yml`):
-
-```yaml
-# Cache configuration (optional)
-cache:
-  enabled: true
-  yaml_cache_size: 1000      # Number of YAML files to cache
-  analysis_cache_size: 200   # Number of analysis results to cache
-  path_cache_size: 512       # Number of file paths to cache
-```
-
-**Cache Behavior:**
-
-The cache is stored in memory and automatically:
-- ✅ Updates when files are modified (via mtime check)
-- ✅ Evicts oldest entries when size limits are reached (LRU)
-- ✅ Clears when the Python process exits
-- ✅ Skips caching for files that don't exist
-
-**When Caching Helps Most:**
-- **CI/CD pipelines**: Analyzing multiple roles sequentially
-- **Development**: Iterating on role documentation
-- **Large projects**: Collections with many roles
-- **Repeated analysis**: Running complexity reports multiple times
-
-**When to Disable Caching:**
-- Testing caching behavior itself
-- Debugging unexpected results
-- Very low memory environments
-- Single-run scenarios where caching overhead exceeds benefits
-
-For detailed caching implementation guide, see [CACHING_IMPLEMENTATION_GUIDE.md](CACHING_IMPLEMENTATION_GUIDE.md).
-
-## Complexity Analysis & Dependency Tracking
-
-Docsible provides advanced analysis features for understanding role complexity and task dependencies.
-
-### Role Complexity Analysis
-
-Use `--complexity-report` to include complexity analysis in documentation, or `--analyze-only` to view analysis without generating documentation:
-
-```bash
-# Include complexity report in documentation
-docsible role --role ./my-role --complexity-report
-
-# Analyze without generating documentation
-docsible role --role ./my-role --analyze-only
-```
-
-**Complexity Metrics**:
-- **Total Tasks**: Count of all tasks across task files
-- **Task Files**: Number of task files
-- **Handlers**: Number of handler tasks
-- **Conditional Tasks**: Tasks with `when` conditions
-- **Error Handlers**: Tasks with rescue/always blocks (for error recovery)
-- **Role Dependencies**: Dependencies from meta/main.yml
-- **Task Includes**: include_tasks/import_tasks count
-- **External Integrations**: Detected connections to external systems (APIs, databases, cloud providers)
-
-**Complexity Categories**:
-- **SIMPLE** (1-10 tasks): Linear execution flow
-- **MEDIUM** (11-25 tasks): Workflow phases with some conditionals
-- **COMPLEX** (25+ tasks): Multiple phases, high integration complexity
-
-**Example Output** (`--analyze-only`):
-```
-============================================================
-📊 ANALYSIS COMPLETE
-============================================================
-
-📋 Role Complexity: MEDIUM (18 tasks)
-
-📊 Metrics:
-   - Task Files: 3
-   - Handlers: 2
-   - Conditional Tasks: 7 (39%)
-   - Error Handlers: 3
-   - Role Dependencies: 1
-   - External Integrations: 2 (AWS, PostgreSQL)
-
-📋 Task Dependencies:
-   - Tasks with variable dependencies: 12/18
-   - Tasks triggering handlers: 5
-   - Tasks with error handling: 3
-   - Tasks setting facts: 4
-
-✓ Analysis complete. Use without --analyze-only to generate documentation.
-```
-
-### Task Dependency Matrix
-
-Use `--show-dependencies` to generate a dependency matrix table showing task relationships:
-
-```bash
-# Include dependency matrix in documentation
-docsible role --role ./my-role --show-dependencies
-
-# Combine with complexity report
-docsible role --role ./my-role --complexity-report --show-dependencies
-```
-
-**Dependency Matrix Features**:
-- **Variable Dependencies**: Shows which variables/facts each task requires
-- **Handler Triggers**: Lists handlers notified by each task
-- **Error Handling**: Displays error recovery strategies (rescue/always blocks)
-- **Facts Set**: Shows variables/facts defined by each task
-
-**When Generated**:
-The dependency matrix is automatically included for:
-- **Complex roles** (25+ tasks): Always shown
-- **Medium roles** (11-25 tasks): Shown if >40% of tasks are conditional
-
-You can force generation for any role using `--show-dependencies`.
-
-**Example Matrix**:
-
-| Task | File | Module | Requires | Triggers | Error Handling | Sets Facts |
-|------|------|--------|----------|----------|----------------|------------|
-| Install packages | `main.yml` | `apt` | pkg_list, os_family | - | None | - |
-| Configure service | `main.yml` | `template` | service_port, config_path | restart_service | rescue | - |
-| Check status | `main.yml` | `command` | service_name | - | None | service_status |
-
-**Use Cases**:
-- **Troubleshooting**: Understand why tasks fail due to missing variables
-- **Dependencies**: See which tasks depend on each other
-- **Error Handling**: Identify tasks with recovery mechanisms
-- **Data Flow**: Track how facts/variables flow between tasks
-
-### Error Handler Visibility
-
-Error handlers (rescue/always blocks) are now tracked in complexity metrics:
-
-```yaml
-# Example task with error handling
-- name: Deploy application
-  block:
-    - name: Copy files
-      copy:
-        src: app/
-        dest: /opt/app
-  rescue:
-    - name: Rollback on failure
-      command: /opt/scripts/rollback.sh
-  always:
-    - name: Clean temporary files
-      file:
-        path: /tmp/deploy
-        state: absent
-```
-
-This task would show:
-- **Error Handling**: `rescue + always`
-- Increases the `error_handlers` metric in complexity analysis
-
-## Pattern Analysis & Simplification Suggestions
-
-Docsible includes an advanced pattern analyzer that detects anti-patterns and provides actionable refactoring suggestions. This optional feature integrates with the complexity report to identify code quality issues across multiple categories.
-
-### Overview
-
-The pattern analyzer examines your role for common anti-patterns and provides:
-- **Health score** (0-100) based on detected issues
-- **Categorized findings** by severity (Critical, Warning, Info)
-- **Actionable suggestions** with code examples and fixes
-- **Impact assessments** explaining why each issue matters
-
-### Enable Pattern Analysis
-
-Use `--simplification-report` to include pattern analysis in your documentation:
-
-```bash
-# Include pattern analysis with complexity report
-docsible role --role ./my-role --complexity-report --simplification-report
-
-# Pattern analysis works independently too
-docsible role --role ./my-role --simplification-report
-```
-
-**Note**: Pattern analysis is opt-in. Use the flag to enable it.
-
-### Pattern Categories
-
-The analyzer detects anti-patterns across four categories:
-
-#### 1. Duplication Patterns
-- **Repeated Task Blocks**: Similar tasks that could be unified with loops
-- **Copy-Paste Variables**: Identical variable definitions across files
-- **Redundant Handlers**: Multiple handlers performing the same action
-
-**Example Detection**:
-```yaml
-# Anti-pattern: Repeated tasks
-- name: Install package A
-  apt:
-    name: package-a
-
-- name: Install package B
-  apt:
-    name: package-b
-
-# Suggested fix: Use loop
-- name: Install packages
-  apt:
-    name: "{{ item }}"
-  loop:
-    - package-a
-    - package-b
-```
-
-#### 2. Complexity Patterns
-- **God Tasks**: Single task files with too many responsibilities
-- **Deep Nesting**: Excessive block nesting (>3 levels)
-- **Long Conditionals**: Complex `when` conditions that should be refactored
-- **Missing Modularity**: Large roles that should be split
-
-**Example Detection**:
-```yaml
-# Anti-pattern: Deep nesting
-- name: Deploy
-  block:
-    - name: Check
-      block:
-        - name: Validate
-          block:  # 3 levels deep!
-            - name: Do work
-              command: ...
-
-# Suggested fix: Extract to separate task files
-# tasks/check.yml, tasks/validate.yml, tasks/deploy.yml
-```
-
-#### 3. Security Patterns
-- **Hardcoded Secrets**: Credentials or tokens in plaintext
-- **Weak Permissions**: Files/directories with overly permissive modes
-- **Sudo Without Validation**: Tasks using become without proper guards
-- **Exposed Variables**: Sensitive data in defaults instead of vars
-
-**Example Detection**:
-```yaml
-# Anti-pattern: Hardcoded secret
-database_password: "admin123"  # In defaults/main.yml
-
-# Suggested fix: Use Ansible Vault
-# In defaults/main.yml:
-database_password: "{{ vault_database_password }}"
-
-# In vars/vault.yml (encrypted):
-vault_database_password: !vault |
-  $ANSIBLE_VAULT;1.1;AES256...
-```
-
-#### 4. Maintainability Patterns
-- **Missing Error Handling**: Tasks without rescue/always blocks
-- **Inconsistent Naming**: Variables/tasks with unclear or inconsistent names
-- **Variable Shadowing**: defaults/ and vars/ defining same variables
-- **Undocumented Variables**: Variables without description comments
-
-**Example Detection**:
-```yaml
-# Anti-pattern: Variable shadowing
-# In defaults/main.yml:
-app_port: 8080
-
-# In vars/main.yml:
-app_port: 9090  # Which one wins? Confusing!
-
-# Suggested fix: Use vars/ for overrides, defaults/ for fallbacks
-# Keep app_port only in defaults/main.yml or only in vars/main.yml
-```
-
-### Health Score Calculation
-
-The overall health score (0-100) reflects code quality:
-
-- **90-100 (Excellent)**: Minimal or no anti-patterns detected
-  - Green status
-  - Follow best practices
-  - Minor improvements suggested
-
-- **70-89 (Good)**: Some warnings, no critical issues
-  - Orange status
-  - Maintainability concerns
-  - Recommended refactoring for quality
-
-- **Below 70 (Needs Improvement)**: Critical or multiple warnings
-  - Red status
-  - Security risks or complexity issues
-  - Immediate attention required
-
-**Score Formula**:
-```
-Base Score = 100
-Deduction = (Critical × 15) + (Warning × 5) + (Info × 1)
-Health Score = max(0, Base Score - Deduction)
-```
-
-### Documentation Output
-
-Pattern analysis adds a "Simplification Opportunities" section to generated documentation:
-
-**Example Output** (role with issues):
-```markdown
-## Simplification Opportunities
-
-**Overall Health Score:** 72/100
-
-This role has **8** potential improvements:
-- 🚨 Critical: 1
-- ⚠️  Warnings: 4
-- 💡 Suggestions: 3
-
-### 🚨 Critical Issues
-
-#### Hardcoded Secrets
-
-**Issue:** Found potential hardcoded secrets in variable definitions
-
-**Why it matters:** Hardcoded credentials pose security risks and make
-credential rotation difficult. Secrets should be encrypted with Ansible Vault.
-
-**Current code:**
-```yaml
-api_key: "sk_live_abcd1234"
-database_password: "admin123"
-```
-
-**Recommended fix:**
-Move secrets to Ansible Vault and reference them:
-```yaml
-# In defaults/main.yml
-api_key: "{{ vault_api_key }}"
-database_password: "{{ vault_database_password }}"
-
-# Encrypt with: ansible-vault encrypt vars/vault.yml
-```
-
-**Files:** `defaults/main.yml`
+- [Config File Schema](#config-file-schema)
+- [Presets](#presets)
+- [CLI Flags](#cli-flags)
+  - [Path Flags](#path-flags)
+  - [Output Flags](#output-flags)
+  - [Content Flags](#content-flags)
+  - [Visualization and Generation Flags](#visualization-and-generation-flags)
+  - [Analysis and Recommendations Flags](#analysis-and-recommendations-flags)
+  - [CI/CD Flags](#cicd-flags)
+  - [Template Flags](#template-flags)
+  - [Repository Flags](#repository-flags)
+  - [Framing Flags](#framing-flags)
+- [CI/CD Integration](#cicd-integration)
+- [Suppression Rules](#suppression-rules)
+- [Team Workflow](#team-workflow)
 
 ---
 
-### ⚠️  Warnings
+## Config File Schema
 
-#### Repeated Task Blocks
-...
-
-### 💡 Optional Improvements
-
-<details>
-<summary><strong>Inconsistent Naming</strong> - Variable names use different conventions</summary>
-
-**Example:**
-```yaml
-appPort: 8080        # camelCase
-app_name: "myapp"    # snake_case
-APP-VERSION: "1.0"   # kebab-case + uppercase
-```
-
-**Suggestion:**
-Standardize on snake_case per Ansible best practices
-
-**Expected benefit:** Improved readability and consistency
-</details>
-
-### Next Steps
-
-1. **Address critical issues first** - These pose security or reliability risks
-2. **Fix warnings** - These impact maintainability and code quality
-3. **Consider info suggestions** - Optional improvements for best practices
-```
-
-**Example Output** (healthy role):
-```markdown
-## Simplification Opportunities
-
-**Overall Health Score:** 100/100
-
-✅ **Excellent!** No anti-patterns detected. This role follows best practices.
-```
-
-### Integration with Complexity Report
-
-Pattern analysis integrates seamlessly with complexity analysis:
-
-```bash
-# Combined analysis for comprehensive insights
-docsible role --role ./my-role \
-  --complexity-report \
-  --simplification-report \
-  --show-dependencies
-```
-
-**Combined Benefits**:
-- **Complexity Report**: Quantitative metrics (task count, conditionals, dependencies)
-- **Pattern Analysis**: Qualitative insights (code smells, refactoring opportunities)
-- **Dependency Matrix**: Task relationships and data flow
-
-Together, these features provide a complete picture of role quality and maintainability.
-
-### Common Use Cases
-
-#### Code Review Workflow
-
-```bash
-# Before merging, check for anti-patterns
-docsible role --role ./new-role --simplification-report --analyze-only
-
-# Output shows issues without generating docs
-📊 Pattern Analysis: 3 issues found (Health: 85/100)
-- ⚠️  Repeated task blocks in tasks/main.yml
-- 💡 Missing error handling for critical tasks
-- 💡 Inconsistent variable naming
-```
-
-#### Documentation Generation
-
-```bash
-# Generate docs with all analysis features
-docsible role --role ./my-role \
-  --complexity-report \
-  --simplification-report \
-  --show-dependencies
-```
-
-#### Continuous Improvement
-
-```bash
-# Track health score over time
-docsible role --role ./my-role --simplification-report > /tmp/health_$(date +%Y%m%d).txt
-
-# Monitor improvements between releases
-```
-
-### Confidence Thresholds
-
-Pattern detection uses confidence scoring (0.0-1.0) to reduce false positives:
-
-- **Default threshold**: 0.7 (70% confidence)
-- **High confidence** (>0.8): Clear anti-patterns with strong evidence
-- **Medium confidence** (0.6-0.8): Likely issues worth reviewing
-- **Low confidence** (<0.6): Not reported (avoid noise)
-
-The default threshold balances precision and recall for practical use.
-
-### Best Practices
-
-1. **Use in Development**: Run with `--simplification-report` during development to catch issues early
-2. **Combine with Complexity**: Use both flags for comprehensive analysis
-3. **Address Critical First**: Focus on security and reliability issues before style improvements
-4. **Iterate Incrementally**: Fix issues gradually, don't try to achieve 100 score immediately
-5. **Context Matters**: Some "anti-patterns" may be intentional for your use case
-
-### Limitations
-
-- **Static Analysis**: Cannot detect runtime issues or logic errors
-- **Context-Unaware**: May flag intentional patterns as issues
-- **Language Patterns**: Focused on YAML/Ansible conventions, not custom modules
-- **False Positives**: Manual review recommended for all suggestions
-
-### Troubleshooting
-
-**Issue**: No patterns detected but role has obvious issues
-
-**Solution**:
-- Check confidence threshold (default 0.7 may be too high)
-- Pattern detector may not cover that specific anti-pattern yet
-- File a GitHub issue to add new detection patterns
-
-**Issue**: Too many false positives
-
-**Solution**:
-- Review "info" level suggestions critically
-- Focus on "critical" and "warning" severity
-- Provide feedback on GitHub for detector improvements
-
-**Issue**: Pattern analysis fails or crashes
-
-**Solution**:
-- Check logs with `--verbose` flag
-- Report errors to GitHub issues
-- Pattern analysis failures don't crash main complexity analysis
-
-## Phase Detection & Migration Assistance
-
-Docsible includes intelligent phase detection and precise line numbering to help migrate messy codebases into atomic, well-organized playbooks. This feature automatically determines **IF** files should be split and **WHERE** to split them.
-
-### Overview
-
-When analyzing complex task files, Docsible uses two complementary approaches:
-
-1. **Phase Detection** (Conservative, 80% confidence threshold):
-   - Detects chronological execution pipelines (setup → install → configure → deploy → activate → verify → cleanup)
-   - Recommends **keeping together** files that form coherent sequential workflows
-   - Prevents incorrect splitting of naturally coupled tasks
-
-2. **Line Number Tracking**:
-   - Extracts precise line ranges (start, end) for every task
-   - Shows exactly where to cut when splitting is recommended
-   - Reduces cognitive load during migration
-
-### Use Cases
-
-#### 1. Codebase Migration
-
-**Problem**: You inherited a role with a 200-line `tasks/main.yml` mixing multiple concerns.
-
-**Solution**: Run complexity analysis to get actionable guidance:
-
-```bash
-docsible role --role ./messy-role --complexity-report
-```
-
-**Output Example 1** (Coherent Pipeline Detected):
-```
-✅ tasks/deploy.yml forms a coherent pipeline (Install → Configure → Activate → Verify)
-   WHY: Sequential workflow is naturally coupled (87% confidence)
-   RECOMMENDATION: Keep together - splitting would break narrative flow
-   PHASE BREAKDOWN:
-      • Lines 1-12: Install (4 tasks)
-      • Lines 13-25: Configure (6 tasks)
-      • Lines 26-30: Activate (2 tasks)
-      • Lines 31-35: Verify (2 tasks)
-```
-
-**Action**: Keep the file intact. The tasks form a logical deployment sequence.
-
-**Output Example 2** (Mixed Concerns Detected):
-```
-🔀 tasks/main.yml mixes 3 concerns (Package Installation, Configuration, Service)
-   WHY: Mixed responsibilities reduce maintainability, testability, and reusability
-   HOW: Split by concern:
-      • tasks/install.yml: Package Installation (5 tasks, lines 1-18, 40-45)
-      • tasks/configure.yml: Configuration Management (3 tasks, lines 19-21)
-      • tasks/service.yml: Service Management (2 tasks, lines 22-25)
-```
-
-**Action**:
-1. Extract lines 1-18 and 40-45 to `tasks/install.yml`
-2. Extract lines 19-21 to `tasks/configure.yml`
-3. Extract lines 22-25 to `tasks/service.yml`
-4. Update `tasks/main.yml` to include these files
-
-#### 2. Testing Simple Playbooks
-
-**Problem**: After splitting, you want to test individual concerns independently.
-
-**Solution**: With atomic task files, you can:
-
-```bash
-# Test just package installation
-ansible-playbook -i inventory test.yml --tags install
-
-# Test just configuration
-ansible-playbook -i inventory test.yml --tags configure
-```
-
-#### 3. Onboarding New Team Members
-
-**Problem**: New developers struggle to understand large monolithic task files.
-
-**Solution**: Phase detection output serves as documentation:
-
-- Shows the execution flow (phases)
-- Indicates which parts are coupled
-- Provides line numbers for quick navigation
-
-### Phase Detection Algorithm
-
-Docsible uses a conservative, multi-signal approach (80% confidence threshold):
-
-1. **Sequential Ordering** (35% weight):
-   - Are phases in expected priority order? (Setup before Install, Install before Configure, etc.)
-
-2. **Phase Coverage** (25% weight):
-   - What percentage of tasks fit into detected phases?
-
-3. **Phase Distinctiveness** (25% weight):
-   - How confident is each phase assignment?
-   - Based on module names (e.g., `apt` → Install) and task names (e.g., "Configure nginx" → Configure)
-
-4. **Minimal Repetition** (15% weight):
-   - Phases shouldn't repeat (e.g., Install → Configure → Install is suspicious)
-
-**Example Analysis**:
-```
-Phase Detection Confidence: 87%
-✓ Sequential Ordering: 92%
-✓ Phase Coverage: 85%
-✓ Phase Confidence: 88%
-✓ No Repetition: 100%
-```
-
-### Detected Phases
-
-| Phase | Description | Example Modules | Example Task Names |
-|-------|-------------|----------------|-------------------|
-| **Setup** | Pre-requisites, validation | `assert`, `stat`, `set_fact` | "Check prerequisites", "Validate config" |
-| **Install** | Package installation, downloads | `apt`, `yum`, `pip`, `git`, `get_url` | "Install nginx", "Download artifact" |
-| **Configure** | File management, configuration | `template`, `copy`, `lineinfile` | "Configure nginx", "Create config file" |
-| **Deploy** | Deployment operations | `command`, `shell`, `docker_container` | "Deploy application", "Run migration" |
-| **Activate** | Start services | `service`, `systemd` | "Start nginx", "Enable service" |
-| **Verify** | Health checks, validation | `uri`, `wait_for`, `assert` | "Health check", "Verify service running" |
-| **Cleanup** | Temporary file removal | `file`, `command` | "Cleanup temp files", "Remove artifacts" |
-
-### Line Number Output Formats
-
-#### Single Block
-```
-tasks/install.yml: Package Installation (5 tasks, lines 1-18)
-```
-
-#### Multiple Scattered Blocks
-```
-tasks/install.yml: Package Installation (5 tasks, lines 1-18, 40-45)
-```
-
-#### Many Blocks (Summarized)
-```
-tasks/install.yml: Package Installation (12 tasks, lines 1-120 (8 blocks))
-```
-
-### Conservative Approach
-
-**Why 80% confidence threshold?**
-- Minimizes false positives
-- Avoids recommending "keep together" for files that should be split
-- Errs on the side of suggesting splits when uncertain
-
-**When phase detection doesn't trigger:**
-- Falls back to concern-based analysis
-- Still provides line numbers for splitting recommendations
-- Users get actionable guidance regardless
-
-### Integration with Complexity Report
-
-Phase detection runs automatically during complexity analysis:
-
-```bash
-# Generate documentation with complexity report
-docsible role --role ./my-role --complexity-report
-
-# Analyze without generating docs (faster)
-docsible role --role ./my-role --analyze-only
-```
-
-**Output includes**:
-- Overall complexity category (SIMPLE/MEDIUM/COMPLEX)
-- File-level analysis with phase detection
-- Integration points and dependencies
-- Actionable recommendations with line numbers
-
-### Best Practices
-
-1. **Start with Analysis**: Run `--analyze-only` first to understand the role structure before making changes
-
-2. **Follow Recommendations**: Phase detection prevents common mistakes:
-   - Don't split coherent pipelines
-   - Do split mixed concerns
-
-3. **Test After Splitting**: Verify each split file independently
-
-4. **Use Line Numbers**: Copy exact line ranges to avoid missing tasks or breaking YAML syntax
-
-5. **Incremental Migration**: Split the largest/most complex files first, then move to smaller ones
-
-### Troubleshooting
-
-**Issue**: Phase detection says "keep together" but file seems complex
-
-**Solution**:
-- Check the confidence score (lower means less certain)
-- Review the phase breakdown - are phases logically grouped?
-- If you disagree, you can still split based on concern recommendations
-
-**Issue**: Line numbers don't match after editing
-
-**Solution**:
-- Line numbers are from the analysis snapshot
-- Re-run analysis after any file changes
-- Use version control to track changes
-
-**Issue**: Recommendations don't cover all files
-
-**Solution**:
-- Phase detection focuses on the largest/most complex files first
-- Use `--complexity-report` to see all file-level metrics
-- Smaller files often don't need splitting
-
-### Limitations
-
-- **Language-Specific**: Optimized for YAML Ansible tasks (doesn't analyze Python modules or Jinja2 templates)
-- **Module-Based Detection**: Relies on Ansible module names (may miss custom modules)
-- **Static Analysis**: Doesn't consider runtime behavior or variable values
-- **Conservative**: May not detect all possible phase patterns to avoid false positives
-
-## Markdown Quality Validation
-
-Docsible includes automated markdown formatting validation to ensure generated documentation is clean and well-formatted. This validation runs as a pre-delivery quality gate before writing README files.
-
-### Overview
-
-The validation system checks for common markdown formatting issues:
-
-- **Whitespace**: Excessive blank lines, trailing spaces, tab characters
-- **Tables**: Column count mismatches, malformed separators, inconsistent rows
-- **Syntax**: Unclosed code blocks, unclosed HTML tags, improper heading hierarchy
-
-### Validation Modes
-
-#### Default Validation (Enabled)
-
-By default, validation runs on all generated documentation:
-
-```bash
-docsible role --role ./my-role
-```
-
-**Output with issues**:
-```
-⚠️  Markdown validation found 2 warning(s):
-  Found tab characters on 3 lines
-  Excessive blank lines: 4 consecutive empty lines (max: 2)
-ℹ️  Run with --auto-fix to automatically correct formatting issues
-✓ README.md updated
-```
-
-#### Disable Validation
-
-Skip validation if you want to inspect raw output:
-
-```bash
-docsible role --role ./my-role --no-validate
-```
-
-#### Auto-Fix Mode
-
-Automatically fix common formatting issues:
-
-```bash
-docsible role --role ./my-role --auto-fix
-```
-
-**Fixes Applied**:
-- Replace tabs with spaces (4 spaces per tab)
-- Remove trailing whitespace from lines
-- Reduce excessive blank lines to maximum 2 consecutive
-- Add blank lines around tables for readability
-
-**Output**:
-```
-🔧 Auto-fixed markdown formatting issues
-✓ Markdown validation passed with no issues
-✓ README.md updated
-```
-
-#### Strict Validation Mode
-
-Fail generation if validation errors are found:
-
-```bash
-docsible role --role ./my-role --strict-validation
-```
-
-**Behavior**:
-- **Warnings**: Logged but don't block generation
-- **Errors**: Stop generation and display error details
-
-**Example failure**:
-```
-❌ Markdown validation found 2 error(s):
-  Unclosed code block: found 3 code fence markers (should be even) (line 45)
-  Table column mismatch: header has 3 columns, separator has 2 (line 78)
-
-ERROR: Markdown validation failed with 2 error(s):
-Line 45: Unclosed code block: found 3 code fence markers (should be even)
-Line 78: Table column mismatch: header has 3 columns, separator has 2
-
-Fix template issues or use --no-validate to skip validation.
-```
-
-### Validation Categories
-
-#### Whitespace Issues
-
-**Excessive Blank Lines** (Warning):
-```markdown
-# Header
-
-
-
-Too many blank lines above
-```
-
-**Tab Characters** (Warning):
-```markdown
-	This line has a tab (should be spaces)
-```
-
-**Trailing Whitespace** (Info):
-```markdown
-Line with trailing spaces
-```
-
-#### Table Issues
-
-**Column Mismatch** (Error):
-```markdown
-| Col 1 | Col 2 | Col 3 |
-|-------|-------|        # Missing separator!
-| A     | B     | C     |
-```
-
-**Malformed Table** (Error):
-```markdown
-| Col 1 | Col 2 |
-| A     | B     |        # Missing separator row!
-```
-
-#### Syntax Issues
-
-**Unclosed Code Block** (Error):
-```markdown
-```python
-def example():
-    pass
-# Missing closing ```
-```
-
-**Unclosed HTML Tags** (Error):
-```markdown
-<details>
-<summary>Content</summary>
-# Missing </details>
-```
-
-**Heading Hierarchy Skip** (Info):
-```markdown
-# Main Title
-
-#### Jumped to H4    # Should be H2
-```
-
-### Common Workflows
-
-#### Development Workflow
-
-During development, use auto-fix to clean up output:
-
-```bash
-docsible role --role ./my-role --auto-fix
-```
-
-#### CI/CD Pipeline
-
-In CI/CD, use strict validation to catch template issues:
-
-```bash
-docsible role --role ./my-role --strict-validation
-```
-
-**Benefits**:
-- Catch template bugs before they reach users
-- Ensure consistent formatting across all roles
-- Prevent broken tables or unclosed tags in documentation
-
-#### Testing Templates
-
-When developing custom templates, test without validation first:
-
-```bash
-# Test template output
-docsible role --role ./test-role --no-validate
-
-# Once working, enable validation
-docsible role --role ./test-role --auto-fix
-```
-
-### Best Practices
-
-1. **Enable Auto-Fix by Default**: Use `--auto-fix` in your workflow to automatically clean output
-2. **Strict Mode in CI**: Use `--strict-validation` in CI/CD to catch template issues early
-3. **Fix Template Issues**: If validation fails, fix the underlying template rather than disabling validation
-4. **Idempotent Fixes**: Running auto-fix multiple times produces the same result
-
-### Integration with Templates
-
-Validation runs **after** template rendering but **before** writing to disk:
-
-```
-Template Rendering → Markdown Validation → Auto-Fix (if enabled) → Write README
-                           ↓
-                    Error/Warning Logs
-                           ↓
-                    Strict Mode Check
-```
-
-This ensures:
-- Templates generate valid markdown
-- Common formatting issues are caught early
-- Users receive clean, well-formatted documentation
-
-## Documentation Drift Detection
-
-Docsible automatically tracks when documentation was generated and can detect if role files have changed.
-
-### Check Documentation Freshness
-
-```bash
-# Check if docs are up to date
-docsible check --role ./my-role
-
-# Output if fresh:
-✅ Documentation is up to date
-   Last generated: 2025-12-15 10:30:00 UTC
-
-# Output if outdated:
-⚠️  Documentation is OUTDATED
-   
-   Reason: Role files have changed since documentation was generated
-   Changed files: 3
-     - defaults/main.yml
-     - tasks/main.yml
-     - handlers/main.yml
-   
-   💡 Run: docsible role --role . --no-backup
-
-
-### Troubleshooting
-
-**Issue**: Validation reports errors in generated output
-
-**Solution**:
-1. Check your Jinja2 templates for unclosed blocks or table issues
-2. Use auto-fix to see corrected output: `--auto-fix`
-3. Review MARKDOWN_QA_STRATEGY.md for template best practices
-
-**Issue**: Auto-fix doesn't resolve all issues
-
-**Solution**:
-- Auto-fix handles whitespace and table spacing only
-- Structural issues (unclosed blocks, column mismatches) require template fixes
-- Use validation output to identify exact problems
-
-## CLI Commands
-
-Docsible uses a Click-based CLI with subcommands. The main structure is:
-
-```bash
-docsible [GLOBAL_OPTIONS] COMMAND [COMMAND_OPTIONS]
-```
-
-Available commands:
-- `document` - Generate documentation for Ansible roles or collections
-- `analyze` - Analyze a role without generating documentation
-- `validate` - Validate documentation without writing any files
-- `init` - Create a `.docsible/config.yml` configuration file via interactive wizard
-- `guide` - Show an interactive guide on a given topic
-- `suppress` - Manage suppression rules for recommendations
-- `role` - *(deprecated)* Generate documentation (use `document` instead)
-
-### Main Command: `docsible role`
-
-Generate documentation for roles or collections:
-
-```bash
-# Document a role
-docsible role --role ./my-role
-
-# Document a collection
-docsible role --collection ./my-collection
-
-# Preview what would be generated (dry-run)
-docsible role --role ./my-role --graph --dry-run
-
-# With custom options
-docsible  role --role ./my-role --graph --comments --task-line
-
-# Enable verbose logging for troubleshooting
-docsible --verbose role --role ./my-role
-```
-
-#### Grouped Help Output
-
-The `docsible role --help` command organizes options into logical categories for easier navigation:
-
-```bash
-$ docsible role --help
-
-📂 Input Paths:
-  -r, --role TEXT        Path to the Ansible role directory.
-  -c, --collection TEXT  Path to the Ansible collection directory.
-  -p, --playbook TEXT    Path to the playbook file.
-
-💾 Output Control:
-  -o, --output TEXT      Output readme file name.
-  -nob, --no-backup      Do not backup the readme before remove.
-  -a, --append           Append to the existing README.md instead of replacing.
-  --dry-run              Preview what would be generated without writing any files.
-  --validate/--no-validate  Validate markdown formatting before writing.
-  --auto-fix             Automatically fix common markdown formatting issues.
-  --strict-validation    Fail generation if markdown validation errors are found.
-  --positive/--neutral   Use positive framing in output (default: --positive).
-  --show-info            Also show INFO-level recommendations (default: CRITICAL/WARNING only).
-
-📄 Content Sections:
-  --no-vars             Hide variable documentation
-  --no-tasks            Hide task lists and task details
-  --no-diagrams         Hide all Mermaid diagrams
-  --no-examples         Hide example playbook sections
-  --no-metadata         Hide role metadata, author, and license
-  --no-handlers         Hide handlers section
-  --include-complexity  Include complexity analysis section in README
-  --minimal             Generate minimal documentation (enables all --no-* flags)
-
-🎨 Templates:
-  --md-role-template    Path to the role markdown template file
-  --md-collection-template  Path to the collection markdown template file
-  --hybrid              Use hybrid template (manual + auto-generated sections)
-
-📊 Visualization:
-  -g, --graph           Generate Mermaid diagrams for role visualization
-  -com, --comments      Extract and include inline comments from task files
-  -tl, --task-line      Include source file line numbers for each task
-  --simplify-diagrams   Show only high-level diagrams, hide detailed flowcharts
-
-🔍 Analysis & Complexity:
-  --complexity-report      Include role complexity analysis in documentation
-  --simplification-report  Include detailed pattern analysis with simplification suggestions
-  --show-dependencies      Generate task dependency matrix table
-  --analyze-only           Analyze role complexity without generating documentation
-
-🔗 Repository Integration:
-  -ru, --repository-url TEXT  Repository base URL (used for standalone roles)
-  -rt, --repo-type TEXT       Repository type: github, gitlab, gitea, etc.
-  -rb, --repo-branch TEXT     Repository branch name (e.g., main or master)
-```
-
-**Benefits of Grouped Help**:
-- Quickly find related options
-- Understand feature categories at a glance
-- Reduced cognitive load when exploring CLI capabilities
-- Professional, organized interface
-
-#### Available Role Options (Full List)
+Docsible reads `.docsible/config.yml` from the working directory (or the directory passed to `--path`). The file is created by `docsible init` and can be edited manually.
 
 ```yaml
-📂 Input Paths:
---role, -r: Path to Ansible role directory
---collection, -c: Path to Ansible collection directory
---playbook, -p: Path to playbook file
+# .docsible/config.yml
 
-💾 Output Control:
---output, -o: Output filename (default: README.md)
---no-backup, -nob: Don't create backup before overwriting
---append, -a: Append to existing README instead of replacing
---no-docsible, -nod: Do not generate .docsible file
---dry-run: Preview what would be generated without writing any files (analysis still performed)
---validate/--no-validate: Enable/disable markdown formatting validation (default: enabled)
---auto-fix: Automatically fix common markdown formatting issues (whitespace, tables)
---strict-validation: Fail generation if markdown validation errors are found (default: warn only)
---positive/--neutral: Show positive framing after generation (default: --positive). See Output Control section.
---show-info: Show INFO-level recommendations in addition to CRITICAL and WARNING (default: off)
+# Built-in preset to apply. One of: personal, team, enterprise, consultant.
+# Preset settings are applied first; CLI flags and the fields below override them.
+preset: team
 
-📄 Content Sections:
---no-vars: Skip variable documentation (defaults, vars, argument_specs)
---no-tasks: Skip task lists and task details
---no-diagrams: Skip all Mermaid diagrams (flowcharts, sequence diagrams)
---simplify-diagrams: Show only high-level diagrams, hide detailed task flowcharts
---no-examples: Skip example playbook sections
---no-metadata: Skip role metadata, author, and license information
---no-handlers: Skip handlers section
---include-complexity: Include complexity analysis section in README
---minimal: Generate minimal documentation (enables all --no-* flags)
+# Per-key overrides that supplement or override the chosen preset.
+overrides:
+  graph: true
+  hybrid: true
 
-🎨 Templates:
---md-role-template, -rtpl, -tpl: Path to the role markdown template file
---md-collection-template, -ctpl: Path to the collection markdown template file
---hybrid: Use hybrid template (manual + auto-generated sections)
+# CI/CD platform metadata written by `docsible init` when CI/CD setup is requested.
+ci_cd:
+  platform: github        # github | gitlab | azure
+  strict_validation: true
 
-📊 Visualization:
---graph, -g: Generate Mermaid diagrams for role visualization
---comments, -com: Extract and include inline comments from task files in documentation
---task-line, -tl: Include source file line numbers for each task in generated documentation
-
-🔍 Analysis & Complexity:
---complexity-report: Include role complexity analysis in generated documentation
---simplification-report: Include detailed pattern analysis with simplification suggestions in documentation
---show-dependencies: Generate task dependency matrix table in documentation
---analyze-only: Analyze role complexity and display detailed metrics without generating documentation
-
-🔗 Repository Integration:
---repository-url, -ru: Repository base URL (used for standalone roles)
---repo-type, -rt: Repository type (github, gitlab, gitea, etc.)
---repo-branch, -rb: Repository branch name (e.g., main or master)
-
-⚙️ Global Options:
---verbose, -v: Enable debug logging
---version: Show version
---help: Show brief help (essential options only)
---help-full: Show full help with all 30+ options grouped by category
+# Analysis behavior — override preset defaults or set standalone values.
+fail_on: warning          # none | info | warning | critical (default: none)
+essential_only: false     # true = show only WARNING/CRITICAL findings (default varies by preset)
+max_recommendations: 10   # integer or null for unlimited (default varies by preset)
 ```
 
-### Configuration Command: `docsible init`
+### Field Descriptions
 
-Generate an example `.docsible.yml` configuration file:
+| Field | Type | Default | Description |
+|---|---|---|---|
+| `preset` | string \| null | null | Applies a built-in preset before all other settings |
+| `overrides` | mapping | `{}` | Key/value pairs that override individual preset settings |
+| `ci_cd` | mapping | `{}` | CI/CD metadata; `strict_validation: true` makes validate exit 1 on any WARNING/CRITICAL |
+| `fail_on` | string \| null | null (preset default or `none`) | Exit threshold for CI: `none`, `info`, `warning`, or `critical` |
+| `essential_only` | bool \| null | null (preset default) | When true, only WARNING and CRITICAL findings are shown |
+| `max_recommendations` | int \| null | null (preset default) | Cap on displayed recommendations; null means unlimited |
 
-```bash
-# Create config in current directory
-docsible init
-
-# Create config in specific directory
-docsible init --path /path/to/project
-
-# Overwrite existing config
-docsible init --force
-```
-
-```yaml
-Init Command Options:
-
---path, -p: Directory where to create .docsible.yml (default: current directory)
---force, -f: Overwrite existing configuration file
---help: Show help message
-```
-
-### Guide Command: `docsible guide`
-
-Show interactive, topic-specific guides directly in the terminal:
-
-```bash
-docsible guide getting-started    # 5-minute quickstart
-docsible guide troubleshooting    # Common issues and fixes
-docsible guide smart-defaults     # How auto-detection works
-```
-
-Output is rendered with `rich` markdown formatting when available, and falls back to plain text otherwise.
-
-Available topics:
-
-| Topic | Description |
-|-------|-------------|
-| `getting-started` | 5-minute quickstart for new users |
-| `troubleshooting` | Common issues and how to fix them |
-| `smart-defaults` | How auto-detection and smart defaults work |
-
-### Enable Verbose Logging
-
-**Problem**: Need detailed information about what Docsible is doing
-
-**Solution**:
-Use the `--verbose` or `-v` flag to enable debug logging:
-
-```bash
-docsible --verbose role --role ./my-role
-
-```
-**Example output:**
-```bash
-DEBUG - Initialized TemplateLoader with template_dir: /path/to/templates
-DEBUG - Loading template: role/standard.jinja2
-INFO - Loaded configuration from .docsible.yml
-INFO - Using hybrid template (manual + auto-generated sections)
-```
-## Output Control
-
-These flags control how Docsible presents results after generating documentation.
-
-### `--positive` / `--neutral`
-
-By default (`--positive`), Docsible displays an encouraging summary after a successful run:
-
-```bash
-docsible role --role .              # positive framing (default)
-docsible role --role . --positive   # same as above, explicit
-docsible role --role . --neutral    # plain output, no framing
-```
-
-**Positive framing output includes:**
-- A success banner confirming documentation was generated
-- Role analysis: complexity level, structure quality, readiness assessment
-- Enhancement opportunities with estimated time-to-implement
-- Contextual next steps based on the role's characteristics
-
-**Example (--positive)**:
-```
-Documentation Generated Successfully!
-
-Role Analysis:
-  Complexity: MEDIUM (18 tasks)
-  Structure: Well-organized (3 task files)
-  Readiness: Production-ready
-
-Enhancement Opportunities:
-  Add complexity report         ~2 min
-  Enable pattern analysis       ~2 min
-
-Next Steps:
-  Review generated README.md
-  Run: docsible role --role . --complexity-report
-```
-
-Use `--neutral` in CI/CD pipelines or scripted workflows where machine-readable output is preferable.
-
-### `--show-info`
-
-By default, only CRITICAL and WARNING severity recommendations are shown. Pass `--show-info` to also see INFO-level suggestions:
-
-```bash
-docsible role --role .              # shows CRITICAL + WARNING only
-docsible role --role . --show-info  # also shows INFO suggestions
-```
-
-INFO suggestions are lower-priority improvements such as optional best-practice hints. They are hidden by default to reduce noise.
+CLI flags always override values from the config file, which in turn override preset defaults.
 
 ---
 
-## Getting Help
+## Presets
 
-### Brief vs. Full Help
-
-The `--help` flag shows a concise view of the most essential options. Use `--help-full` to see every available option, organized into groups:
+Presets bundle a curated set of settings suited to common use cases. Apply a preset with `--preset` on any command, or set `preset:` in `.docsible/config.yml`.
 
 ```bash
-docsible role --help        # essential options only
-docsible role --help-full   # all 30+ options grouped by category
-```
-
-`--help-full` renders the same grouped categories shown in the [Grouped Help Output](#grouped-help-output) section — useful when exploring less common flags like `--simplify-diagrams`, `--strict-validation`, or `--show-dependencies`.
-
-### Interactive Guides
-
-The `docsible guide` command provides walkthrough-style help for specific topics:
-
-```bash
-docsible guide getting-started    # 5-minute quickstart
-docsible guide troubleshooting    # Common issues and fixes
-docsible guide smart-defaults     # Understand auto-detection
-```
-
-Guides render as formatted markdown in the terminal (requires `rich`; falls back to plain text automatically).
-
-**When to use guides vs. `--help`:**
-
-| Situation | Recommended |
-|-----------|-------------|
-| Forgot a flag name | `docsible role --help` or `--help-full` |
-| New to docsible | `docsible guide getting-started` |
-| Something isn't working | `docsible guide troubleshooting` |
-| Confused by auto-detection | `docsible guide smart-defaults` |
-
----
-
-## Suppression System
-
-The suppression system lets you silence specific recommendations (false positives) with a documented reason.
-
-Suppressions are stored in `.docsible/suppress.yml` relative to your role directory or current working directory.
-
-### Commands
-
-#### `docsible suppress add`
-
-Add a new suppression rule:
-
-```bash
-# Basic suppression (case-insensitive substring match)
-docsible suppress add "no examples directory" --reason "Examples maintained in separate repo"
-
-# Scope to specific files (glob pattern)
-docsible suppress add "no examples" --reason "Legacy role" --file "roles/webserver"
-
-# Auto-expire after 90 days
-docsible suppress add "no examples" --reason "Temporary exception" --expires 90
-
-# Use regular expression matching
-docsible suppress add "no (examples|defaults)" --reason "Minimalist role" --regex
-
-# With audit trail
-docsible suppress add "no examples" --reason "Approved exception" --approved-by "team-lead"
-```
-
-Options:
-| Option | Description |
-|--------|-------------|
-| `PATTERN` | Case-insensitive substring to match against recommendation messages |
-| `--reason`, `-r` | Required justification for suppression |
-| `--file`, `-f` | Glob pattern to scope suppression to specific files |
-| `--expires`, `-e` | Auto-expire after N days |
-| `--approved-by` | Name of approver (audit trail) |
-| `--regex` | Treat PATTERN as a regular expression |
-| `--path`, `-p` | Base path for `.docsible/suppress.yml` (default: current directory) |
-
-#### `docsible suppress list`
-
-List all active suppression rules:
-
-```bash
-docsible suppress list
-
-# Include expired rules
-docsible suppress list --show-expired
-```
-
-#### `docsible suppress remove`
-
-Remove a rule by its ID:
-
-```bash
-docsible suppress remove abc123
-```
-
-#### `docsible suppress clean`
-
-Remove all expired rules:
-
-```bash
-docsible suppress clean
-
-# Preview without removing
-docsible suppress clean --dry-run
-```
-
-### Storage Format
-
-Suppressions are stored in `.docsible/suppress.yml`:
-
-```yaml
-rules:
-  - id: abc123
-    pattern: "no examples directory"
-    reason: "Examples maintained in separate docsible-examples repo"
-    file_pattern: "roles/*"
-    created_at: "2026-03-06T10:00:00+00:00"
-    expires_at: "2026-06-04T10:00:00+00:00"
-    approved_by: "team-lead"
-    match_count: 5
-    last_matched: "2026-03-06T15:30:00+00:00"
-    use_regex: false
-```
-
-### Integration with Role Documentation
-
-When running `docsible role`, suppressed recommendations are automatically filtered before display:
-
-```bash
-$ docsible role --role .
-...
-  (2 recommendation(s) suppressed — see 'docsible suppress list')
-```
-
-Use `--no-suppress` is planned for future releases to bypass suppressions in CI.
-
----
-
-## Preset System
-
-Presets bundle common option combinations for different use cases. Apply with `--preset` on any documentation command.
-
-### Built-in Presets
-
-| Preset | Use Case | Key Behaviours |
-|--------|----------|----------------|
-| `personal` | Solo / learning | Minimal output, no graphs, fast |
-| `team` | Team collaboration | Smart defaults, auto-fix, comments |
-| `enterprise` | Production / compliance | All reports, strict validation, always graphs |
-| `consultant` | Client deliverables | Maximum detail, all diagrams, task lines |
-
-### Usage
-
-```bash
-# Apply a preset
+docsible document role . --preset=personal
 docsible document role . --preset=team
-
-# Preset + override: enterprise settings but no diagrams
-docsible document role . --preset=enterprise --no-graph
-
-# Store preset in project config (applied automatically on every run)
-docsible init --preset=team
-docsible document role .    # picks up preset from .docsible/config.yml
+docsible document role . --preset=enterprise
+docsible document role . --preset=consultant
 ```
 
-### Preset Settings Reference
+### Preset Settings Table
 
 | Setting | `personal` | `team` | `enterprise` | `consultant` |
-|---------|-----------|--------|-------------|-------------|
-| `--minimal` | ✅ | — | — | — |
-| `--graph` | — | smart | ✅ | ✅ |
-| `--validate-markdown` | ✅ | ✅ | ✅ | ✅ |
-| `--strict-validation` | — | — | ✅ | — |
-| `--auto-fix` | — | ✅ | — | — |
-| `--complexity-report` | — | — | ✅ | ✅ |
-| `--show-dependencies` | — | smart | ✅ | ✅ |
-| `--comments` | — | ✅ | ✅ | ✅ |
-| `--task-line` | — | — | ✅ | ✅ |
-| `--include-complexity` | — | — | ✅ | ✅ |
+|---|---|---|---|---|
+| Description | Solo / learning | Team collaboration | Production / compliance | Client deliverables |
+| `generate_graph` | false | smart defaults | true | true |
+| `minimal` | true | — | false | false |
+| `validate_markdown` | true | true | true | true |
+| `strict_validation` | false | false | true | false |
+| `auto_fix` | false | true | false | false |
+| `no_backup` | true | false | false | false |
+| `complexity_report` | false | false | true | true |
+| `simplification_report` | false | false | true | true |
+| `show_dependencies` | false | smart defaults | true | true |
+| `positive_framing` | true | true | true | true |
+| `comments` | false | true | true | true |
+| `task_line` | false | false | true | true |
+| `include_complexity` | false | false | true | true |
+| `fail_on` | none | warning | critical | warning |
+| `essential_only` | true | false | false | false |
+| `max_recommendations` | 5 | 10 | unlimited | 15 |
 
-`—` means the preset does not set this option (smart defaults or user choice apply).
+"smart defaults" means the setting is left unset in the preset and auto-adjusted based on role complexity at runtime.
 
-### Project Config: `.docsible/config.yml`
-
-```yaml
-preset: team
-overrides:
-  generate_graph: true   # Override: always generate graphs even for simple roles
-ci_cd:
-  platform: github       # Set by docsible init
-```
+Individual flags passed on the command line always override preset defaults.
 
 ---
 
-## Intent-Based Commands
+## CLI Flags
 
-Phase 3 introduces intent-organized command groups. The legacy `docsible role` is still supported but deprecated.
+### Path Flags
 
-### `docsible document role`
+| Flag | Short | Description |
+|---|---|---|
+| `--role TEXT` | `-r` | Path to the Ansible role directory |
+| `--collection TEXT` | `-c` | Path to the Ansible collection directory |
+| `--playbook TEXT` | `-p` | Path to the playbook file |
 
-Generate documentation (full feature parity with `docsible role`):
+### Output Flags
+
+| Flag | Short | Default | Description |
+|---|---|---|---|
+| `--output TEXT` | `-o` | `README.md` | Output file name |
+| `--no-backup` | `-nob` | off | Do not back up the existing README before overwriting |
+| `--append` | `-a` | off | Append to the existing README instead of replacing it |
+| `--no-docsible` | `-nod` | off | Do not generate `.docsible` metadata file |
+| `--dry-run` | — | off | Preview output without writing any files |
+| `--validate / --no-validate` | — | on | Validate markdown formatting before writing |
+| `--auto-fix` | — | off | Automatically fix common markdown formatting issues |
+| `--strict-validation` | — | off | Exit 1 if markdown validation errors are found (fixed — previously a no-op in validate mode) |
+
+### Content Flags
+
+| Flag | Description |
+|---|---|
+| `--no-vars` | Hide variable documentation (defaults, vars, argument_specs) |
+| `--no-tasks` | Hide task lists and task details |
+| `--no-diagrams` | Hide all Mermaid diagrams |
+| `--no-examples` | Hide example playbook sections |
+| `--no-metadata` | Hide role metadata, author, and license |
+| `--no-handlers` | Hide handlers section |
+| `--minimal` | Enable all `--no-*` flags; generate the smallest possible README |
+| `--include-complexity` | Add a complexity analysis section to the README |
+
+### Visualization and Generation Flags
+
+| Flag | Short | Description |
+|---|---|---|
+| `--graph` | `-g` | Generate Mermaid diagrams for role visualization |
+| `--comments` | `-com` | Extract and include inline task comments |
+| `--task-line` | `-tl` | Include source file line numbers for each task |
+| `--simplify-diagrams` | — | Show only high-level diagrams; hide detailed flowcharts |
+| `--complexity-report` | — | Include complexity analysis in documentation |
+| `--simplification-report` | — | Include pattern analysis with simplification suggestions |
+| `--show-dependencies` | — | Generate task dependency matrix table |
+| `--analyze-only` | — | Show complexity analysis without generating documentation |
+
+### Analysis and Recommendations Flags
+
+These flags control how findings (INFO / WARNING / CRITICAL) are collected and displayed.
+
+| Flag | Default | Description |
+|---|---|---|
+| `--recommendations-only` | off | Show recommendations without generating documentation |
+| `--show-info` | off | Show INFO-level recommendations (hidden by default) |
+| `--advanced-patterns` | off | Show all findings including INFO-level; removes the default 5-recommendation cap |
+| `--no-suppress` | off | Bypass `.docsible/suppress.yml` and show all recommendations including suppressed ones |
+| `--output-format [text\|json]` | `text` | Output format for findings; `json` emits machine-readable JSON |
+
+#### `--advanced-patterns` behaviour
+
+Without this flag: only WARNING and CRITICAL findings are shown, capped at 5.
+
+With this flag: all findings including INFO are shown with no cap.
 
 ```bash
+# Default — at most 5 WARNING/CRITICAL findings
 docsible document role --role .
-docsible document role --role . --graph --preset=enterprise
-docsible document role --role . --preset=team --output docs/README.md
+
+# Advanced — all findings, no cap
+docsible document role --role . --advanced-patterns
 ```
 
-### `docsible analyze role`
+#### `--output-format json` schema
 
-Analyze a role without generating documentation. Automatically enables `--complexity-report`:
+```json
+{
+  "role": "my-role",
+  "findings": [
+    {
+      "severity": "WARNING",
+      "message": "No example playbook found",
+      "category": "documentation"
+    }
+  ],
+  "summary": {
+    "total": 3,
+    "critical": 0,
+    "warning": 2,
+    "info": 1
+  },
+  "truncated": false
+}
+```
 
 ```bash
-docsible analyze role --role .
-docsible analyze role --role . --simplification-report --show-dependencies
-docsible analyze role --role . --preset=enterprise
+docsible analyze role --role . --output-format json
+docsible analyze role --role . --output-format json | jq '.summary'
 ```
 
-### `docsible validate role`
+### CI/CD Flags
 
-Validate documentation without writing any files (`--dry-run` is implied):
+| Flag | Default | Description |
+|---|---|---|
+| `--fail-on [none\|info\|warning\|critical]` | `none` | Exit with code 1 if findings at or above this severity exist |
+
+#### `--fail-on` exit codes
+
+| Value | Exit 1 when... |
+|---|---|
+| `none` | Never (always exits 0) |
+| `info` | Any INFO, WARNING, or CRITICAL finding exists |
+| `warning` | Any WARNING or CRITICAL finding exists |
+| `critical` | Any CRITICAL finding exists |
 
 ```bash
-docsible validate role --role .
-docsible validate role --role . --no-strict     # relax strict mode
-docsible validate role --role . --preset=enterprise
+# Fail only on critical issues (recommended for most CI pipelines)
+docsible validate role --role . --fail-on critical
+
+# Fail on warnings or worse (stricter; recommended for team preset)
+docsible validate role --role . --fail-on warning
+
+# Never fail (default; useful for documentation-only jobs)
+docsible validate role --role . --fail-on none
 ```
 
-### Migration from `docsible role`
+#### `--strict-validation` (fixed)
 
-`docsible role` continues to work but prints a deprecation notice to stderr:
-
-```
-DeprecationWarning: 'docsible role' is deprecated. Use 'docsible document role' instead.
-```
-
-Migration is straightforward — all options are identical:
+`--strict-validation` in `validate` mode now correctly exits 1 when WARNING or CRITICAL findings are present. In previous versions this flag was a no-op when used with `docsible validate role`.
 
 ```bash
-# Before
-docsible role --role . --graph --validate-markdown
+docsible validate role --role . --strict-validation
+```
 
-# After
-docsible document role --role . --graph --validate-markdown
+### Template Flags
+
+| Flag | Short | Description |
+|---|---|---|
+| `--md-role-template TEXT` | `-rtpl`, `-tpl` | Path to a custom role Markdown template |
+| `--md-collection-template TEXT` | `-ctpl` | Path to a custom collection Markdown template |
+| `--hybrid` | — | Use hybrid template (manual + auto-generated sections) |
+
+### Repository Flags
+
+| Flag | Short | Default | Description |
+|---|---|---|---|
+| `--repository-url TEXT` | `-ru` | `detect` | Repository base URL for standalone roles |
+| `--repo-type TEXT` | `-rt` | — | Repository type: `github`, `gitlab`, `gitea`, etc. |
+| `--repo-branch TEXT` | `-rb` | — | Repository branch name (e.g., `main`) |
+
+### Framing Flags
+
+| Flag | Default | Description |
+|---|---|---|
+| `--positive / --neutral` | positive | Use positive/actionable output framing |
+| `--help-full` | — | Show all available options and advanced settings |
+| `--preset [personal\|team\|enterprise\|consultant]` | — | Apply a built-in preset |
+
+---
+
+## CI/CD Integration
+
+### Quick Start
+
+```bash
+# Fail the pipeline if CRITICAL findings exist
+docsible validate role --role . --fail-on critical
+
+# Fail the pipeline if WARNING or CRITICAL findings exist
+docsible validate role --role . --fail-on warning
+
+# Generate machine-readable output for downstream processing
+docsible analyze role --role . --output-format json
+```
+
+### GitHub Actions
+
+```yaml
+- name: Validate role documentation
+  run: docsible validate role --role . --fail-on critical
+
+- name: Generate documentation
+  run: docsible document role --role . --no-backup
+  if: github.ref == 'refs/heads/main'
+```
+
+See `examples/ci_pipeline/github-actions.yml` for a complete workflow.
+
+### GitLab CI
+
+```yaml
+docsible:check:
+  stage: test
+  image: python:3.12
+  script:
+    - pip install docsible
+    - docsible validate role --role . --fail-on warning
+```
+
+See `examples/ci_pipeline/gitlab-ci.yml` for a complete pipeline.
+
+### Pre-commit Hook
+
+```yaml
+- id: docsible-validate
+  name: Validate Ansible role documentation
+  language: system
+  entry: docsible validate role --role . --fail-on critical
+  pass_filenames: false
+  types: [yaml]
+```
+
+See `examples/ci_pipeline/pre-commit-config.yaml` for the full hook configuration.
+
+### Choosing a `--fail-on` Level
+
+| Scenario | Recommended level |
+|---|---|
+| Catch only blocking errors | `critical` |
+| Enforce team quality standards | `warning` |
+| Enforce all recommendations | `info` |
+| Documentation-only (never fail) | `none` |
+
+---
+
+## Suppression Rules
+
+Suppression rules let you silence specific recommendations that are known false positives or deliberately accepted for your project. Rules are stored in `.docsible/suppress.yml` inside the `.docsible` directory alongside `config.yml`.
+
+### File location and format
+
+```yaml
+# .docsible/suppress.yml
+rules:
+  - id: ab12cd34
+    pattern: "no example playbook"
+    reason: "Examples live in a separate repository"
+    file_pattern: null        # optional: scope to a glob (e.g. "roles/webserver")
+    use_regex: false          # true = treat pattern as a regular expression
+    expires_at: "2026-06-01T00:00:00+00:00"  # optional: auto-expires on this date
+    approved_by: "alice"      # optional: audit trail
+    match_count: 3
+    last_matched: "2026-03-01T10:00:00+00:00"
+    created_at: "2026-01-15T09:00:00+00:00"
+```
+
+The file is managed by the `docsible suppress` command group — you do not need to edit it by hand.
+
+### CLI commands
+
+| Command | Description |
+|---|---|
+| `docsible suppress add <pattern> --reason <text>` | Add a new suppression rule |
+| `docsible suppress list` | List all active (non-expired) rules |
+| `docsible suppress remove <id>` | Remove a rule by its ID |
+| `docsible suppress clean` | Delete all expired rules |
+
+#### `suppress add` options
+
+| Option | Short | Description |
+|---|---|---|
+| `--reason TEXT` | `-r` | **Required.** Justification for suppressing this recommendation |
+| `--file TEXT` | `-f` | Scope rule to files matching a glob pattern (e.g., `roles/webserver`) |
+| `--expires N` | `-e` | Auto-expire the rule after N days |
+| `--approved-by TEXT` | — | Record an approver name for audit purposes |
+| `--regex` | — | Treat the pattern as a regular expression instead of a substring |
+| `--path TEXT` | `-p` | Base path for locating `.docsible/suppress.yml` (default: current directory) |
+
+Pattern matching is case-insensitive substring by default. Pass `--regex` to use a full regular expression.
+
+```bash
+# Suppress a specific finding indefinitely
+docsible suppress add "no example playbook" --reason "Examples in separate repo"
+
+# Suppress with an expiry date (good for temporary waivers)
+docsible suppress add "no example playbook" --reason "Legacy role" --expires 90
+
+# Suppress scoped to a specific role directory
+docsible suppress add "no example playbook" --reason "Legacy" --file "roles/webserver"
+
+# Use a regex pattern
+docsible suppress add "task\s+name.*missing" --reason "Naming enforced in pre-commit" --regex
+```
+
+#### `suppress list` options
+
+| Option | Description |
+|---|---|
+| `--show-expired` | Include expired rules in the listing (hidden by default) |
+| `--path TEXT` | Base path for locating `.docsible/suppress.yml` |
+
+#### `suppress clean` options
+
+| Option | Description |
+|---|---|
+| `--dry-run` | Show what would be removed without making changes |
+| `--path TEXT` | Base path for locating `.docsible/suppress.yml` |
+
+Only rules with a past `expires_at` date are removed. Rules with no expiry are never touched by `clean`.
+
+### Bypassing suppression
+
+Pass `--no-suppress` to `docsible document role` or `docsible analyze role` to see all recommendations regardless of any rules in `suppress.yml`. This is useful for auditing or reviewing whether existing rules are still needed.
+
+```bash
+docsible document role --role . --no-suppress
+docsible analyze role --role . --no-suppress
+```
+
+### Committing suppress.yml
+
+Commit `.docsible/suppress.yml` to version control alongside `config.yml` so that all team members and CI runners apply the same suppressions automatically.
+
+```bash
+git add .docsible/suppress.yml
+git commit -m "chore: suppress known false-positive in legacy webserver role"
 ```
 
 ---
 
-## Interactive Wizard (docsible init)
+## Team Workflow
 
-`docsible init` runs a 3-step wizard to configure your project and optionally set up CI/CD.
+### 1. Initialize the project
 
 ```bash
-docsible init                    # Interactive wizard
-docsible init --preset=team      # Skip wizard, use preset directly
-docsible init --force            # Overwrite existing config
+# Interactive wizard — picks a preset, optionally generates CI/CD config
+docsible init
+
+# Non-interactive — apply a preset directly
+docsible init --preset=team
 ```
 
-### Wizard Steps
+This creates `.docsible/config.yml` in the current directory.
 
-**Step 1: Use case**
-```
-Step 1/3: What is your use case?
-  1. Personal projects  (quick docs, minimal output)
-  2. Team collaboration (comprehensive docs, smart graphs)
-  3. Enterprise/prod    (validation, compliance, all reports)
-  4. Consulting         (maximum detail, all diagrams)
-Choice [2]:
-```
+### 2. Edit the config for your team
 
-**Step 2: Smart defaults**
-```
-Step 2/3: Documentation detail level
-  Enable smart defaults? [Y/n]:
-```
-
-**Step 3: CI/CD Integration**
-```
-Step 3/3: CI/CD Integration
-  Set up CI/CD integration? [y/N]:
-  Select platform:
-    1. GitHub Actions   → .github/workflows/docsible.yml
-    2. GitLab CI        → .gitlab-ci.yml
-    3. Azure DevOps     → azure-pipelines.yml
+```yaml
+# .docsible/config.yml
+preset: team
+fail_on: warning
+essential_only: false
+max_recommendations: 10
+overrides:
+  graph: true
+  hybrid: true
+ci_cd:
+  strict_validation: true
 ```
 
-Writes `.docsible/config.yml` with the chosen settings.
+### 3. Commit the config to the repository
+
+```bash
+git add .docsible/config.yml
+git commit -m "chore: add docsible team configuration"
+```
+
+All team members and CI runners will now use the same preset and analysis thresholds automatically, without having to pass flags on every invocation.
+
+### 4. Override per-run as needed
+
+CLI flags always take precedence over the config file:
+
+```bash
+# Temporarily use enterprise strictness on this run
+docsible document role --role . --preset=enterprise
+
+# Check without failing (ignore fail_on from config)
+docsible validate role --role . --fail-on none
+```
+
+See `examples/team-config/` for a ready-to-use team configuration example.
 
 ---
 
-## Migration Guide
+## Adding a New `scan` Subcommand
 
-### Migrating from Pre-0.8.0 Versions
+The `scan` command group lives in `docsible/commands/scan/` and follows the same pattern used by `analyze` and `document`.
 
-**Good News**: No migration needed! Your existing projects will work exactly as before.
+### Module structure
 
-### Optional: Add Configuration for Custom Structures
-
-If you want to document projects with non-standard structures:
-
-1. **Generate config template**:
-   ```bash
-   cd /path/to/your/project
-   docsible init
-   ```
-
-2. **Customize** `.docsible.yml` to match your structure
-
-3. **Test** the configuration:
-   ```bash
-   docsible role --role .
-   ```
-
-4. **Commit** `.docsible.yml` to your repository
-
-## Troubleshooting
-
-### Configuration Not Loading
-
-**Problem**: Changes in `.docsible.yml` are not being applied
-
-**Solutions**:
-- Ensure `.docsible.yml` is in the project root (where you run docsible)
-- Check YAML syntax: run `yamllint .docsible.yml`
-- Verify indentation (use spaces, not tabs)
-- Check the console output for `[INFO] Loaded configuration from ...`
-
-### Roles Not Found
-
-**Problem**: Docsible can't find roles in your monorepo
-
-**Solution**:
-Add `roles_dir` to `.docsible.yml`:
-```yaml
-structure:
-  roles_dir: 'path/to/roles'
+```
+docsible/commands/scan/
+├── __init__.py            # scan_group (Click group), imports and attaches subcommands
+├── collection.py          # `scan collection` subcommand implementation
+├── models/
+│   └── scan_result.py     # RoleResult, ScanCollectionResult dataclasses
+└── formatters/
+    ├── text.py            # Human-readable table output
+    └── json.py            # Machine-readable JSON output
 ```
 
-### Custom Directory Not Detected
+### Steps to add a new subcommand (e.g. `scan role`)
 
-**Problem**: Docsible can't find your custom `defaults/` directory
+1. **Create the subcommand file** — add `docsible/commands/scan/role.py` with a Click command decorated with `@scan_group.command()`.
+2. **Extend the models** if the new subcommand returns a different result shape — add or extend dataclasses in `models/scan_result.py`.
+3. **Add formatters** — add `text` and `json` formatter functions in the `formatters/` directory, or extend the existing ones.
+4. **Register the subcommand** — import the new command in `docsible/commands/scan/__init__.py` so Click picks it up when `scan_group` is loaded.
+5. **Register `scan_group` in the CLI** — `docsible/cli.py` already attaches `scan_group` to the root CLI; no changes needed there for new subcommands.
 
-**Solution**:
-Specify the custom directory name:
-```yaml
-structure:
-  defaults_dir: 'your_custom_name'
-```
-
-## Advanced Usage
-
-### Debugging Configuration
-
-To see what configuration Docsible is using, the ProjectStructure class provides a `to_dict()` method for debugging (developers can access this programmatically).
-
-### Extending for New Project Types
-
-The `ProjectStructure` class in `docsible/utils/project_structure.py` can be extended to support additional project patterns. See the source code for implementation details.
-
-## Support
-
-- **GitHub Issues**: https://github.com/docsible/docsible/issues
-- **Documentation**: https://github.com/docsible/docsible
-- **Examples**: See the `examples/` directory (if available)
-
-## See Also
-
-- [README.md](README.md) - Main documentation
-- [CHANGELOG.md](CHANGELOG.md) - Version history
-- [Contributing Guide](CONTRIBUTING.md) - How to contribute
+Follow the same `--fail-on` / `--output-format` / `--preset` / `--dry-run` conventions used by `scan collection` to keep the interface consistent across the command group.

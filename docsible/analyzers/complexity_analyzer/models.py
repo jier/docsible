@@ -36,9 +36,7 @@ class IntegrationPoint(BaseModel):
     task_count: int
     uses_credentials: bool = False
     # Type-specific details
-    endpoints: list[str] = Field(
-        default_factory=list, description="API endpoints or URLs"
-    )
+    endpoints: list[str] = Field(default_factory=list, description="API endpoints or URLs")
     ports: list[int] = Field(default_factory=list, description="Network ports used")
     services: list[str] = Field(
         default_factory=list, description="Cloud services or container images"
@@ -61,13 +59,9 @@ class ComplexityMetrics(BaseModel):
     )
 
     # Internal composition (role orchestration)
-    role_dependencies: int = Field(
-        default=0, description="Role dependencies from meta/main.yml"
-    )
+    role_dependencies: int = Field(default=0, description="Role dependencies from meta/main.yml")
     role_includes: int = Field(default=0, description="include_role/import_role count")
-    task_includes: int = Field(
-        default=0, description="include_tasks/import_tasks count"
-    )
+    task_includes: int = Field(default=0, description="include_tasks/import_tasks count")
 
     # External integrations
     external_integrations: int = Field(
@@ -105,22 +99,16 @@ class FileComplexityDetail(BaseModel):
     task_count: int = Field(description="Number of tasks in this file")
     conditional_count: int = Field(description="Number of conditional tasks")
     conditional_percentage: float = Field(description="Percentage of conditional tasks")
-    has_integrations: bool = Field(
-        default=False, description="File uses external integrations"
-    )
+    has_integrations: bool = Field(default=False, description="File uses external integrations")
     integration_types: list[str] = Field(
         default_factory=list, description="Types of integrations used"
     )
     module_diversity: int = Field(description="Number of unique modules used")
-    primary_concern: str | None = Field(
-        default=None, description="Detected primary concern"
-    )
+    primary_concern: str | None = Field(default=None, description="Detected primary concern")
     phase_detection: dict[str, Any] | None = Field(
         default=None, description="Phase detection results"
     )
-    line_ranges: list[tuple] | None = Field(
-        default=None, description="Line ranges for each task"
-    )
+    line_ranges: list[tuple] | None = Field(default=None, description="Line ranges for each task")
 
     @property
     def is_god_file(self) -> bool:
@@ -154,9 +142,7 @@ class ConditionalHotspot(BaseModel):
 
     file_path: str
     conditional_variable: str = Field(description="Main variable driving conditionals")
-    usage_count: int = Field(
-        description="How many times this variable appears in conditions"
-    )
+    usage_count: int = Field(description="How many times this variable appears in conditions")
     affected_tasks: int = Field(description="Number of tasks using this condition")
     suggestion: str = Field(description="Recommended action")
 

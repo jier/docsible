@@ -191,9 +191,7 @@ def process_special_task_keys(
     tasks.append(
         {
             "name": escape_pipes(task_name),
-            "module": task_module
-            if task_module != "unknown"
-            else "",  # Blank if unknown
+            "module": task_module if task_module != "unknown" else "",  # Blank if unknown
             "type": task_type,
             "when": task_when,
         }

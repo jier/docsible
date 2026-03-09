@@ -143,9 +143,7 @@ class PatternAnalyzer:
         report = self.analyze(role_info)
         return [s for s in report.suggestions if s.severity == severity]
 
-    def analyze_critical_only(
-        self, role_info: dict[str, Any]
-    ) -> list[SimplificationSuggestion]:
+    def analyze_critical_only(self, role_info: dict[str, Any]) -> list[SimplificationSuggestion]:
         """Analyze role and return only critical issues.
 
         Convenience method for getting high-priority items.

@@ -1,0 +1,5 @@
+---
+- name: Install cache server
+  package:
+    name: redis
+    state: present

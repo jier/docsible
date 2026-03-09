@@ -42,9 +42,7 @@ class TemplateConfig(BaseModel):
 
     hybrid: bool = Field(False, description="Use hybrid template")
     md_role_template: Path | None = Field(None, description="Custom role template")
-    md_collection_template: Path | None = Field(
-        None, description="Custom collection template"
-    )
+    md_collection_template: Path | None = Field(None, description="Custom collection template")
 
     class ConfigDict:
         """Pydantic configuration."""
@@ -121,8 +119,22 @@ class AnalysisConfig(BaseModel):
     simplification_report: bool = Field(False, description="Show simplification suggestions")
     analyze_only: bool = Field(False, description="Analyze without generating docs")
     show_info: bool = Field(False, description="Show INFO-level recommendations")
-    recommendations_only: bool = Field(False, description="Show only recommendations without generating docs")
+    recommendations_only: bool = Field(
+        False, description="Show only recommendations without generating docs"
+    )
     positive_framing: bool = Field(True, description="Use positive output framing")
+    fail_on: str = Field(
+        "none",
+        description="Exit 1 if findings at this severity or above (none/info/warning/critical)",
+    )
+    essential_only: bool = Field(
+        True, description="Show only WARNING/CRITICAL findings by default (hide INFO)"
+    )
+    max_recommendations: int | None = Field(
+        5, description="Cap recommendations shown in default mode (None=unlimited)"
+    )
+    advanced_patterns: bool = Field(False, description="Show all findings including INFO, no cap")
+    output_format: str = Field("text", description="Output format: text or json")
     apply_suppressions: bool = Field(
         default=True,
         description="Apply .docsible/suppress.yml rules before displaying recommendations",

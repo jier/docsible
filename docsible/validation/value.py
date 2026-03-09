@@ -8,7 +8,9 @@ from .models import ValidationIssue, ValidationSeverity, ValidationType
 class ValueValidator(BaseValidator):
     type = ValidationType.VALUE
 
-    def validate(self, documentation: str, role_info: dict[str, Any] | None, complexity_report: Any | None) -> tuple[list[ValidationIssue], dict[str, Any]]:
+    def validate(
+        self, documentation: str, role_info: dict[str, Any] | None, complexity_report: Any | None
+    ) -> tuple[list[ValidationIssue], dict[str, Any]]:
         """
         Validate documentation usefulness and actionable content.
 
@@ -42,9 +44,7 @@ class ValueValidator(BaseValidator):
 
         # Check for security considerations (especially with integrations)
         has_security = bool(
-            re.search(
-                r"security|credentials?|authentication", documentation, re.IGNORECASE
-            )
+            re.search(r"security|credentials?|authentication", documentation, re.IGNORECASE)
         )
         metrics["has_security_guidance"] = has_security
 

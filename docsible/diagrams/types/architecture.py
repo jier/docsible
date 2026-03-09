@@ -51,9 +51,7 @@ def generate_component_architecture(
     lines = ["graph TB"]
 
     # Component counters
-    defaults_count = sum(
-        len(df.get("data", {})) for df in role_info.get("defaults", [])
-    )
+    defaults_count = sum(len(df.get("data", {})) for df in role_info.get("defaults", []))
     vars_count = sum(len(vf.get("data", {})) for vf in role_info.get("vars", []))
     handlers_count = len(role_info.get("handlers", []))
 
@@ -96,9 +94,7 @@ def generate_component_architecture(
     # External integrations node
     if complexity_report and complexity_report.integration_points:
         integration_count = len(complexity_report.integration_points)
-        integration_names = [
-            ip.system_name for ip in complexity_report.integration_points[:2]
-        ]
+        integration_names = [ip.system_name for ip in complexity_report.integration_points[:2]]
         if integration_count > 2:
             integration_names.append("...")
         integration_label = "<br/>".join(integration_names)
@@ -110,7 +106,9 @@ def generate_component_architecture(
 
     # Variables flow to tasks
     if has_variables and task_files:
-        first_task_id = f"tasks_{task_files[0].get('file', 'file0').replace('.', '_').replace('/', '_')}"
+        first_task_id = (
+            f"tasks_{task_files[0].get('file', 'file0').replace('.', '_').replace('/', '_')}"
+        )
         if defaults_count > 0:
             lines.append(f"    defaults --> {first_task_id}")
         if vars_count > 0:
@@ -124,7 +122,9 @@ def generate_component_architecture(
 
     # Tasks to handlers (notification)
     if task_files and handlers_count > 0:
-        last_task_id = f"tasks_{task_files[-1].get('file', 'fileN').replace('.', '_').replace('/', '_')}"
+        last_task_id = (
+            f"tasks_{task_files[-1].get('file', 'fileN').replace('.', '_').replace('/', '_')}"
+        )
         lines.append(f'    {last_task_id} -."notify".-> handlers')
 
     # Tasks to external systems
@@ -148,12 +148,8 @@ def generate_component_architecture(
     lines.append("    %% Styling")
     lines.append("    classDef varStyle fill:#e3f2fd,stroke:#1976d2,stroke-width:2px")
     lines.append("    classDef taskStyle fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px")
-    lines.append(
-        "    classDef handlerStyle fill:#fff3e0,stroke:#f57c00,stroke-width:2px"
-    )
-    lines.append(
-        "    classDef externalStyle fill:#ffebee,stroke:#c62828,stroke-width:2px"
-    )
+    lines.append("    classDef handlerStyle fill:#fff3e0,stroke:#f57c00,stroke-width:2px")
+    lines.append("    classDef externalStyle fill:#ffebee,stroke:#c62828,stroke-width:2px")
     lines.append("")
 
     if defaults_count > 0:
@@ -167,9 +163,7 @@ def generate_component_architecture(
 
     # Apply task styling to all task nodes
     for task_file in task_files:
-        safe_id = (
-            f"tasks_{task_file.get('file', 'file').replace('.', '_').replace('/', '_')}"
-        )
+        safe_id = f"tasks_{task_file.get('file', 'file').replace('.', '_').replace('/', '_')}"
         lines.append(f"    class {safe_id} taskStyle")
 
     return "\n".join(lines)

@@ -13,5 +13,4 @@ class BaseValidator(ABC):
         documentation: str,
         role_info: dict[str, Any] | None,
         complexity_report: Any | None,
-    ) -> tuple[list[ValidationIssue], dict[str, Any]]:
-        ...
+    ) -> tuple[list[ValidationIssue], dict[str, Any]]: ...

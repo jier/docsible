@@ -145,17 +145,11 @@ def handle_analyze_only_mode(role_info: dict[str, Any], role_name: str) -> None:
             click.echo(
                 f"   - Tasks with variable dependencies: {summary['tasks_with_requirements']}/{summary['total_tasks']}"
             )
-            click.echo(
-                f"   - Tasks triggering handlers: {summary['tasks_with_triggers']}"
-            )
-            click.echo(
-                f"   - Tasks with error handling: {summary['error_handling_count']}"
-            )
+            click.echo(f"   - Tasks triggering handlers: {summary['tasks_with_triggers']}")
+            click.echo(f"   - Tasks with error handling: {summary['error_handling_count']}")
             click.echo(f"   - Tasks setting facts: {summary['tasks_setting_facts']}")
 
-    click.echo(
-        "\n✓ Analysis complete. Use without --analyze-only to generate documentation.\n"
-    )
+    click.echo("\n✓ Analysis complete. Use without --analyze-only to generate documentation.\n")
 
 
 def generate_mermaid_diagrams(
@@ -179,7 +173,7 @@ def generate_mermaid_diagrams(
     Returns:
         Dictionary containing all generated diagrams
     """
-    result: dict[str, str | dict[Any, Any] | None ] = {
+    result: dict[str, str | dict[Any, Any] | None] = {
         "mermaid_code_per_file": {},
         "sequence_diagram_high_level": None,
         "sequence_diagram_detailed": None,
@@ -220,10 +214,8 @@ def generate_mermaid_diagrams(
     if playbook_content:
         try:
             playbook_parsed = yaml.safe_load(playbook_content)
-            result["sequence_diagram_high_level"] = (
-                generate_mermaid_sequence_playbook_high_level(
-                    playbook_parsed, role_meta=role_info.get("meta")
-                )
+            result["sequence_diagram_high_level"] = generate_mermaid_sequence_playbook_high_level(
+                playbook_parsed, role_meta=role_info.get("meta")
             )
         except Exception as e:
             logger.warning(f"Could not generate high-level sequence diagram: {e}")
@@ -300,6 +292,7 @@ def generate_integration_and_architecture_diagrams(
             generate_component_architecture,
             should_generate_architecture_diagram,
         )
+
         if should_generate_architecture_diagram(analysis_report):
             architecture_diagram = generate_component_architecture(
                 role_info=role_info,
@@ -340,9 +333,7 @@ def generate_dependency_matrix(
         )
 
         # Force show dependencies if user requested it, otherwise use heuristic
-        if show_dependencies or should_generate_dependency_matrix(
-            role_info, analysis_report
-        ):
+        if show_dependencies or should_generate_dependency_matrix(role_info, analysis_report):
             dependency_matrix = generate_dependency_matrix_markdown(role_info)
             if dependency_matrix:
                 show_dependency_matrix = True

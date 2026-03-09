@@ -9,11 +9,16 @@ from docsible.suppression.store import load_store, resolve_suppress_path
 
 @click.command(name="list")
 @click.option(
-    "--path", "-p", "base_path", default=None,
+    "--path",
+    "-p",
+    "base_path",
+    default=None,
     help="Base path for locating .docsible/suppress.yml",
 )
 @click.option(
-    "--show-expired", is_flag=True, default=False,
+    "--show-expired",
+    is_flag=True,
+    default=False,
     help="Include expired rules in the listing",
 )
 def suppress_list(base_path: str | None, show_expired: bool) -> None:

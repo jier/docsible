@@ -42,13 +42,11 @@ class SmartDefaultsEngine:
                 DependenciesDecisionRule(),
             ],
             key=lambda r: r.priority,
-            reverse=True  # Highest priority first
+            reverse=True,  # Highest priority first
         )
 
     def generate_config(
-        self,
-        role_path: Path,
-        user_overrides: dict[str, Any] | None = None
+        self, role_path: Path, user_overrides: dict[str, Any] | None = None
     ) -> tuple[DocumentationConfig, Any | None]:
         """Generate smart configuration for role.
 
@@ -76,11 +74,7 @@ class SmartDefaultsEngine:
         decisions = self._make_decisions(context)
 
         # Phase 4: Build configuration
-        config = (
-            ConfigurationBuilder()
-            .add_decisions(decisions)
-            .build()
-        )
+        config = ConfigurationBuilder().add_decisions(decisions).build()
 
         logger.info(
             f"Generated config with {len(config.decisions)} decisions "
@@ -107,22 +101,15 @@ class SmartDefaultsEngine:
             try:
                 result = detector.detect(role_path)
                 results.append(result)
-                logger.debug(
-                    f"{detector.__class__.__name__}: "
-                    f"{result.confidence:.0%} confidence"
-                )
+                logger.debug(f"{detector.__class__.__name__}: {result.confidence:.0%} confidence")
             except Exception as e:
-                logger.error(
-                    f"Detector {detector.__class__.__name__} failed: {e}"
-                )
+                logger.error(f"Detector {detector.__class__.__name__} failed: {e}")
                 # Continue with other detectors
 
         return results
 
     def _build_context(
-        self,
-        detection_results: list[Any],
-        user_overrides: dict[str, Any]
+        self, detection_results: list[Any], user_overrides: dict[str, Any]
     ) -> DecisionContext:
         """Build decision context from detection results.
 
@@ -171,18 +158,16 @@ class SmartDefaultsEngine:
             total_tasks=complexity_findings.get("total_tasks", 0),
             complexity_score=complexity_findings.get("complexity_score", 0.5),
             has_dependencies=complexity_findings.get("has_dependencies", False),
-
             # Structure
             has_handlers=structure_findings.get("has_handlers", False),
             uses_advanced_features=(
-                structure_findings.get("uses_includes", False) or
-                structure_findings.get("uses_imports", False) or
-                structure_findings.get("uses_roles", False)
+                structure_findings.get("uses_includes", False)
+                or structure_findings.get("uses_imports", False)
+                or structure_findings.get("uses_roles", False)
             ),
             task_file_count=structure_findings.get("task_file_count", 0),
-
             # User overrides
-            user_overrides=user_overrides
+            user_overrides=user_overrides,
         )
 
         return context
@@ -204,8 +189,7 @@ class SmartDefaultsEngine:
                 if decision is not None:
                     decisions.append(decision)
                     logger.debug(
-                        f"{rule.__class__.__name__}: "
-                        f"{decision.option_name} = {decision.value}"
+                        f"{rule.__class__.__name__}: {decision.option_name} = {decision.value}"
                     )
             except Exception as e:
                 logger.error(f"Rule {rule.__class__.__name__} failed: {e}")

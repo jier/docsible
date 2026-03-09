@@ -1,0 +1,5 @@
+namespace: test_ns
+name: multi_role_collection
+version: 1.0.0
+description: Multi-role collection fixture for top-n tests
+license: MIT
