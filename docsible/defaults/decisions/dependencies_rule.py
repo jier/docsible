@@ -44,7 +44,7 @@ class DependenciesDecisionRule(DecisionRule):
                     "to help users understand installation requirements"
                 ),
                 confidence=0.9,
-                rule_name="DependenciesDecisionRule"
+                rule_name="DependenciesDecisionRule",
             )
 
         # 3. Complex role → likely to have dependencies worth checking
@@ -57,7 +57,7 @@ class DependenciesDecisionRule(DecisionRule):
                     "dependencies worth documenting"
                 ),
                 confidence=0.5,  # Lower confidence - we're guessing
-                rule_name="DependenciesDecisionRule"
+                rule_name="DependenciesDecisionRule",
             )
 
         # 4. Default: no dependencies, don't show
@@ -66,7 +66,7 @@ class DependenciesDecisionRule(DecisionRule):
             value=False,
             rationale="Role has no dependencies to document",
             confidence=0.8,
-            rule_name="DependenciesDecisionRule"
+            rule_name="DependenciesDecisionRule",
         )
 
     def _has_dependencies(self, context: DecisionContext) -> bool:

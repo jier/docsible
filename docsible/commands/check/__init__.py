@@ -67,9 +67,7 @@ def check(role_path: str, readme: str, quiet: bool) -> None:
             if details.get("reason"):
                 click.echo(f"   Reason: {details['reason']}", err=True)
             if details.get("changed_files"):
-                click.echo(
-                    f"   Changed files: {len(details['changed_files'])}", err=True
-                )
+                click.echo(f"   Changed files: {len(details['changed_files'])}", err=True)
                 for file in details["changed_files"][:5]:
                     click.echo(f"     - {file}", err=True)
             if details.get("recommendation"):

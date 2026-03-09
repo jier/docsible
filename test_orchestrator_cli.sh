@@ -1,6 +1,7 @@
 #!/bin/bash
 # Test script for the intent-based CLI commands
-# Usage: ./test_orchestrator_cli.sh
+# Usage: ./test_orchestrator_cli.sh [-v|--verbose]
+#   -v, --verbose   Show full command output (default: suppressed, tail shown on failure)
 
 # Colors for output
 GREEN='\033[0;32m'
@@ -13,28 +14,56 @@ echo -e "${BLUE}========================================${NC}"
 echo -e "${BLUE}Testing Docsible Intent-Based CLI${NC}"
 echo -e "${BLUE}========================================${NC}\n"
 
+# Parse flags
+VERBOSE=0
+for arg in "$@"; do
+    case "$arg" in
+        -v|--verbose) VERBOSE=1 ;;
+    esac
+done
+
+if [ "$VERBOSE" -eq 1 ]; then
+    echo -e "${BLUE}Mode: verbose (full command output shown)${NC}\n"
+fi
+
 # Counter for tests
 TESTS_RUN=0
 TESTS_PASSED=0
 TESTS_FAILED=0
 
+# Array to record failed tests: "NUM|NAME|COMMAND"
+FAILED_TESTS=()
+
 # Function to run a test
 run_test() {
     local test_name="$1"
     shift
-    local cmd="$@"
+    local cmd="$*"
 
     TESTS_RUN=$((TESTS_RUN + 1))
-    echo -e "\n${YELLOW}Test $TESTS_RUN: $test_name${NC}"
+    local test_num=$TESTS_RUN
+    echo -e "\n${YELLOW}Test $test_num: $test_name${NC}"
     echo -e "${BLUE}Command: $cmd${NC}"
 
-    if eval "$cmd"; then
+    if [ "$VERBOSE" -eq 1 ]; then
+        eval "$cmd"
+        local exit_code=$?
+    else
+        eval "$cmd" > /tmp/docsible_test_out.txt 2>&1
+        local exit_code=$?
+    fi
+
+    if [ $exit_code -eq 0 ]; then
         echo -e "${GREEN}✓ PASSED${NC}"
         TESTS_PASSED=$((TESTS_PASSED + 1))
         return 0
     else
-        echo -e "${RED}✗ FAILED${NC}"
+        echo -e "${RED}✗ FAILED (exit $exit_code)${NC}"
+        if [ "$VERBOSE" -eq 0 ]; then
+            tail -5 /tmp/docsible_test_out.txt | sed "s/^/  /"
+        fi
         TESTS_FAILED=$((TESTS_FAILED + 1))
+        FAILED_TESTS+=("$test_num|$test_name|$cmd")
         return 1
     fi
 }
@@ -130,15 +159,63 @@ run_test "edge_case_role with --no-vars" \
 
 # --- docsible analyze role ---
 
-# Test 17: Analyze role (no docs written; complexity_report forced on)
+# Test 21: Analyze role (no docs written; complexity_report forced on)
 run_test "Analyze role" \
     "docsible analyze role --role tests/fixtures/complex_role"
 
 # --- docsible validate role ---
 
-# Test 18: Validate role (dry_run enforced internally)
+# Test 22: Validate role (dry_run enforced internally)
 run_test "Validate role" \
     "docsible validate role --role tests/fixtures/simple_role"
+
+# --- New feature tests: --fail-on ---
+
+run_test "--fail-on none exits 0 even with findings" \
+    "docsible document role --role tests/fixtures/complex_role --fail-on none --dry-run"
+
+run_test "--fail-on critical exits 0 on clean role" \
+    "docsible document role --role tests/fixtures/clean_role --fail-on critical --dry-run"
+
+# We test the flag exists and is accepted, but don't assert on exit code in the script
+run_test "--fail-on flag accepted by CLI" \
+    "docsible document role --role tests/fixtures/simple_role --fail-on none --dry-run"
+
+# --- New feature tests: --advanced-patterns ---
+
+run_test "--advanced-patterns flag accepted" \
+    "docsible document role --role tests/fixtures/simple_role --advanced-patterns --dry-run"
+
+run_test "--advanced-patterns with complex role" \
+    "docsible document role --role tests/fixtures/complex_role --advanced-patterns --dry-run"
+
+# --- New feature tests: --output-format json ---
+
+run_test "--output-format text (default)" \
+    "docsible document role --role tests/fixtures/simple_role --output-format text --dry-run"
+
+run_test "--output-format json with analyze" \
+    "docsible analyze role --role tests/fixtures/complex_role --output-format json"
+
+# --- New feature tests: validate with --strict / --no-strict ---
+# Use clean_role (no findings) so --strict exits 0 — verifies strict mode works on a passing role
+
+run_test "validate --strict exits 0 on clean role" \
+    "docsible validate role --role tests/fixtures/clean_role --strict"
+
+run_test "validate --no-strict exits 0 with findings" \
+    "docsible validate role --role tests/fixtures/simple_role --no-strict"
+
+# --- New feature tests: preset analysis settings ---
+
+run_test "document role with personal preset" \
+    "docsible document role --role tests/fixtures/simple_role --preset personal --dry-run"
+
+run_test "document role with team preset" \
+    "docsible document role --role tests/fixtures/simple_role --preset team --dry-run"
+
+run_test "analyze role with team preset and fail-on" \
+    "docsible analyze role --role tests/fixtures/simple_role --preset team --fail-on none"
 
 # --- Actual file generation ---
 
@@ -156,11 +233,17 @@ echo -e "\n${BLUE}========================================${NC}"
 echo -e "${BLUE}Test Summary${NC}"
 echo -e "${BLUE}========================================${NC}"
 echo -e "Total tests run: ${TESTS_RUN}"
-echo -e "${GREEN}Tests passed: ${TESTS_PASSED}${NC}"
+echo -e "${GREEN}Tests passed:  ${TESTS_PASSED}${NC}"
 if [ $TESTS_FAILED -gt 0 ]; then
-    echo -e "${RED}Tests failed: ${TESTS_FAILED}${NC}"
+    echo -e "${RED}Tests failed:  ${TESTS_FAILED}${NC}"
+    echo -e "\n${RED}Failed tests:${NC}"
+    for entry in "${FAILED_TESTS[@]}"; do
+        IFS='|' read -r num name cmd <<< "$entry"
+        echo -e "  ${RED}✗ Test $num: $name${NC}"
+        echo -e "    ${BLUE}Command: $cmd${NC}"
+    done
 else
-    echo -e "${GREEN}Tests failed: ${TESTS_FAILED}${NC}"
+    echo -e "${GREEN}Tests failed:  ${TESTS_FAILED}${NC}"
 fi
 echo -e "${BLUE}========================================${NC}"
 

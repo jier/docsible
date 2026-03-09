@@ -194,9 +194,7 @@ def build_role_info(
             repository_url = None
 
     # Extract playbook role dependencies
-    playbook_dependencies = extract_playbook_role_dependencies(
-        playbook_content, role_name
-    )
+    playbook_dependencies = extract_playbook_role_dependencies(playbook_content, role_name)
 
     # Build base role info
     role_info = {
@@ -237,6 +235,7 @@ def build_role_info(
                     if tasks_data:
                         relative_path = file_path.relative_to(tasks_dir)
                         from typing import Any
+
                         task_info: dict[str, Any] = {
                             "file": str(relative_path),
                             "tasks": [],
@@ -253,13 +252,9 @@ def build_role_info(
 
                         # Always extract line ranges for phase detection (lightweight operation)
                         try:
-                            task_info["line_ranges"] = get_task_line_ranges(
-                                str(file_path)
-                            )
+                            task_info["line_ranges"] = get_task_line_ranges(str(file_path))
                         except Exception as e:
-                            logger.debug(
-                                f"Could not extract line ranges for {file_path}: {e}"
-                            )
+                            logger.debug(f"Could not extract line ranges for {file_path}: {e}")
 
                         if isinstance(tasks_data, list):
                             for task in tasks_data:
@@ -302,9 +297,7 @@ def build_role_info(
                                         "unknown",
                                     ),
                                     "listen": handler.get("listen", []),
-                                    "file": str(
-                                        Path(file_path).relative_to(handlers_dir)
-                                    ),
+                                    "file": str(Path(file_path).relative_to(handlers_dir)),
                                 }
                                 role_info["handlers"].append(handler_info)
 
@@ -390,9 +383,7 @@ def _display_dry_run_summary(
             click.echo("   ✓ State transition diagram")
         if integration_boundary_diagram:
             integration_count = len(analysis_report.integration_points)
-            click.echo(
-                f"   ✓ Integration boundary diagram ({integration_count} external systems)"
-            )
+            click.echo(f"   ✓ Integration boundary diagram ({integration_count} external systems)")
         if architecture_diagram:
             click.echo("   ✓ Component architecture diagram")
 
@@ -411,6 +402,7 @@ def _display_dry_run_summary(
         click.echo(f"   → {output} (existing file would be updated)")
         if not no_backup:
             from datetime import datetime
+
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             backup_name = f"{output.rsplit('.', 1)[0]}_backup_{timestamp}.{output.rsplit('.', 1)[1] if '.' in output else 'md'}"
             click.echo(f"   → {backup_name} (backup of existing)")
@@ -438,6 +430,7 @@ def _display_dry_run_summary(
 def _optional_path(value: str | None) -> Path | None:
     return Path(value) if value else None
 
+
 def _ensure_str(value: Path | str | None, default: str = "") -> str:
     """Convert Path | str | None to str, with default for None.
 
@@ -451,6 +444,7 @@ def _ensure_str(value: Path | str | None, default: str = "") -> str:
     if value is None:
         return default
     return str(value)
+
 
 def doc_the_role(**kwargs: Any) -> None:
     """Generate documentation for an Ansible role using orchestrator pattern.
@@ -499,9 +493,7 @@ def doc_the_role(**kwargs: Any) -> None:
 
     # SMART DEFAULTS INTEGRATION
     # Apply smart defaults based on role complexity (if enabled)
-    enable_smart_defaults = (
-        os.getenv("DOCSIBLE_ENABLE_SMART_DEFAULTS", "true").lower() == "true"
-    )
+    enable_smart_defaults = os.getenv("DOCSIBLE_ENABLE_SMART_DEFAULTS", "true").lower() == "true"
 
     role_path = kwargs.get("role_path")
     collection_path = kwargs.get("collection_path")
@@ -542,9 +534,7 @@ def doc_the_role(**kwargs: Any) -> None:
             if "generate_graph" not in user_overrides:
                 kwargs["generate_graph"] = smart_graph
                 if smart_graph:
-                    logger.info(
-                        "Smart default: Enabling graph generation for this role"
-                    )
+                    logger.info("Smart default: Enabling graph generation for this role")
 
             if "minimal" not in user_overrides:
                 kwargs["minimal"] = smart_minimal
@@ -596,6 +586,11 @@ def doc_the_role(**kwargs: Any) -> None:
             show_info=kwargs.get("show_info", False),
             recommendations_only=kwargs.get("recommendations_only", False),
             positive_framing=kwargs.get("positive_framing", True),
+            fail_on=kwargs.get("fail_on", "none"),
+            essential_only=kwargs.get("essential_only", True),
+            max_recommendations=kwargs.get("max_recommendations", 5),
+            advanced_patterns=kwargs.get("advanced_patterns", False),
+            output_format=kwargs.get("output_format", "text"),
             cached_complexity_report=kwargs.get("_complexity_report"),  # From smart defaults
         ),
         processing=ProcessingConfig(
@@ -660,7 +655,7 @@ def doc_the_role(**kwargs: Any) -> None:
         raise click.ClickException(str(e)) from e
     except Exception as e:
         from docsible.formatters.help.contextual import ContextualHelpProvider
+
         help_msg = ContextualHelpProvider.format_error_with_help(e)
         logger.error(help_msg)
         raise
-

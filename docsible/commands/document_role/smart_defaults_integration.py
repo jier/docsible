@@ -37,9 +37,7 @@ def apply_smart_defaults(
 
         # Run smart defaults engine
         engine = SmartDefaultsEngine()
-        config, complexity_report = engine.generate_config(
-            role_path, user_overrides=user_overrides
-        )
+        config, complexity_report = engine.generate_config(role_path, user_overrides=user_overrides)
 
         # Log decisions made
         logger.info(f"Smart defaults applied (confidence: {config.confidence:.0%})")

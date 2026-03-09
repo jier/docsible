@@ -15,8 +15,12 @@ class DetectionResult(BaseModel):
 
     detector_name: str = Field(description="Name of the detector that produced this result")
     findings: dict[str, Any] = Field(description="Dictionary of findings from detection")
-    confidence: float = Field(ge=0.0, le=1.0, description="Confidence level (0.0 - 1.0) in the findings")
-    metadata: dict[str, Any] | None = Field(default=None, description="Optional metadata about the detection process")
+    confidence: float = Field(
+        ge=0.0, le=1.0, description="Confidence level (0.0 - 1.0) in the findings"
+    )
+    metadata: dict[str, Any] | None = Field(
+        default=None, description="Optional metadata about the detection process"
+    )
 
 
 class Detector(ABC):

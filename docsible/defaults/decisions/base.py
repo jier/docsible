@@ -16,10 +16,14 @@ class DecisionContext(BaseModel):
     """
 
     # From ComplexityDetector
-    complexity_category: Category = Field(description="Which complexity category do we base our decision on")
+    complexity_category: Category = Field(
+        description="Which complexity category do we base our decision on"
+    )
     total_tasks: int = Field(ge=0, description="Amount of total tasks")
     complexity_score: float = Field(ge=0.0, description="Score on complexity calculation")
-    has_dependencies: bool = Field(default=False, description="Does Role have dependencies in meta/main.yml")
+    has_dependencies: bool = Field(
+        default=False, description="Does Role have dependencies in meta/main.yml"
+    )
 
     # From StructureDetector
     has_handlers: bool = Field(description="Does Role has handlers check")
@@ -44,7 +48,6 @@ class DecisionContext(BaseModel):
         return option in self.user_overrides
 
 
-
 class Decision(BaseModel):
     """A single configuration decision.
 
@@ -52,7 +55,9 @@ class Decision(BaseModel):
     """
 
     option_name: str = Field(description="CLI option being decided (e.g., 'generate_graph'")
-    value: Any = Field(default=list[bool | str],description="Decided value (e.g., True, False, 'auto')")
+    value: Any = Field(
+        default=list[bool | str], description="Decided value (e.g., True, False, 'auto')"
+    )
     rationale: str = Field(description="Why this decision was made (for debugging/logging)")
     confidence: float = Field(ge=0.0, le=1.0, description="How confident we are (0.0 - 1.0)")
     rule_name: str = Field(description="Which rule made this decision")

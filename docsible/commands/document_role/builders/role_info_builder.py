@@ -375,9 +375,7 @@ class RoleInfoBuilder:
             return str(role_spec.get("role") or role_spec.get("name") or "")
         return None
 
-    def _build_repository_info(
-        self, role_path: Path, repository: RepositoryConfig
-    ) -> dict:
+    def _build_repository_info(self, role_path: Path, repository: RepositoryConfig) -> dict:
         """Build repository information.
 
         Args:

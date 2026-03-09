@@ -75,4 +75,12 @@ def add_output_options(f: F) -> F:
     f = click.option(
         "--output", "-o", "output", default="README.md", help="Output readme file name."
     )(f)
+    f = click.option(
+        "--output-format",
+        "output_format",
+        type=click.Choice(["text", "json"]),
+        default="text",
+        show_default=True,
+        help="Output format for findings (text or json). Use 'json' for CI tool integration.",
+    )(f)
     return f

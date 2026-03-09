@@ -77,6 +77,9 @@ def doc_the_role(
     show_info: bool,
     recommendations_only: bool,
     positive_framing: bool,
+    fail_on: str,
+    advanced_patterns: bool,
+    output_format: str,
 ) -> None:
     """Generate documentation for an Ansible role.
 
@@ -135,8 +138,7 @@ def doc_the_role(
         docsible role --collection /path/to/collection
     """
     click.echo(
-        "DeprecationWarning: 'docsible role' is deprecated. "
-        "Use 'docsible document role' instead.",
+        "DeprecationWarning: 'docsible role' is deprecated. Use 'docsible document role' instead.",
         file=sys.stderr,
     )
 
@@ -178,6 +180,9 @@ def doc_the_role(
         "show_info": show_info,
         "recommendations_only": recommendations_only,
         "positive_framing": positive_framing,
+        "fail_on": fail_on,
+        "advanced_patterns": advanced_patterns,
+        "output_format": output_format,
     }
     resolved = resolve_settings(preset_name=preset, cli_overrides=cli_kwargs)
     cli_kwargs.update(resolved)

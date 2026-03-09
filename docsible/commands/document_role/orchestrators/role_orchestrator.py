@@ -74,6 +74,7 @@ class RoleOrchestrator:
 
         if self.context.analysis.apply_suppressions:
             from docsible.suppression.engine import apply_suppressions
+
             recommendations, suppressed = apply_suppressions(
                 recommendations,
                 base_path=role_path,
@@ -89,6 +90,37 @@ class RoleOrchestrator:
         if recommendations:
             self._display_recommendations(recommendations)
 
+        # strict_validation: exit 1 if any WARNING/CRITICAL findings (used by 'validate role')
+        if self.context.validation.strict_validation and recommendations:
+            from docsible.models.severity import Severity
+
+            blocking = [
+                r for r in recommendations if r.severity in (Severity.WARNING, Severity.CRITICAL)
+            ]
+            if blocking:
+                click.echo(
+                    f"\n✗ Strict validation failed: {len(blocking)} WARNING/CRITICAL finding(s) found.",
+                    err=True,
+                )
+                raise SystemExit(1)
+
+        # CI exit code gate — checked against full list (before display cap)
+        fail_on = self.context.analysis.fail_on
+        if fail_on != "none" and recommendations:
+            _severity_rank = {"none": 0, "info": 1, "warning": 2, "critical": 3}
+            threshold = _severity_rank[fail_on]
+            failing = [
+                r
+                for r in recommendations
+                if _severity_rank.get(r.severity.value.lower(), 0) >= threshold
+            ]
+            if failing:
+                click.echo(
+                    f"\n✗ Exiting with code 1: {len(failing)} finding(s) at '{fail_on}' level or above.",
+                    err=True,
+                )
+                raise SystemExit(1)
+
         # Step 7.6: Handle recommendations-only mode
         if self.context.analysis.recommendations_only:
             # Only show recommendations, don't generate documentation
@@ -96,15 +128,11 @@ class RoleOrchestrator:
 
         # Step 8: Handle dry-run mode
         if self.context.processing.dry_run:
-            self._display_dry_run(
-                role_info, role_path, analysis_report, diagrams, dependency_data
-            )
+            self._display_dry_run(role_info, role_path, analysis_report, diagrams, dependency_data)
             return
 
         # Step 9: Render documentation
-        self._render_documentation(
-            role_info, role_path, analysis_report, diagrams, dependency_data
-        )
+        self._render_documentation(role_info, role_path, analysis_report, diagrams, dependency_data)
 
     def _validate_paths(self) -> Path:
         """Validate and return role path.
@@ -252,12 +280,10 @@ class RoleOrchestrator:
         """
         from docsible.commands.document_role.helpers import generate_dependency_matrix
 
-        dependency_matrix, dependency_summary, show_dependency_matrix = (
-            generate_dependency_matrix(
-                show_dependencies=self.context.diagrams.show_dependencies,
-                role_info=role_info,
-                analysis_report=analysis_report,
-            )
+        dependency_matrix, dependency_summary, show_dependency_matrix = generate_dependency_matrix(
+            show_dependencies=self.context.diagrams.show_dependencies,
+            role_info=role_info,
+            analysis_report=analysis_report,
         )
 
         return {
@@ -267,7 +293,12 @@ class RoleOrchestrator:
         }
 
     def _display_dry_run(
-        self, role_info: dict, role_path: Path, analysis_report, diagrams: dict, dependency_data: dict
+        self,
+        role_info: dict,
+        role_path: Path,
+        analysis_report,
+        diagrams: dict,
+        dependency_data: dict,
     ) -> None:
         """Display dry-run summary.
 
@@ -300,18 +331,63 @@ class RoleOrchestrator:
 
     def _display_recommendations(self, recommendations: list[Recommendation]) -> None:
         """Display recommendations to user"""
+        all_recs = recommendations
+
+        # JSON format: always show full list, no cap
+        if self.context.analysis.output_format == "json":
+            from docsible.formatters.text.json_formatter import JsonRecommendationFormatter
+
+            role_name = ""
+            if self.context.paths.role_path is not None:
+                role_name = self.context.paths.role_path.name
+
+            json_output = JsonRecommendationFormatter().format(
+                all_recs,
+                role_name=role_name,
+                truncated=False,
+                total_count=len(all_recs),
+            )
+            click.echo(json_output)
+            return
+
+        # Text format: apply filtering and capping unless --advanced-patterns
         from docsible.formatters.text.recommendation import RecommendationFormatter
+        from docsible.models.severity import Severity
+
+        if not self.context.analysis.advanced_patterns:
+            # Filter out INFO unless show_info is explicitly set
+            if not self.context.analysis.show_info:
+                display_recs = [r for r in all_recs if r.severity != Severity.INFO]
+            else:
+                display_recs = list(all_recs)
+
+            # Cap to max_recommendations
+            max_recs = self.context.analysis.max_recommendations
+            if max_recs is not None and len(display_recs) > max_recs:
+                display_recs = display_recs[:max_recs]
+                hidden_count = len(all_recs) - len(display_recs)
+                click.echo(
+                    f"  ({hidden_count} more findings hidden"
+                    " — run with --advanced-patterns to see all)"
+                )
+        else:
+            display_recs = list(all_recs)
 
         formatter = RecommendationFormatter()
         output = formatter.format_recommendations(
-            recommendations=recommendations,
-            show_info=self.context.analysis.show_info
+            recommendations=display_recs,
+            show_info=self.context.analysis.show_info,
         )
 
         click.echo(output)
 
     def _render_documentation(
-        self, role_info: dict, role_path: Path, analysis_report, diagrams: dict, dependency_data: dict
+        self,
+        role_info: dict,
+        role_path: Path,
+        analysis_report,
+        diagrams: dict,
+        dependency_data: dict,
     ) -> None:
         """Render final documentation.
 
@@ -376,6 +452,7 @@ class RoleOrchestrator:
         # Display positive or neutral success message
         if self.context.analysis.positive_framing:
             from docsible.formatters.text.positive import PositiveFormatter
+
             formatter = PositiveFormatter()
             success_msg = formatter.format_success(
                 output_file=readme_path,

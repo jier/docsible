@@ -59,9 +59,7 @@ def get_version() -> str:
 
 
 @click.group()
-@click.option(
-    "--verbose", "-v", is_flag=True, help="Enable verbose logging (DEBUG level)"
-)
+@click.option("--verbose", "-v", is_flag=True, help="Enable verbose logging (DEBUG level)")
 @click.version_option(
     version=get_version(),
     help=f"Show the module version. Current version: {get_version()}",

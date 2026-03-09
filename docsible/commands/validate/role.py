@@ -1,4 +1,5 @@
 """docsible validate role — validate without writing files."""
+
 import click
 
 from docsible.commands.document_role.core_orchestrated import doc_the_role as core_doc_the_role
@@ -32,7 +33,9 @@ from docsible.presets.resolver import resolve_settings
     help="Apply a built-in preset.",
 )
 @click.option(
-    "--strict/--no-strict", "strict_validation", default=True,
+    "--strict/--no-strict",
+    "strict_validation",
+    default=True,
     help="Fail on validation warnings (default: on for validate intent).",
 )
 def validate_role_cmd(preset, strict_validation, **kwargs) -> None:

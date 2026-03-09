@@ -9,11 +9,16 @@ from docsible.suppression.store import load_store, resolve_suppress_path, save_s
 
 @click.command(name="clean")
 @click.option(
-    "--path", "-p", "base_path", default=None,
+    "--path",
+    "-p",
+    "base_path",
+    default=None,
     help="Base path for locating .docsible/suppress.yml",
 )
 @click.option(
-    "--dry-run", is_flag=True, default=False,
+    "--dry-run",
+    is_flag=True,
+    default=False,
     help="Show what would be removed without making changes",
 )
 def suppress_clean(base_path: str | None, dry_run: bool) -> None:

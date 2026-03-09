@@ -79,9 +79,7 @@ class ConfigurationBuilder:
 
         # Build config with decisions
         config = DocumentationConfig(
-            **self._config_values,
-            decisions=self._decisions,
-            confidence=confidence
+            **self._config_values, decisions=self._decisions, confidence=confidence
         )
 
         # Validate
