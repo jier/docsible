@@ -127,7 +127,7 @@ class SecurityDetector(BasePatternDetector):
         risky_tasks = []
 
         for task in self._flatten_tasks(role_info):
-            task_name = task.get("name", "").lower()
+            task_name = (task.get("name") or task.get("module", "")).lower()
             module = task.get("module", "")
             has_no_log = task.get("no_log", False)
 
@@ -186,7 +186,7 @@ class SecurityDetector(BasePatternDetector):
             is_world_writable = mode_str in ["0777", "777", "0666", "666"]
 
             # Check if task involves sensitive files
-            task_name = task.get("name", "").lower()
+            task_name = (task.get("name") or task.get("module", "")).lower()
             path = task.get("path", task.get("dest", "")).lower()
 
             is_sensitive = any(

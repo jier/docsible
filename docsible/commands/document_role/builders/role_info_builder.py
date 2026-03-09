@@ -243,6 +243,7 @@ class RoleInfoBuilder:
 
                 for handler in handlers_data:
                     if not (isinstance(handler, dict) and "name" in handler):
+                        logger.warning("Skipping handler without 'name:' field: %r", handler)
                         continue
 
                     # Find the module (first key that's not a standard ansible key)

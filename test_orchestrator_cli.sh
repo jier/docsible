@@ -94,6 +94,10 @@ run_test "Complex role with --complexity-report" \
 run_test "Role with --simplification-report" \
     "docsible document role --role tests/fixtures/complex_role --simplification-report --dry-run"
 
+# Test 6b: unnamed task detection runs without crash
+run_test "unnamed task detection runs without crash" \
+    "docsible document role --role tests/fixtures/clean_role --simplification-report --dry-run"
+
 # Test 7: Role with --show-dependencies
 run_test "Role with --show-dependencies" \
     "docsible document role --role tests/fixtures/complex_role --show-dependencies --dry-run"

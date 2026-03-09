@@ -40,6 +40,7 @@ class MaintainabilityDetector(BasePatternDetector):
         suggestions.extend(self._detect_missing_check_mode(role_info))
         suggestions.extend(self._detect_missing_failed_when(role_info))
         suggestions.extend(self._detect_variable_shadowing(role_info))
+        suggestions.extend(self._detect_unnamed_tasks(role_info))
 
         return suggestions
 
@@ -319,6 +320,55 @@ class MaintainabilityDetector(BasePatternDetector):
                     affected_files=["defaults/main.yml", "vars/main.yml"],
                     impact="Eliminates confusion about which value will be used",
                     confidence=0.95,
+                )
+            )
+
+        return suggestions
+
+    def _detect_unnamed_tasks(self, role_info: dict[str, Any]) -> list[SimplificationSuggestion]:
+        """Detect tasks that are missing a 'name:' field.
+
+        Tasks without names produce unhelpful output in Ansible runs and
+        are harder to debug.
+        """
+        suggestions: list[SimplificationSuggestion] = []
+
+        # Modules that legitimately have no name
+        nameless_ok_modules = {
+            "meta",
+            "block",
+            "rescue",
+            "always",
+            "include_tasks",
+            "import_tasks",
+            "include_role",
+            "import_role",
+            "ansible.builtin.include_tasks",
+            "ansible.builtin.import_tasks",
+            "ansible.builtin.include_role",
+            "ansible.builtin.import_role",
+        }
+
+        unnamed_tasks = []
+
+        for task in self._flatten_tasks(role_info):
+            if not task.get("name"):
+                module = task.get("module", "")
+                if module not in nameless_ok_modules:
+                    unnamed_tasks.append(task)
+
+        if len(unnamed_tasks) >= 3:
+            suggestions.append(
+                SimplificationSuggestion(
+                    pattern="unnamed_tasks",
+                    category=self.pattern_category,
+                    severity=SeverityLevel.INFO,
+                    description=f"Found {len(unnamed_tasks)} tasks without a 'name:' field",
+                    example=self._show_task_snippet(unnamed_tasks[:3]),
+                    suggestion=Suggestion.unnamed_tasks(),
+                    affected_files=self._get_unique_files(unnamed_tasks),
+                    impact="Improves role readability and makes Ansible output easier to follow",
+                    confidence=1.0,
                 )
             )
 

@@ -232,7 +232,7 @@ class DuplicationDetector(BasePatternDetector):
         # Group tasks by common name prefixes
         prefix_groups = defaultdict(list)
         for task in tasks:
-            name = task.get("name", "")
+            name = task.get("name") or task.get("module", "unnamed")
             # Extract first two words as prefix
             words = name.split()
             if len(words) >= 2:
