@@ -132,6 +132,18 @@ The `docsible --version` command reads the version dynamically from git tags at 
 
 > The old `scripts/change_version.py` script has been removed. Use the process above instead.
 
+## Testing
+
+### Shell Integration Tests
+
+The shell integration tests cover end-to-end CLI behaviour across all major commands:
+
+```bash
+bash tests/integration/test_orchestrator_cli.sh
+```
+
+These 40 tests exercise `docsible document role`, `analyze role`, `validate role`, and `scan collection` with the full range of feature flags.
+
 ## Best Practices
 
 - Keep your commits clean and concise.
