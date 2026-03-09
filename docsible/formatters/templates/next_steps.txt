@@ -3,4 +3,4 @@
    2. {step_2}
    3. {step_3}
 
-📚 Learn more: https://docs.docsible.com/getting-started
+

@@ -126,7 +126,7 @@ class PositiveFormatter:
             lines.append("   3. Test with: ansible-playbook --check playbook.yml")
             lines.append("   4. Generate graph with: docsible role --role . --graph")
         lines.append("")
-        lines.append("📚 Learn more: https://docs.docsible.com/getting-started")
+        # TODO: add documentation URL when published
         return lines
 
     def _format_file_size(self, file_path: Path) -> str:

@@ -8,6 +8,7 @@ This directory contains ready-to-use CI/CD configuration files for integrating D
 |---|---|---|
 | `github-actions.yml` | GitHub Actions | Validate on every PR; generate docs on main |
 | `gitlab-ci.yml` | GitLab CI | Two-stage pipeline: test and deploy |
+| `azure-devops-pipeline.yml` | Azure DevOps | Two-stage pipeline: validate then generate |
 | `pre-commit-config.yaml` | pre-commit | Local hook that runs before every commit |
 
 ---
@@ -41,6 +42,23 @@ cp examples/ci_pipeline/gitlab-ci.yml .gitlab-ci.yml
 ```
 
 If you already have a `.gitlab-ci.yml`, merge the two job blocks into your existing file.
+
+---
+
+## Azure DevOps (`azure-devops-pipeline.yml`)
+
+The pipeline has two stages:
+
+- **Validate** — runs `docsible validate role --role . --fail-on critical` on all branches and pull requests. The stage fails only on CRITICAL findings.
+- **Document** — runs `docsible document role --role . --no-backup` on `main` after validation passes and publishes `README.md` as a pipeline artifact.
+
+**Usage:** copy to `azure-pipelines.yml` at your repository root:
+
+```bash
+cp examples/ci_pipeline/azure-devops-pipeline.yml azure-pipelines.yml
+```
+
+If you already have an `azure-pipelines.yml`, add the two stages (or their jobs) to your existing pipeline. The `dependsOn: Validate` + `condition` guard on the Document stage ensure documentation is only regenerated when the quality gate passes.
 
 ---
 
