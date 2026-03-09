@@ -217,6 +217,23 @@ run_test "document role with team preset" \
 run_test "analyze role with team preset and fail-on" \
     "docsible analyze role --role tests/fixtures/simple_role --preset team --fail-on none"
 
+# --- docsible scan collection ---
+
+run_test "scan collection --dry-run" \
+    "docsible scan collection tests/fixtures/minimal_collection --dry-run"
+
+run_test "scan collection --output-format json" \
+    "docsible scan collection tests/fixtures/minimal_collection --output-format json"
+
+run_test "scan collection --fail-on none" \
+    "docsible scan collection tests/fixtures/minimal_collection --fail-on none"
+
+run_test "scan collection multi-role --top-n 2" \
+    "docsible scan collection tests/fixtures/multi_role_collection --top-n 2"
+
+run_test "scan collection --output-format json --fail-on none" \
+    "docsible scan collection tests/fixtures/minimal_collection --output-format json --fail-on none"
+
 # --- Actual file generation ---
 
 run_test "Generate actual documentation" \

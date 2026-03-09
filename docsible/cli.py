@@ -14,6 +14,7 @@ from docsible.commands.check import check
 from docsible.commands.document import document_group
 from docsible.commands.guide import guide_command
 from docsible.commands.legacy.role import doc_the_role
+from docsible.commands.scan import scan_group
 from docsible.commands.suppress import suppress_group
 from docsible.commands.validate import validate_group
 from docsible.commands.wizard import wizard_init
@@ -96,6 +97,7 @@ cli.add_command(suppress_group, name="suppress")
 cli.add_command(document_group, name="document")
 cli.add_command(analyze_group, name="analyze")
 cli.add_command(validate_group, name="validate")
+cli.add_command(scan_group, name="scan")
 
 
 def main() -> None:

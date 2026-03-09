@@ -16,6 +16,7 @@ Project home: https://github.com/docsible/docsible
   - [docsible init](#docsible-init)
   - [docsible document role](#docsible-document-role)
   - [docsible analyze role](#docsible-analyze-role)
+  - [docsible scan collection](#docsible-scan-collection)
   - [docsible validate role](#docsible-validate-role)
   - [docsible suppress](#docsible-suppress)
   - [docsible guide](#docsible-guide)
@@ -101,6 +102,9 @@ docsible validate role --role . --fail-on warning
 
 # Machine-readable output for downstream tools
 docsible analyze role --role . --output-format json
+
+# Gate an entire collection — exit 1 if any role has WARNING or CRITICAL findings
+docsible scan collection . --fail-on warning --output-format json
 ```
 
 ### `--fail-on` levels
@@ -277,6 +281,34 @@ docsible analyze role --role /path/to/role --advanced-patterns
 
 # Machine-readable JSON output for CI tool integration
 docsible analyze role --role /path/to/role --output-format json
+```
+
+### docsible scan collection
+
+Scan all roles in a collection directory, run analysis on each, and output a summary table sorted by severity. No files are written — analysis only.
+
+```bash
+# Scan all roles in the current collection
+docsible scan collection ./my_collection
+
+# CI/CD gating — exit 1 if any role has WARNING or CRITICAL findings
+docsible scan collection . --fail-on warning --output-format json
+
+# Show only the 5 worst roles
+docsible scan collection ./my_collection --top-n 5
+
+# Preview what would be scanned without running analysis
+docsible scan collection ./my_collection --dry-run
+```
+
+```
+  PATH                        Path to the collection directory
+  --output-format [text|json] Output format for findings (default: text)
+  --fail-on [none|info|warning|critical]
+                              Exit with code 1 if any role has findings at or above this severity (default: none)
+  --top-n N                   Show only the N worst roles in the summary
+  --preset PRESET             Apply a built-in preset (personal/team/enterprise/consultant)
+  --dry-run                   Preview roles that would be scanned without running analysis
 ```
 
 ### docsible validate role

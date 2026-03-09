@@ -379,3 +379,32 @@ docsible validate role --role . --fail-on none
 ```
 
 See `examples/team-config/` for a ready-to-use team configuration example.
+
+---
+
+## Adding a New `scan` Subcommand
+
+The `scan` command group lives in `docsible/commands/scan/` and follows the same pattern used by `analyze` and `document`.
+
+### Module structure
+
+```
+docsible/commands/scan/
+├── __init__.py            # scan_group (Click group), imports and attaches subcommands
+├── collection.py          # `scan collection` subcommand implementation
+├── models/
+│   └── scan_result.py     # RoleResult, ScanCollectionResult dataclasses
+└── formatters/
+    ├── text.py            # Human-readable table output
+    └── json.py            # Machine-readable JSON output
+```
+
+### Steps to add a new subcommand (e.g. `scan role`)
+
+1. **Create the subcommand file** — add `docsible/commands/scan/role.py` with a Click command decorated with `@scan_group.command()`.
+2. **Extend the models** if the new subcommand returns a different result shape — add or extend dataclasses in `models/scan_result.py`.
+3. **Add formatters** — add `text` and `json` formatter functions in the `formatters/` directory, or extend the existing ones.
+4. **Register the subcommand** — import the new command in `docsible/commands/scan/__init__.py` so Click picks it up when `scan_group` is loaded.
+5. **Register `scan_group` in the CLI** — `docsible/cli.py` already attaches `scan_group` to the root CLI; no changes needed there for new subcommands.
+
+Follow the same `--fail-on` / `--output-format` / `--preset` / `--dry-run` conventions used by `scan collection` to keep the interface consistent across the command group.

@@ -1,0 +1,5 @@
+namespace: test_ns
+name: minimal_collection
+version: 1.0.0
+description: Minimal collection fixture for tests
+license: MIT
