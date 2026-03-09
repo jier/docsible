@@ -42,7 +42,7 @@ poetry run docsible --help
 ### Setup pyenv
 
 ```bash
-# Install Python 3.11 (or any version >=3.7)
+# Install Python 3.11 (or any version >=3.10)
 pyenv install 3.11.0
 
 # Set local Python version
@@ -98,7 +98,7 @@ uv pip install -e .
 python -m pytest tests/
 
 # Run docsible
-docsible --role ./example-role --graph
+docsible document role --role tests/fixtures/simple_role --graph
 ```
 
 ### Using Poetry
@@ -115,7 +115,7 @@ poetry install
 poetry run pytest tests/
 
 # Run docsible
-poetry run docsible --role ./example-role --graph
+poetry run docsible document role --role tests/fixtures/simple_role --graph
 ```
 
 ### Using pip (Traditional)
@@ -136,25 +136,17 @@ pip install -e .
 pytest tests/
 
 # Run docsible
-docsible --role ./example-role --graph
+docsible document role --role tests/fixtures/simple_role --graph
 ```
 
 ## Requirements
 
-- **Python**: 3.7 or higher
+- **Python**: 3.10 or higher
 - **Dependencies**:
   - click >= 8.1.7
   - PyYAML >= 6.0.1
   - Jinja2 >= 3.1.2
   - pydantic >= 2.0.0
-
-### Optional Dependencies
-
-- **Redis** (optional): For distributed caching in multi-user environments
-  ```bash
-  # Install Redis support
-  pip install redis
-  ```
 
 ## Tool Comparison
 
@@ -179,9 +171,24 @@ docsible --version
 # Test with help
 docsible --help
 
-# Generate example config
-docsible-init-config --path .
+# Run interactive setup wizard
+docsible init
 ```
+
+## Available Commands
+
+The following commands are available in this release:
+
+| Command | Description |
+|---------|-------------|
+| `docsible document role` | Generate documentation for an Ansible role |
+| `docsible analyze role` | Analyze a role without writing any files |
+| `docsible validate role` | Validate a role with exit codes suitable for CI |
+| `docsible scan collection` | Scan and document all roles in a collection |
+| `docsible suppress` | Manage suppression rules (silence specific warnings) |
+| `docsible init` | Interactive setup wizard for configuration |
+
+**Presets:** Use `--preset personal|team|enterprise|consulting` to apply a predefined configuration profile to any command.
 
 ## Troubleshooting
 
@@ -268,7 +275,7 @@ pip install build
 python -m build
 
 # Install built wheel
-pip install dist/docsible-0.8.0-py3-none-any.whl
+pip install dist/docsible-0.9.0-py3-none-any.whl
 ```
 
 ### Using Poetry
@@ -278,7 +285,7 @@ pip install dist/docsible-0.8.0-py3-none-any.whl
 poetry build
 
 # Install built wheel
-pip install dist/docsible-0.8.0-py3-none-any.whl
+pip install dist/docsible-0.9.0-py3-none-any.whl
 ```
 
 ## Performance Optimization

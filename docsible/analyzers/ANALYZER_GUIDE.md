@@ -21,6 +21,13 @@ to display or use for file naming suggestions.
 ...finding anti-patterns in a full role to report as recommendations with severity,
 impact, and suggested fixes.
 
+The `patterns/detectors/maintainability.py` detector currently implements the following checks:
+`missing_idempotency`, `monolithic_main_file`, `magic_values`, `missing_check_mode`,
+`missing_failed_when`, `variable_shadowing`, and `unnamed_tasks`.
+`unnamed_tasks` flags tasks with no `name:` field (INFO, fires when 3+ unnamed tasks are found);
+it skips structural tasks (`include_tasks`, `import_tasks`, `include_role`, `import_role`,
+`meta`, `block`/`rescue`/`always`).
+
 ### Use `complexity_analyzer/phase.py` when you need pipeline awareness
 ...detecting whether a task file forms a coherent lifecycle pipeline
 (SETUP → INSTALL → CONFIGURE → DEPLOY → VERIFY) to avoid incorrectly flagging it

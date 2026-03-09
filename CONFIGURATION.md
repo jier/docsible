@@ -178,6 +178,20 @@ docsible document role --role .
 docsible document role --role . --advanced-patterns
 ```
 
+#### Pattern analysis checks
+
+The table below lists the checks run by the pattern analysis subsystem (enabled by `--simplification-report` or `--advanced-patterns`).
+
+| Pattern id | Category | Severity | What it detects | Notes |
+|---|---|---|---|---|
+| `missing_idempotency` | Maintainability | WARNING | `shell`/`command`/`raw` tasks without `creates`, `removes`, or `changed_when` | — |
+| `monolithic_main_file` | Maintainability | WARNING | `main.yml` files containing more than 30 tasks | — |
+| `magic_values` | Maintainability | INFO | Repeated literal strings (10+ chars, no Jinja2) used in 3 or more tasks | — |
+| `missing_check_mode` | Maintainability | INFO | Tasks that register variables but may fail under `--check` mode | — |
+| `missing_failed_when` | Maintainability | INFO | `shell`/`command` tasks with pipes but no `failed_when` | — |
+| `variable_shadowing` | Maintainability | WARNING | Variables defined in both `defaults/` and `vars/` | — |
+| `unnamed_tasks` | Maintainability | INFO | Tasks missing a `name:` field (threshold: 3+ unnamed tasks) | Skips structural tasks: `include_tasks`, `import_tasks`, `include_role`, `import_role`, `meta`, `block`/`rescue`/`always` |
+
 #### `--output-format json` schema
 
 ```json

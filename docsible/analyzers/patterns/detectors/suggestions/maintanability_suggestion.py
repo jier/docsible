@@ -185,6 +185,16 @@ class Suggestion:
         )
 
     @staticmethod
+    def unnamed_tasks() -> str:
+        return (
+            "Add a descriptive 'name:' field to each task. Names improve readability, appear in Ansible output, and make debugging easier. Example:\n"
+            "- name: Install nginx\n"
+            "  apt:\n"
+            "    name: nginx\n"
+            "    state: present"
+        )
+
+    @staticmethod
     def variable_shadowing() -> str:
         return (
             "Avoid variable shadowing:\n\n"

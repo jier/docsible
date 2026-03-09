@@ -143,6 +143,7 @@ See [`examples/ci_pipeline/`](examples/ci_pipeline/) for complete, ready-to-use 
 
 - **GitHub Actions** — validate on PRs, generate docs on main
 - **GitLab CI** — two-stage test/deploy pipeline
+- **Azure DevOps** — two-stage pipeline: validate then generate
 - **pre-commit** — local hook before every commit
 
 Commit `.docsible/config.yml` to your repository so all team members and CI runners share the same preset and `fail_on` threshold without passing flags every time. See [`examples/team-config/`](examples/team-config/) for a sample team config.
