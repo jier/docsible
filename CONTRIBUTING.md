@@ -110,6 +110,28 @@ Both templates respect the same flags for consistent behavior.
 
 6. **Review and Merge**: After a review, your changes may be merged into the original repository.
 
+## Release Process
+
+Versions are managed via git tags. To cut a new release:
+
+1. Update the version in two places:
+   - `pyproject.toml` — `version = "X.Y.Z"` (both the `[project]` and `[tool.poetry]` sections)
+   - `docsible/constants.py` — `VERSION = "X.Y.Z"` (used as fallback when not in a git repo)
+
+2. Create an annotated git tag:
+   ```bash
+   git tag -a vX.Y.Z -m "Release X.Y.Z: <brief description>"
+   ```
+
+3. Push the tag to trigger any release workflows:
+   ```bash
+   git push origin vX.Y.Z
+   ```
+
+The `docsible --version` command reads the version dynamically from git tags at runtime (via `docsible/utils/version.py`). Between releases it shows a dev version like `0.9.0.dev3+gabc1234`.
+
+> The old `scripts/change_version.py` script has been removed. Use the process above instead.
+
 ## Best Practices
 
 - Keep your commits clean and concise.

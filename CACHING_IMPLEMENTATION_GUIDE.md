@@ -206,6 +206,38 @@ cache_key = (str(path), path.stat().st_mtime)
 - ✅ No manual cache invalidation needed
 - ✅ Old entries cleaned up automatically
 
+### `@cache_by_content_hash`
+
+Caches results by an MD5 hash of the input string content rather than a file path. Useful for functions that parse in-memory YAML or template strings where there is no backing file to stat. The cache key is the full content hash, so two calls with identical content always share a cache entry regardless of origin.
+
+```python
+def cache_by_content_hash(func: Callable[[str], T]) -> Callable[[str], T]:
+    ...
+
+# Usage:
+@cache_by_content_hash
+def parse_yaml_string(content: str) -> dict:
+    return yaml.safe_load(content)
+```
+
+Does **not** participate in the global `DOCSIBLE_DISABLE_CACHE` flag — it is a lightweight decorator without size limits, suitable for small, stable payloads.
+
+### `cached_resolve_path`
+
+A thin `@lru_cache(maxsize=128)` wrapper around `Path(path_str).resolve()`. Avoids repeated filesystem calls when the same relative or symbolic path string is resolved many times during a scan. Takes a plain string (not a `Path`) so it is hashable by `lru_cache`.
+
+```python
+def cached_resolve_path(path_str: str) -> Path:
+    ...
+
+# Usage:
+from docsible.utils.cache import cached_resolve_path
+
+absolute = cached_resolve_path("./roles/webserver")
+```
+
+Its cache is cleared by `clear_all_caches()` and its hit/miss counters are included in the `path_cache` section of `get_cache_stats()`.
+
 ### Example: Loading a Role Twice
 
 **Without Caching (Before):**
@@ -567,20 +599,43 @@ print(f"Caching enabled: {stats['caching_enabled']}")
 
 Based on CACHING_ANALYSIS.md recommendations:
 
-### Phase 2: Complexity Analysis Caching (Not Yet Implemented)
+### Phase 2: Complexity Analysis Caching
 
-Would cache entire complexity analysis results:
+Caches entire complexity analysis results at the role directory level. Implemented in `docsible/analyzers/complexity_analyzer/analyzers/role_analyzer.py`:
 
 ```python
-from docsible.utils.cache import cache_by_file_mtime
+from docsible.utils.cache import cache_by_dir_mtime
 
-@cache_by_file_mtime
-def analyze_role_complexity_cached(role_path: Path) -> ComplexityReport:
-    """Cache complexity analysis results."""
+@cache_by_dir_mtime
+def analyze_role_complexity_cached(role_path: Path, ...) -> ComplexityReport:
+    """Cached wrapper for role complexity analysis.
+
+    Caches complexity analysis results by role directory path and all file modification times.
+    Automatically invalidates cache when any file in the role changes.
+    """
     # ... analysis logic
 ```
 
-**Expected Improvement:** Additional 30-40% faster for roles with complex analysis.
+**Improvement:** 13-15x faster (92-93% improvement) on cache hit; 100-1000x faster for pattern analysis.
+
+### Collection-Level Git Info Caching
+
+When scanning a collection (`docsible scan collection`), git repository information is fetched once for the entire collection and passed into each per-role analysis call, rather than spawning a subprocess for every role.
+
+Implemented in `docsible/commands/scan/collection.py`:
+
+```python
+from docsible.utils.git import get_repo_info
+
+# Called once before iterating over roles
+git_info: dict = get_repo_info(str(collection_path)) or {}
+
+# Each role receives the pre-fetched dict — no subprocess per role
+for role_path in sorted(role_paths):
+    result = _analyse_role(role_path, git_info)
+```
+
+`_analyse_role()` forwards `git_info` fields (`repository`, `repository_type`, `branch`) directly to `build_role_info()`. For a collection with 50 roles this avoids 49 redundant `git` subprocess calls, which is measurable on slow or remote file systems.
 
 ### Phase 3: CLI Flags (Not Yet Implemented)
 
