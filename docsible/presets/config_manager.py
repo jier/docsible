@@ -1,4 +1,5 @@
 """Persistence layer for preset configuration using YAML storage."""
+
 import logging
 import os
 from pathlib import Path

@@ -1,4 +1,3 @@
-
 from pydantic import BaseModel, Field
 
 from docsible.models.severity import Severity
@@ -14,24 +13,19 @@ class Recommendation(BaseModel):
 
     # New severity field
     severity: Severity = Field(
-        default=Severity.INFO,
-        description="Severity level for prioritization"
+        default=Severity.INFO, description="Severity level for prioritization"
     )
 
     # Optional context
     file_path: str | None = Field(None, description="Affected file")
-    line_number: int | None= Field(None, description="Line number if applicable")
+    line_number: int | None = Field(None, description="Line number if applicable")
     remediation: str | None = Field(None, description="How to fix")
 
     # Metadata
     confidence: float = Field(
-        ge=0.0, le=1.0,
-        description="Confidence in this recommendation (0.0-1.0)"
+        ge=0.0, le=1.0, description="Confidence in this recommendation (0.0-1.0)"
     )
-    auto_fixable: bool = Field(
-        default=False,
-        description="Can be auto-fixed with --auto-fix"
-    )
+    auto_fixable: bool = Field(default=False, description="Can be auto-fixed with --auto-fix")
 
     @property
     def location(self) -> str:

@@ -94,9 +94,7 @@ class StructureConfig(BaseModel):
         """
         for ext in v:
             if not ext.startswith("."):
-                raise ValueError(
-                    f"File extension '{ext}' must start with a dot (e.g., '.yml')"
-                )
+                raise ValueError(f"File extension '{ext}' must start with a dot (e.g., '.yml')")
         return v
 
     model_config = {

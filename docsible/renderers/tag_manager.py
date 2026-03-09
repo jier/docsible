@@ -105,9 +105,7 @@ def manage_docsible_file_keys(docsible_path: Path) -> dict:
 
             if updated:
                 with open(docsible_path, "w", encoding="utf-8") as f:
-                    yaml.dump(
-                        existing_data, f, default_flow_style=False, allow_unicode=True
-                    )
+                    yaml.dump(existing_data, f, default_flow_style=False, allow_unicode=True)
                 logger.info(f"Updated {docsible_path} with new keys.")
 
             return existing_data

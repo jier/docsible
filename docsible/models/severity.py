@@ -3,6 +3,7 @@ from enum import Enum
 
 class Severity(Enum):
     """Recommendation severity levels."""
+
     CRITICAL = "critical"
     WARNING = "warning"
     INFO = "info"
@@ -33,5 +34,3 @@ class Severity(Enum):
             Severity.WARNING: 2,
             Severity.INFO: 1,
         }[self]
-
-
