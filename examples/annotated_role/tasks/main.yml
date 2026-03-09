@@ -1,0 +1,41 @@
+---
+# Install the web server package before any configuration takes place
+- name: Install nginx
+  ansible.builtin.apt:
+    name: nginx
+    state: present
+  when: ansible_os_family == "Debian"
+
+# Deploy the virtual host configuration generated from the role template
+- name: Configure virtual host
+  ansible.builtin.template:
+    src: vhost.conf.j2
+    dest: "/etc/nginx/sites-available/{{ webserver_server_name }}.conf"
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Reload nginx
+
+# Enable the site by symlinking into sites-enabled
+- name: Enable virtual host
+  ansible.builtin.file:
+    src: "/etc/nginx/sites-available/{{ webserver_server_name }}.conf"
+    dest: "/etc/nginx/sites-enabled/{{ webserver_server_name }}.conf"
+    state: link
+  notify: Reload nginx
+
+# Ensure the document root directory exists with correct permissions
+- name: Create document root
+  ansible.builtin.file:
+    path: "{{ webserver_document_root }}"
+    state: directory
+    owner: www-data
+    group: www-data
+    mode: "0755"
+
+# Start and enable the service so it survives reboots
+- name: Start and enable nginx
+  ansible.builtin.service:
+    name: nginx
+    state: started
+    enabled: true

@@ -1,0 +1,15 @@
+---
+galaxy_info:
+  author: Test Author
+  description: Fixture role for testing docsible comment tag extraction
+  license: MIT
+  min_ansible_version: "2.12"
+  platforms:
+    - name: Ubuntu
+      versions:
+        - jammy
+  galaxy_tags:
+    - test
+    - annotated
+
+dependencies: []

@@ -1,0 +1,37 @@
+---
+# title: Web server port
+# description: TCP port on which the web server listens for incoming connections
+# required: true
+# choices: 80, 443, 8080, 8443
+webserver_port: 80
+
+# title: Server name
+# description: Hostname or domain name served by this virtual host
+# required: true
+webserver_server_name: "example.com"
+
+# title: Document root
+# description: Absolute path to the directory containing web content
+# required: false
+webserver_document_root: "/var/www/html"
+
+# title: Enable HTTPS redirect
+# required: false
+webserver_https_redirect: false
+
+# title: Worker processes
+# required: false
+# choices: auto, 1, 2, 4, 8
+webserver_worker_processes: "auto"
+
+# title: Access log path
+# required: false
+webserver_access_log: "/var/log/nginx/access.log"
+
+# title: Error log level
+# required: false
+# choices: debug, info, notice, warn, error, crit
+webserver_error_log_level: "warn"
+
+# No comment tags on this variable — inline comment is used instead
+webserver_keepalive_timeout: 65  # Seconds to keep idle connections open

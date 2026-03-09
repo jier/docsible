@@ -1,0 +1,18 @@
+---
+# title: Listen port
+# description: TCP port on which the service listens
+# required: true
+# choices: 80, 443, 8080
+service_port: 8080
+
+# title: Enable TLS
+# required: false
+service_tls_enabled: false
+
+# title: Log level
+# required: false
+# choices: debug, info, warn, error
+service_log_level: "info"
+
+# No comment tags — only an inline comment
+service_timeout: 30  # Request timeout in seconds
