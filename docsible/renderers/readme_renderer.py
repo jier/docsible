@@ -66,7 +66,7 @@ class ReadmeRenderer:
         self,
         role_info: dict[str, Any],
         output_path: Path,
-        template_type: str = "standard",
+        template_type: str = "standard_modular",
         custom_template_path: str | None = None,
         mermaid_code_per_file: dict[str, str] | None = None,
         sequence_diagram_high_level: str | None = None,
@@ -93,7 +93,7 @@ class ReadmeRenderer:
         Args:
             role_info: Role information dictionary
             output_path: Path where README will be written
-            template_type: 'standard' or 'hybrid' (default: 'standard')
+            template_type: 'standard_modular' or 'hybrid' (default: 'standard_modular')
             custom_template_path: Optional custom template file path
             mermaid_code_per_file: Task flow graphs per file
             sequence_diagram_high_level: High-level sequence diagram
@@ -116,7 +116,7 @@ class ReadmeRenderer:
         template = self.template_processor.get_role_template(
             template_type=template_type, custom_path=custom_template_path
         )
-
+        
         # Step 3: Render template
         new_content = template.render(
             role=role_info,

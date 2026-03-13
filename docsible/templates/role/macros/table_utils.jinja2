@@ -1,16 +1,5 @@
 {# Small, pure functions with no side effects #}
 
-{% macro detect_dynamic_columns(file_data) -%}
-  {% set ns = namespace(has_required=false, has_title=false, has_choices=false) %}
-  {%- for key, details in file_data.items() -%}
-    {%- if details.required is not none -%}{% set ns.has_required = true %}{%- endif -%}
-    {%- if details.title is not none -%}{% set ns.has_title = true %}{%- endif -%}
-    {%- if details.choices != None -%}{% set ns.has_choices = true %}{%- endif -%}
-  {%- endfor %}
-  {{- ns -}}
-{%- endmacro %}
-
-
 {% macro format_key_name(key) -%}
   {%- if '.' in key -%}
     {{ key.rsplit('.', 1)[0] ~ '.**' ~ key.rsplit('.', 1)[1] ~ '**' }}
@@ -19,7 +8,6 @@
   {%- endif -%}
 {%- endmacro %}
 
-
 {% macro format_variable_value(details) -%}
   {%- if details.value is string and details.value | length == 0 -%}
     {# Empty string - render nothing #}
@@ -27,7 +15,6 @@
     {{ details.value | escape_table_value }}
   {%- endif -%}
 {%- endmacro %}
-
 
 {% macro render_repo_link_for_key(key, file_path, line, role) -%}
   {%- if role.repository and file_path and line is not none -%}

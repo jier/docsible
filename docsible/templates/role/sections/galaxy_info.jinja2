@@ -16,7 +16,7 @@ Description: {{ role.meta.galaxy_info.description or 'Not available.' }}
 {% endif %}
 {% endif %}
 
-{% if role.docsible %}
+{% if role.docsible and (role.docsible.description or role.docsible.requester or role.docsible.users or role.docsible.dt_dev or role.docsible.dt_prod or role.docsible.dt_update or role.docsible.version or role.docsible.time_saving or role.docsible.category or role.docsible.subCategory or role.docsible.aap_hub or role.docsible.automation_kind or role.docsible.critical) %}
 | Field                | Value           |
 |--------------------- |-----------------|
 {%- if role.docsible.description %}
