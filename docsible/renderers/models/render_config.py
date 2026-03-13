@@ -5,7 +5,7 @@ class RenderConfig(BaseModel):
     """Configuration for how to render documentation.
 
     Attributes:
-        template_type: Type of template ('standard', 'hybrid', 'hybrid_modular')
+        template_type: Type of template ('standard_modular', 'hybrid')
         custom_template_path: Path to custom template file
         append: Append to existing README instead of replacing
         backup: Create backup before overwriting
@@ -14,7 +14,7 @@ class RenderConfig(BaseModel):
         strict_validation: Fail on validation errors
     """
 
-    template_type: str = Field(default="standard", description="Template type to use")
+    template_type: str = Field(default="standard_modular", description="Template type to use")
     custom_template_path: str | None = Field(
         default=None, description="Path to custom template file"
     )

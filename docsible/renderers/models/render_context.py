@@ -28,7 +28,7 @@ class RenderContext(BaseModel):
 
     # Template configuration
     template_type: str = Field(
-        default="standard", description="Template type ('standard', 'hybrid', 'hybrid_modular')"
+        default="standard_modular", description="Template type ('standard_modular', 'hybrid')"
     )
     custom_template_path: str | None = Field(
         default=None, description="Optional custom template file path"

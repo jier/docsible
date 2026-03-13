@@ -1,20 +1,5 @@
 {% from 'macros/table_utils.jinja2' import render_repo_link_for_key %}
 
-{% macro format_packed_description(details) -%}
-{%- if details.title -%}
-**{{ details.title | escape_table_cell }}**<br>
-{%- endif -%}
-{%- if details.description -%}
-{{ details.description | escape_table_cell }}
-{%- endif -%}
-{%- if details.required -%}
-<br>**Required:** {{ details.required | escape_table_cell }}
-{%- endif -%}
-{%- if details.choices -%}
-<br>**Choices:** {{ details.choices | escape_table_cell }}
-{%- endif -%}
-{%- endmacro %}
-
 {% macro format_value(details) -%}
 {%- if details.value is mapping or details.value is sequence -%}
 *See YAML*
@@ -23,14 +8,25 @@
 {%- endif -%}
 {%- endmacro %}
 
-{% macro render_row(key, details, file_path, role) -%}
-| `{{ key | escape_table_cell }}` | {{ format_value(details) }} | {{ details.type | escape_table_cell }} | {{ format_packed_description(details) }} |
+{% macro render_header(columns) -%}
+| Variable | Default Value | Type |{% if columns.has_description %} Description |{% endif %}{%- if columns.has_title %} Title |{% endif %}{%- if columns.has_required %} Required |{% endif %}{%- if columns.has_choices %} Choices |{% endif %}
+|----------|---------------|------|{% if columns.has_description %}-------------|{% endif %}{%- if columns.has_title %}-------|{% endif %}{%- if columns.has_required %}----------|{% endif %}{%- if columns.has_choices %}---------|{% endif %}
+{%- endmacro %}
+
+{% macro render_row(key, details, file_path, role, columns) -%}
+| `{{ key | escape_table_cell }}` | {{ format_value(details) }} | {{ details.type | escape_table_cell }} |{% if columns.has_description %} {{ details.description | escape_table_cell }} |{% endif %}{%- if columns.has_title %} {{ details.title | escape_table_cell }} |{% endif %}{%- if columns.has_required %} {{ details.required | escape_table_cell }} |{% endif %}{%- if columns.has_choices %} {{ details.choices | escape_table_cell }} |{% endif %}
 {%- endmacro %}
 
 {% macro render_table(file_data, file_path, role) -%}
-| Variable | Default Value | Type | Description |
-|----------|---------------|------|-------------|
+{%- set ns = namespace(has_required=false, has_title=false, has_choices=false, has_description=false) -%}
+{%- for key, details in file_data.items() -%}
+  {%- if details.required -%}{%- set ns.has_required = true -%}{%- endif -%}
+  {%- if details.title -%}{%- set ns.has_title = true -%}{%- endif -%}
+  {%- if details.choices -%}{%- set ns.has_choices = true -%}{%- endif -%}
+  {%- if details.description -%}{%- set ns.has_description = true -%}{%- endif -%}
+{%- endfor -%}
+{{ render_header(ns) }}
 {% for key, details in file_data.items() -%}
-{{ render_row(key, details, file_path, role) }}
+{{ render_row(key, details, file_path, role, ns) }}
 {% endfor -%}
 {%- endmacro %}

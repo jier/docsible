@@ -161,6 +161,15 @@ run_test "edge_case_role with --no-handlers" \
 run_test "edge_case_role with --no-vars" \
     "docsible document role --role tests/fixtures/edge_case_role --no-vars --dry-run"
 
+# --- Comment tags ---
+
+# Comment tags: verify annotated_role fixture runs without error
+run_test "comment tags: title and description render in output" \
+  "docsible document role --role tests/fixtures/annotated_role --dry-run"
+
+run_test "comment tags: annotated example role runs without error" \
+  "docsible document role --role examples/annotated_role --dry-run"
+
 # --- docsible analyze role ---
 
 # Test 21: Analyze role (no docs written; complexity_report forced on)

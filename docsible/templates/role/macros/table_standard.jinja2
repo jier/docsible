@@ -1,5 +1,4 @@
 {% from 'macros/table_utils.jinja2' import
-  detect_dynamic_columns,
   format_key_name,
   format_variable_value,
   render_repo_link_for_key
@@ -42,10 +41,15 @@
   {%- endif %}
 {%- endmacro %}
 {% macro render_table(file_data, file_path, role) -%}
-{%- set columns = detect_dynamic_columns(file_data) -%}
-{{ render_header(columns) }}
+{%- set ns = namespace(has_required=false, has_title=false, has_choices=false) -%}
+{%- for key, details in file_data.items() -%}
+  {%- if details.required -%}{%- set ns.has_required = true -%}{%- endif -%}
+  {%- if details.title -%}{%- set ns.has_title = true -%}{%- endif -%}
+  {%- if details.choices -%}{%- set ns.has_choices = true -%}{%- endif -%}
+{%- endfor -%}
+{{ render_header(ns) }}
 {% for key, details in file_data.items() -%}
-{{ render_row(key, details, file_path, role, columns) }}
+{{ render_row(key, details, file_path, role, ns) }}
 {% endfor -%}
 {{- render_descriptions_section(file_data, file_path) }}
 {%- endmacro %}

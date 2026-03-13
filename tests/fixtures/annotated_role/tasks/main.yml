@@ -1,0 +1,21 @@
+---
+# Ensure the service package is installed
+- name: Install service package
+  ansible.builtin.apt:
+    name: myservice
+    state: present
+
+# Write the configuration file from template
+- name: Configure service
+  ansible.builtin.template:
+    src: service.conf.j2
+    dest: /etc/myservice/service.conf
+    mode: "0644"
+  notify: Restart service
+
+# Start and enable the service
+- name: Start service
+  ansible.builtin.service:
+    name: myservice
+    state: started
+    enabled: true

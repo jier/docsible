@@ -81,11 +81,11 @@ class TemplateLoader:
         logger.debug(f"Loading template: {name}")
         return self.env.get_template(name)
 
-    def get_role_template(self, template_type: str = "standard") -> Template:
+    def get_role_template(self, template_type: str = "standard_modular") -> Template:
         """Get role documentation template by type.
 
         Args:
-            template_type: Template type ('standard' or 'hybrid')
+            template_type: Template type ('standard_modular' or 'hybrid')
 
         Returns:
             Compiled Jinja2 template
@@ -95,16 +95,14 @@ class TemplateLoader:
             >>> template = loader.get_role_template('hybrid')
         """
         template_map = {
-            "standard": "role/standard.jinja2",
             "standard_modular": "role/standard_modular.jinja2",
             "hybrid": "role/hybrid_modular.jinja2",
-            "hybrid_modular": "role/hybrid.jinja2",
         }
 
         template_name = template_map.get(template_type)
         if not template_name:
-            logger.warning(f"Unknown template type '{template_type}', falling back to 'standard'")
-            template_name = template_map["standard"]
+            logger.warning(f"Unknown template type '{template_type}', falling back to 'standard_modular'")
+            template_name = template_map["standard_modular"]
 
         return self.get_template(template_name)
 

@@ -1,0 +1,21 @@
+---
+galaxy_info:
+  author: docsible-examples
+  description: Example webserver role demonstrating docsible comment tags
+  license: MIT
+  min_ansible_version: "2.12"
+  platforms:
+    - name: Ubuntu
+      versions:
+        - focal
+        - jammy
+    - name: Debian
+      versions:
+        - bullseye
+        - bookworm
+  galaxy_tags:
+    - web
+    - nginx
+    - example
+
+dependencies: []

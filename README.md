@@ -457,17 +457,53 @@ Docsible requires Python 3.x and the following libraries:
 
 ### On variables and defaults
 
-The tool reads comments placed immediately before a variable, provided they begin with a recognized tag:
+Place comment tags immediately before a variable in `defaults/main.yml`. The tool recognises four tags:
 
-`# title:` — populates the **Title** column in `README.md` (short description of the variable)
+| Tag | Column populated | Notes |
+|-----|-----------------|-------|
+| `# title:` | **Title** | Short label for the variable |
+| `# required:` | **Required** | Indicate whether the variable must be set (`true` / `false`) |
+| `# choices:` | **Choices** | Comma-separated list of valid values |
+| `# description:` | **Description** | Full description; overrides any inline YAML comment on the same line |
 
-`# required:` — populates the **Required** column in `README.md`
+**Example `defaults/main.yml`:**
 
-`# choices:` — populates the **Choices** column in `README.md` (optional)
+```yaml
+# title: Database host
+# description: Hostname or IP address of the primary database server
+# required: true
+db_host: "localhost"
+
+# title: Database port
+# required: false
+# choices: 3306, 5432, 27017
+db_port: 3306
+
+# title: Retry attempts
+db_retries: 3  # Number of connection retries before giving up
+```
+
+The snippet above produces a variable table like:
+
+| Variable | Value | Type | Required | Choices | Title | Description |
+|----------|-------|------|----------|---------|-------|-------------|
+| `db_host` | `"localhost"` | str | true | | Database host | Hostname or IP address of the primary database server |
+| `db_port` | `3306` | int | false | 3306, 5432, 27017 | Database port | |
+| `db_retries` | `3` | int | | | Retry attempts | Number of connection retries before giving up |
+
+Variables with none of the four tags still appear in the table; the columns for those fields are simply left empty.
 
 ### On tasks
 
-The tool reads all lines before each `- name:` entry that begin with `#`. Those comments are reported in the **Comments** column of the task tables.
+The tool reads all lines before each `- name:` entry that begin with `#`. Those comments are reported in the **Comments** column of the task tables. For example:
+
+```yaml
+# Runs only when the target package is not already installed
+- name: Install application package
+  ansible.builtin.apt:
+    name: myapp
+    state: present
+```
 
 ## Contributing
 

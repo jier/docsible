@@ -19,7 +19,7 @@ class TestRenderContextCreation:
         context = RenderContext(role_info={'name': 'test_role'})
         
         assert context.role_info == {'name': 'test_role'}
-        assert context.template_type == "standard"
+        assert context.template_type == "standard_modular"
         assert context.append is False
         assert context.no_vars is False
 
@@ -67,7 +67,7 @@ class TestRenderContextCreation:
         """Test that default values are set correctly."""
         context = RenderContext(role_info={})
         
-        assert context.template_type == "standard"
+        assert context.template_type == "standard_modular"
         assert context.custom_template_path is None
         assert context.mermaid_code_per_file is None
         assert context.show_dependency_matrix is False
