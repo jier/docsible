@@ -19,7 +19,7 @@ This module splits the work into two layers:
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -37,6 +37,7 @@ class RoleAnalysis:
     complexity_report: ComplexityReport
     recommendations: list[Recommendation]
     execution_graph: Any = None
+    suppressed: list[Recommendation] = field(default_factory=list)
 
 
 def analyze_role(
@@ -46,6 +47,7 @@ def analyze_role(
     include_patterns: bool = False,
     min_confidence: float = 0.7,
     cached_complexity_report: ComplexityReport | None = None,
+    apply_suppressions: bool = False,
 ) -> RoleAnalysis:
     """Compute complexity (incl. execution graph) and recommendations.
 
@@ -57,6 +59,9 @@ def analyze_role(
         min_confidence: Minimum confidence for pattern detection
         cached_complexity_report: Reuse an already-computed report (e.g. from
             smart defaults) instead of analyzing again
+        apply_suppressions: Filter suppressed recommendations here (via the
+            suppression store for ``role_path``) so all callers honor
+            suppression from one place; also returned as ``suppressed``
 
     Returns:
         RoleAnalysis with the complexity report, recommendations, and the
@@ -71,10 +76,16 @@ def analyze_role(
         execution_graph=execution_graph,
     )
     recommendations = generate_all_recommendations(role_path, complexity_report)
+    suppressed: list[Recommendation] = []
+    if apply_suppressions:
+        from docsible.suppression.engine import apply_suppressions as _filter
+
+        recommendations, suppressed = _filter(recommendations, base_path=role_path)
     return RoleAnalysis(
         complexity_report=complexity_report,
         recommendations=recommendations,
         execution_graph=execution_graph,
+        suppressed=suppressed,
     )
 
 

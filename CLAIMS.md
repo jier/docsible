@@ -392,6 +392,40 @@ smaller/synthetic test collection did not surface:
   `dev-sec/ansible-collection-hardening`, which has 4 real roles + 2 empty
   submodule dirs under `roles/`.)
 
+## Analysis-path status & merge sequencing
+
+Single-role `document role`, `document role --collection`, and `scan collection`
+now share `analyze_role()` for complexity, execution graph, and recommendations.
+As of this change they also share **suppression**: `analyze_role()` filters in
+one place, so a suppressed finding is consistently excluded from the terminal
+view, CI gates, collection role counts, and scan counts (previously only the
+single-role orchestrator applied suppression).
+
+Tracked sequencing (technical ordering, not a dated roadmap):
+- Suppression is now shared, but `document role --collection` still lacks the
+  `fail_on` exit gate that single-role `document role` has. Add it when the
+  collection document loop is restructured (collection branch), so CI behaviour
+  is consistent across paths.
+- Removing the deprecated `docsible role` command and retiring `RoleInfoBuilder`
+  is the only *breaking* change and belongs in the 1.0.0 cut. The
+  `docsible guide` guides (`getting-started`, `smart-defaults`,
+  `troubleshooting`) teach `docsible role` exclusively and their tests
+  (`test_guide_command`, `test_brief_help`, `test_cli_integration`) reference it,
+  so the guide rewrite must land in the same change that removes the command.
+- The hybrid template (`hybrid_modular.jinja2`) does not render the Execution
+  Graph Summary / Execution Routes sections that the standard template does;
+  reconcile it before freezing the public graph contract, so "the graph is the
+  single source" holds for every output path.
+- Freeze the JSON graph contract only *after* the collection cross-role work, so
+  it locks the final node/edge shape.
+- Known caveat found while testing: the suppression store resolves to
+  `<role_path>/.docsible/suppress.yml`, but a role's `.docsible` is normally a
+  metadata *file*, so a per-role store cannot sit at `role/.docsible/` for roles
+  that have one (only a project-root `.docsible/` directory works). Single-role
+  usage (where `role_path` is often the project root) masks this; the
+  collection/scan paths expose it. Unify the store location in the same
+  collection/CI pass.
+
 ## Remaining Duplication Work
 
 The source-only duplication scan is below the original baseline, but remaining

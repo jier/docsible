@@ -89,24 +89,16 @@ class RoleOrchestrator:
         ):
             self._validate_documentation(role_info, analysis_report, diagrams, dependency_data)
 
-        # Step 7.5: Recommendations were already computed alongside complexity
-        # in step 4 (shared analyze_role()), using the validated role_path.
+        # Step 7.5: Recommendations were computed and suppression applied inside
+        # the shared analyze_role() (step 4), so single-role, --collection, and
+        # scan all honor suppression from one place.
         recommendations = analysis.recommendations
-
-        if self.context.analysis.apply_suppressions:
-            from docsible.suppression.engine import apply_suppressions
-
-            recommendations, suppressed = apply_suppressions(
-                recommendations,
-                base_path=role_path,
+        suppressed = analysis.suppressed
+        if suppressed and self.context.analysis.output_format != "json":
+            click.echo(
+                f"  ({len(suppressed)} recommendation(s) suppressed"
+                f" — see 'docsible suppress list')"
             )
-            if suppressed and self.context.analysis.output_format != "json":
-                click.echo(
-                    f"  ({len(suppressed)} recommendation(s) suppressed"
-                    f" — see 'docsible suppress list')"
-                )
-        else:
-            suppressed = []
 
         if recommendations or self.context.analysis.output_format == "json":
             self._display_recommendations(recommendations, analysis_report)
@@ -244,6 +236,7 @@ class RoleOrchestrator:
             include_patterns=self.context.analysis.simplification_report,
             min_confidence=0.7,
             cached_complexity_report=self.context.analysis.cached_complexity_report,
+            apply_suppressions=self.context.analysis.apply_suppressions,
         )
 
     def _display_analysis_and_exit(self, analysis_report, role_info: dict) -> None:
