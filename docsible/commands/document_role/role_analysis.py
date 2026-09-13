@@ -19,7 +19,7 @@ This module splits the work into two layers:
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -37,6 +37,7 @@ class RoleAnalysis:
     complexity_report: ComplexityReport
     recommendations: list[Recommendation]
     execution_graph: Any = None
+    suppressed: list[Recommendation] = field(default_factory=list)
 
 
 def analyze_role(
@@ -46,6 +47,8 @@ def analyze_role(
     include_patterns: bool = False,
     min_confidence: float = 0.7,
     cached_complexity_report: ComplexityReport | None = None,
+    apply_suppressions: bool = False,
+    suppress_base_path: Path | None = None,
 ) -> RoleAnalysis:
     """Compute complexity (incl. execution graph) and recommendations.
 
@@ -57,6 +60,13 @@ def analyze_role(
         min_confidence: Minimum confidence for pattern detection
         cached_complexity_report: Reuse an already-computed report (e.g. from
             smart defaults) instead of analyzing again
+        apply_suppressions: Filter suppressed recommendations here so all
+            callers (single-role, --collection, scan) honor suppression the
+            same way, from one place
+        suppress_base_path: Project/collection root that owns the
+            `.docsible/suppress.yml` store (rules scope per-role via `--file`).
+            Defaults to ``role_path`` when omitted. Pass the shared root from
+            scan/collection so they read one project store, not a per-role one.
 
     Returns:
         RoleAnalysis with the complexity report, recommendations, and the
@@ -71,10 +81,18 @@ def analyze_role(
         execution_graph=execution_graph,
     )
     recommendations = generate_all_recommendations(role_path, complexity_report)
+    suppressed: list[Recommendation] = []
+    if apply_suppressions:
+        from docsible.suppression.engine import apply_suppressions as _filter
+
+        recommendations, suppressed = _filter(
+            recommendations, base_path=suppress_base_path or role_path
+        )
     return RoleAnalysis(
         complexity_report=complexity_report,
         recommendations=recommendations,
         execution_graph=execution_graph,
+        suppressed=suppressed,
     )
 
 

@@ -32,7 +32,7 @@ Run the source-only duplication scan when it is useful:
 npx --yes jscpd docsible --pattern "**/*.py"
 ```
 
-`jscpd` is informational: its current baseline is 21 clones and 1.30% duplicated lines, not a zero-threshold gate. Update the baseline only after reviewing intentional duplication.
+`jscpd` is informational, not a zero-threshold gate. Current baseline (2026-09-13): 17 clones and 1.02% duplicated lines (down from 21 / 1.30%). Update this baseline only after reviewing intentional duplication — the current grouping and the one known dedup candidate (`role_orchestrator._render_documentation` ↔ `role_analysis.render_analyzed_role`) are recorded in `CLAIMS.md`.
 
 ## Verified Baseline (2026-09-13)
 

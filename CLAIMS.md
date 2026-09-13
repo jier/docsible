@@ -392,6 +392,44 @@ smaller/synthetic test collection did not surface:
   `dev-sec/ansible-collection-hardening`, which has 4 real roles + 2 empty
   submodule dirs under `roles/`.)
 
+## Analysis-path status & merge sequencing
+
+Single-role `document role`, `document role --collection`, and `scan collection`
+now share `analyze_role()` for complexity, execution graph, and recommendations.
+As of this change they also share **suppression**: `analyze_role()` filters in
+one place, so a suppressed finding is consistently excluded from the terminal
+view, CI gates, collection role counts, and scan counts (previously only the
+single-role orchestrator applied suppression).
+
+Tracked sequencing (technical ordering, not a dated roadmap):
+- Suppression is now shared, but `document role --collection` still lacks the
+  `fail_on` exit gate that single-role `document role` has. Add it when the
+  collection document loop is restructured (collection branch), so CI behaviour
+  is consistent across paths.
+- Removing the deprecated `docsible role` command and retiring `RoleInfoBuilder`
+  is the only *breaking* change and belongs in the 1.0.0 cut. The
+  `docsible guide` guides (`getting-started`, `smart-defaults`,
+  `troubleshooting`) teach `docsible role` exclusively and their tests
+  (`test_guide_command`, `test_brief_help`, `test_cli_integration`) reference it,
+  so the guide rewrite must land in the same change that removes the command.
+- The hybrid template (`hybrid_modular.jinja2`) does not render the Execution
+  Graph Summary / Execution Routes sections that the standard template does;
+  reconcile it before freezing the public graph contract, so "the graph is the
+  single source" holds for every output path.
+- Freeze the JSON graph contract only *after* the collection cross-role work, so
+  it locks the final node/edge shape.
+- Suppression store resolution (fixed in step 3a). Previously `analyze_role`
+  always read the store from `role_path`, while `docsible suppress add` writes
+  to the **working-directory** `.docsible/suppress.yml`. `scan collection` and
+  `document role --collection` now pass `suppress_base_path = <collection root>`,
+  so they read the one project/collection-root store and scope per role via a
+  rule's `--file` — matching the documented model (and the metadata-`.docsible`
+  file vs store-directory collision can no longer occur for collection roles).
+  Residual: single-role `analyze_role` still defaults its base to `role_path`,
+  which equals the project root for the common `--role .` invocation but not for
+  an absolute `--role /abs/path`; unifying that (e.g. walking up to the nearest
+  `.docsible/`) is a small follow-up, not a regression.
+
 ## Remaining Duplication Work
 
 The source-only duplication scan is below the original baseline, but remaining
@@ -422,6 +460,35 @@ duplication is prioritized by ownership and behavior rather than percentage.
    change requires them to move together.
 6. Remove obsolete duplicate tests and generated fixture backups only after
    confirming they are not test contracts.
+
+### jscpd (source-only, `docsible/**/*.py`) — 2026-09-13
+
+17 clones / 258 duplicated lines (1.02%) / 1414 tokens (1.22%), down from the
+prior baseline of 21 clones / 1.30%. Grouped by owner, mapped to the items
+above; the ones to actually act on are called out:
+
+- **`role_orchestrator._render_documentation` ↔ `role_analysis.render_analyzed_role`**
+  (the `ReadmeRenderer(...).render_role(...)` assembly) — **introduced by the
+  step‑3 consolidation**: two render assemblies where there should be one.
+  Action: have the orchestrator delegate to `render_analyzed_role` so a single
+  path renders. Ties to item 1.
+- **`commands/analyze/role.py` ↔ `commands/validate/role.py`** — the two thin
+  intent-command wrappers duplicate the same option-stack decoration. Low-risk
+  extraction candidate (a shared decorator), cosmetic.
+- **`commands/document/role.py` ↔ `commands/legacy/role.py`** — legacy
+  duplication; expected to vanish when step‑3b removes `docsible role`
+  (item 3).
+- **`renderers/models/diagram_data.py` ↔ `renderers/models/render_context.py`**
+  and `readme_renderer.py` internal (`render_role` ↔ `render_collection`) —
+  renderer-model / renderer-method overlap → item 5.
+- Remaining intra-file repeats in `diagrams/mermaid/core.py`,
+  `diagrams/sequence/role.py`, `diagrams/types/formatters.py`,
+  `repositories/role_repository.py`, `utils/cache.py` — pre-existing, no owner
+  overlap with the graph work; leave unless a change touches them.
+
+Only the first item (`_render_documentation` / `render_analyzed_role`) is a
+regression *from* our consolidation and worth folding into the dedup pass; the
+rest are either legacy-to-be-removed or pre-existing.
 
 ## Scope of This Document
 

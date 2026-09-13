@@ -209,8 +209,14 @@ def document_collection_roles(
 
                 # Analyze complexity, execution graph, and recommendations —
                 # identical to standalone `document role` and `scan collection`
-                # (previously this was skipped entirely for collection roles).
-                analysis = analyze_role(role_info, role_path, min_confidence=0.7)
+                # (shared analyze_role; suppression resolved from the collection root).
+                analysis = analyze_role(
+                    role_info,
+                    role_path,
+                    min_confidence=0.7,
+                    apply_suppressions=True,
+                    suppress_base_path=collection_root,
+                )
 
                 role_readme_path = role_path / output
                 template_type = "hybrid" if hybrid else "standard_modular"
