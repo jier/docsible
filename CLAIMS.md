@@ -418,13 +418,17 @@ Tracked sequencing (technical ordering, not a dated roadmap):
   single source" holds for every output path.
 - Freeze the JSON graph contract only *after* the collection cross-role work, so
   it locks the final node/edge shape.
-- Known caveat found while testing: the suppression store resolves to
-  `<role_path>/.docsible/suppress.yml`, but a role's `.docsible` is normally a
-  metadata *file*, so a per-role store cannot sit at `role/.docsible/` for roles
-  that have one (only a project-root `.docsible/` directory works). Single-role
-  usage (where `role_path` is often the project root) masks this; the
-  collection/scan paths expose it. Unify the store location in the same
-  collection/CI pass.
+- Suppression store resolution (fixed in step 3a). Previously `analyze_role`
+  always read the store from `role_path`, while `docsible suppress add` writes
+  to the **working-directory** `.docsible/suppress.yml`. `scan collection` and
+  `document role --collection` now pass `suppress_base_path = <collection root>`,
+  so they read the one project/collection-root store and scope per role via a
+  rule's `--file` — matching the documented model (and the metadata-`.docsible`
+  file vs store-directory collision can no longer occur for collection roles).
+  Residual: single-role `analyze_role` still defaults its base to `role_path`,
+  which equals the project root for the common `--role .` invocation but not for
+  an absolute `--role /abs/path`; unifying that (e.g. walking up to the nearest
+  `.docsible/`) is a small follow-up, not a regression.
 
 ## Remaining Duplication Work
 

@@ -65,11 +65,28 @@ def test_scan_collection_honours_suppression(tmp_path):
     before = info_count()
     assert before >= 1  # the "examples/ directory" info finding exists
 
-    web_role = collection / "roles" / "web_role"
-    # The role's `.docsible` is a metadata file; the suppression store needs
-    # `.docsible/` as a directory, so drop the file in this throwaway copy.
-    (web_role / ".docsible").unlink(missing_ok=True)
-    (web_role / ".docsible").mkdir()
-    (web_role / ".docsible" / "suppress.yml").write_text(RULE)
+    # One project/collection-root store; rules scope per role via `--file`.
+    (collection / ".docsible").mkdir()
+    (collection / ".docsible" / "suppress.yml").write_text(RULE)
 
-    assert info_count() < before  # scan now honors the suppression
+    assert info_count() < before  # scan now reads the collection-root store
+
+
+def test_suppress_base_path_controls_which_store_is_read(tmp_path):
+    role = _write_role(tmp_path / "proj" / "roles" / "r")  # role has no store
+    root = tmp_path / "proj"
+    (root / ".docsible").mkdir(parents=True)
+    (root / ".docsible" / "suppress.yml").write_text(RULE)  # store at project root
+
+    role_info = RoleInfoLoader().load(role)
+
+    # Default base is the role dir -> the project-root store is not read.
+    by_role = analyze_role(role_info, role, apply_suppressions=True)
+    assert any("examples" in r.message for r in by_role.recommendations)
+
+    # Explicit project root -> suppression applies.
+    by_root = analyze_role(
+        role_info, role, apply_suppressions=True, suppress_base_path=root
+    )
+    assert not any("examples" in r.message for r in by_root.recommendations)
+    assert any("examples" in r.message for r in by_root.suppressed)

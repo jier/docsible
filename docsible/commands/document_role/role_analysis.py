@@ -48,6 +48,7 @@ def analyze_role(
     min_confidence: float = 0.7,
     cached_complexity_report: ComplexityReport | None = None,
     apply_suppressions: bool = False,
+    suppress_base_path: Path | None = None,
 ) -> RoleAnalysis:
     """Compute complexity (incl. execution graph) and recommendations.
 
@@ -59,9 +60,13 @@ def analyze_role(
         min_confidence: Minimum confidence for pattern detection
         cached_complexity_report: Reuse an already-computed report (e.g. from
             smart defaults) instead of analyzing again
-        apply_suppressions: Filter suppressed recommendations here (via the
-            suppression store for ``role_path``) so all callers honor
-            suppression from one place; also returned as ``suppressed``
+        apply_suppressions: Filter suppressed recommendations here so all
+            callers (single-role, --collection, scan) honor suppression the
+            same way, from one place
+        suppress_base_path: Project/collection root that owns the
+            `.docsible/suppress.yml` store (rules scope per-role via `--file`).
+            Defaults to ``role_path`` when omitted. Pass the shared root from
+            scan/collection so they read one project store, not a per-role one.
 
     Returns:
         RoleAnalysis with the complexity report, recommendations, and the
@@ -80,7 +85,9 @@ def analyze_role(
     if apply_suppressions:
         from docsible.suppression.engine import apply_suppressions as _filter
 
-        recommendations, suppressed = _filter(recommendations, base_path=role_path)
+        recommendations, suppressed = _filter(
+            recommendations, base_path=suppress_base_path or role_path
+        )
     return RoleAnalysis(
         complexity_report=complexity_report,
         recommendations=recommendations,

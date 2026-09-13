@@ -38,12 +38,14 @@ def _complexity_label(category_value: str) -> str:
     return _COMPLEXITY_MAP.get(category_value.lower(), "unknown")
 
 
-def _analyse_role(role_path: Path, git_info: dict) -> RoleResult:
+def _analyse_role(role_path: Path, git_info: dict, collection_root: Path) -> RoleResult:
     """Run analysis on a single role and return a RoleResult.
 
     Args:
         role_path: Absolute path to the role directory.
         git_info: Pre-fetched git repository info (cached at collection level).
+        collection_root: Project root owning the shared `.docsible/suppress.yml`
+            store (per-role scoping happens through a rule's `--file`).
 
     Returns:
         RoleResult with metrics and findings.
@@ -80,8 +82,15 @@ def _analyse_role(role_path: Path, git_info: dict) -> RoleResult:
     variable_count = defaults_count + vars_count
 
     # Complexity + recommendations — shared with `document role` and
-    # `document role --collection` so all three agree, including suppression.
-    analysis = analyze_role(role_info, role_path, min_confidence=0.7, apply_suppressions=True)
+    # `document role --collection` so all three agree, including suppression
+    # resolved from the one collection/project-root store.
+    analysis = analyze_role(
+        role_info,
+        role_path,
+        min_confidence=0.7,
+        apply_suppressions=True,
+        suppress_base_path=collection_root,
+    )
     complexity_report = analysis.complexity_report
     complexity = _complexity_label(complexity_report.category.value)
     recommendations = analysis.recommendations
@@ -223,7 +232,7 @@ def scan_collection_cmd(
     role_results: list[RoleResult] = []
     for role_path in sorted(role_paths):
         try:
-            result = _analyse_role(role_path, git_info)
+            result = _analyse_role(role_path, git_info, collection_path)
             role_results.append(result)
             logger.debug(f"Scanned role: {role_path.name}")
         except Exception as exc:
