@@ -461,6 +461,35 @@ duplication is prioritized by ownership and behavior rather than percentage.
 6. Remove obsolete duplicate tests and generated fixture backups only after
    confirming they are not test contracts.
 
+### jscpd (source-only, `docsible/**/*.py`) — 2026-09-13
+
+17 clones / 258 duplicated lines (1.02%) / 1414 tokens (1.22%), down from the
+prior baseline of 21 clones / 1.30%. Grouped by owner, mapped to the items
+above; the ones to actually act on are called out:
+
+- **`role_orchestrator._render_documentation` ↔ `role_analysis.render_analyzed_role`**
+  (the `ReadmeRenderer(...).render_role(...)` assembly) — **introduced by the
+  step‑3 consolidation**: two render assemblies where there should be one.
+  Action: have the orchestrator delegate to `render_analyzed_role` so a single
+  path renders. Ties to item 1.
+- **`commands/analyze/role.py` ↔ `commands/validate/role.py`** — the two thin
+  intent-command wrappers duplicate the same option-stack decoration. Low-risk
+  extraction candidate (a shared decorator), cosmetic.
+- **`commands/document/role.py` ↔ `commands/legacy/role.py`** — legacy
+  duplication; expected to vanish when step‑3b removes `docsible role`
+  (item 3).
+- **`renderers/models/diagram_data.py` ↔ `renderers/models/render_context.py`**
+  and `readme_renderer.py` internal (`render_role` ↔ `render_collection`) —
+  renderer-model / renderer-method overlap → item 5.
+- Remaining intra-file repeats in `diagrams/mermaid/core.py`,
+  `diagrams/sequence/role.py`, `diagrams/types/formatters.py`,
+  `repositories/role_repository.py`, `utils/cache.py` — pre-existing, no owner
+  overlap with the graph work; leave unless a change touches them.
+
+Only the first item (`_render_documentation` / `render_analyzed_role`) is a
+regression *from* our consolidation and worth folding into the dedup pass; the
+rest are either legacy-to-be-removed or pre-existing.
+
 ## Scope of This Document
 
 This file records observable project state, commands verified for this
